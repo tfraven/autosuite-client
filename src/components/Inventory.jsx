@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Bike,
   Search,
   Plus,
   LayoutGrid,
@@ -593,25 +592,20 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   {/* Vehicle Graphic & Title */}
                   <div className="bike-card-body">
                     <div className="bike-card-head">
-                      <div className="bike-card-icon-wrap">
-                        <Bike size={28} />
-                      </div>
-                      <div className="bike-card-headings">
-                        <h3 className="bike-card-title">{bike.modelName}</h3>
+                      <h3 className="bike-card-title" title={bike.modelName}>{bike.modelName}</h3>
 
-                        <div className="bike-card-specs">
-                          <span className="spec-tag color-indicator-chip">
-                            <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
-                            {bike.color}
+                      <div className="bike-card-specs">
+                        <span className="spec-tag color-indicator-chip">
+                          <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
+                          {bike.color}
+                        </span>
+                        <span className="spec-tag">{bike.modelYear}</span>
+                        <span className="spec-tag">{bike.marketTarget}</span>
+                        {bike.conditionGrade && (
+                          <span className="spec-tag spec-tag-grade">
+                            {bike.conditionGrade.replace('GRADE_', 'Grade ')}
                           </span>
-                          <span className="spec-tag">{bike.modelYear}</span>
-                          <span className="spec-tag">{bike.marketTarget}</span>
-                          {bike.conditionGrade && (
-                            <span className="spec-tag text-amber">
-                              {bike.conditionGrade.replace('GRADE_', 'Grade ')}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -619,17 +613,15 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     <div className="bike-ids-box">
                       <div className="id-row">
                         <span className="id-title">Chassis</span>
-                        <span className="font-mono text-cyan text-xs font-bold">{bike.chassisNumber}</span>
+                        <span className="id-value id-value-key">{bike.chassisNumber}</span>
                         <button
                           className="copy-btn"
                           onClick={() => copyToClipboard(bike.chassisNumber)}
                           title="Copy chassis number"
+                          aria-label={`Copy chassis number ${bike.chassisNumber}`}
                         >
                           {copiedChassis === bike.chassisNumber ? (
-                            <>
-                              <Check size={12} className="text-emerald" />
-                              <span className="text-emerald text-xs">Copied</span>
-                            </>
+                            <Check size={12} className="text-emerald" />
                           ) : (
                             <Copy size={12} />
                           )}
@@ -637,33 +629,23 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       </div>
                       <div className="id-row">
                         <span className="id-title">Engine</span>
-                        <span className="font-mono text-muted text-xs">{bike.engineNumber}</span>
+                        <span className="id-value">{bike.engineNumber}</span>
                       </div>
                       {bike.registrationNumber && (
                         <div className="id-row">
                           <span className="id-title">Reg no</span>
-                          <span className="font-mono text-amber text-xs font-bold">{bike.registrationNumber}</span>
+                          <span className="id-value id-value-reg">{bike.registrationNumber}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Price & Margins */}
                     <div className="bike-price-footer">
-                      <div>
-                        <span className="price-label">Retail price</span>
-                        <div className="price-val">{formatPKR(bike.retailPrice)}</div>
-                      </div>
-                      <div className="text-right">
-                        <span className="price-label">Dealer cost</span>
-                        <div className="cost-val text-muted text-xs font-mono">
-                          {formatPKR(cost)}
-                        </div>
-                        {margin > 0 && (
-                          <div className="profit-margin-tag mt-1">
-                            +{formatPKR(margin)} margin
-                          </div>
-                        )}
-                      </div>
+                      <div className="price-val">{formatPKR(bike.retailPrice)}</div>
+                      {margin > 0 && (
+                        <div className="profit-margin-tag">+{formatPKR(margin)}</div>
+                      )}
+                      <div className="cost-val">Cost {formatPKR(cost)}</div>
                     </div>
                   </div>
 

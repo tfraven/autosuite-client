@@ -200,31 +200,41 @@ export default function Customers() {
 
               <div className="bikes-registered-grid">
                 {selectedCustomer.purchasedBikes.map((bike, idx) => (
-                  <div key={idx} className="customer-bike-tile glass-panel">
-                    <div className="tile-top">
-                      <div className="tile-icon-box">
-                        <Bike size={20} className="text-cyan" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold">{bike.modelName}</h4>
-                        <div className="text-xs text-muted">{bike.modelYear} · {bike.color}</div>
-                      </div>
-                      <span className="glass-badge badge-muted text-xs ml-auto">
-                        {bike.invoiceNumber}
-                      </span>
+                  <div key={idx} className="customer-bike-tile">
+                    <div className="tile-icon-box">
+                      <Bike size={18} />
                     </div>
+
+                    <div className="tile-identity">
+                      <h4 className="tile-title">{bike.modelName}</h4>
+                      <div className="tile-meta">
+                        <span className="spec-tag">{bike.modelYear}</span>
+                        <span className="spec-tag">{bike.color}</span>
+                      </div>
+                    </div>
+
                     <div className="tile-ids">
                       <div className="tile-id-row">
-                        <span>Chassis:</span>
-                        <strong className="font-mono text-cyan" onClick={() => copyToClipboard(bike.chassisNumber)} title="Click to copy">
+                        <span className="id-title">Chassis</span>
+                        <button
+                          type="button"
+                          className="id-value id-value-key id-value-copy"
+                          onClick={() => copyToClipboard(bike.chassisNumber)}
+                          title="Copy chassis number"
+                        >
                           {bike.chassisNumber}
-                        </strong>
+                          {copiedText === bike.chassisNumber
+                            ? <Check size={11} className="text-emerald" />
+                            : <Copy size={11} />}
+                        </button>
                       </div>
                       <div className="tile-id-row">
-                        <span>Engine:</span>
-                        <strong className="font-mono">{bike.engineNumber}</strong>
+                        <span className="id-title">Engine</span>
+                        <span className="id-value">{bike.engineNumber}</span>
                       </div>
                     </div>
+
+                    <span className="tile-invoice">{bike.invoiceNumber}</span>
                   </div>
                 ))}
               </div>
