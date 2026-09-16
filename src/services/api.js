@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = 'https://autosuite-server.vercel.app/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('autosuite_token');
@@ -195,7 +195,7 @@ export const api = {
     const query = new URLSearchParams(params).toString();
     const token = localStorage.getItem('autosuite_token');
     const url = `${API_BASE}/reports/export/${type}${query ? `?${query}` : ''}`;
-    
+
     const res = await fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
