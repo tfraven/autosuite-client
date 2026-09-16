@@ -1,17 +1,14 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Bike, 
-  ReceiptText, 
-  FileCheck2, 
-  Wrench, 
-  FileSpreadsheet, 
-  ShieldCheck, 
-  UserCheck,
+import {
+  LayoutDashboard,
+  Bike,
+  ReceiptText,
+  FileCheck2,
+  Wrench,
+  FileSpreadsheet,
+  ShieldCheck,
   Users,
-  X,
-  Sparkles,
-  Cpu
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,43 +24,43 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
     },
     {
       id: 'inventory',
-      label: 'Motorcycle Stock',
+      label: 'Motorcycle stock',
       icon: Bike,
       show: hasPermission('MANAGE_BIKES') || hasPermission('READ_SALES')
     },
     {
       id: 'sales',
-      label: 'Sales & Billing',
+      label: 'Sales and billing',
       icon: ReceiptText,
       show: hasPermission('CREATE_SALE') || hasPermission('READ_SALES')
     },
     {
       id: 'customers',
-      label: 'Customer Records',
+      label: 'Customers',
       icon: Users,
       show: hasPermission('READ_SALES') || hasPermission('CREATE_SALE')
     },
     {
       id: 'documents',
-      label: 'Motorcycle Letters',
+      label: 'Letters and documents',
       icon: FileCheck2,
       show: hasPermission('MANAGE_DOCS')
     },
     {
       id: 'parts',
-      label: 'Spare Parts (B2B)',
+      label: 'Spare parts',
       icon: Wrench,
       show: hasPermission('MANAGE_PARTS')
     },
     {
       id: 'reports',
-      label: 'Reports & Exports',
+      label: 'Reports and exports',
       icon: FileSpreadsheet,
       show: hasPermission('VIEW_REPORTS') || hasPermission('EXPORT_EXCEL')
     },
     {
       id: 'users',
-      label: 'Staff & RBAC',
+      label: 'Staff and access',
       icon: ShieldCheck,
       show: isRole('Admin')
     }
@@ -81,20 +78,18 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
       <div className="sidebar-brand">
         <div className="brand-wrapper">
           <div className="brand-icon">
-            <Bike size={24} color="#38bdf8" />
+            <Bike size={18} />
           </div>
           <div>
             <h2>AutoSuite</h2>
-            <span className="brand-tagline">
-              <Sparkles size={11} /> Enterprise ERP
-            </span>
+            <span className="brand-tagline">Falcon Honda Motors</span>
           </div>
         </div>
         {onCloseMobile && (
-          <button 
-            className="sidebar-close-btn" 
+          <button
+            className="sidebar-close-btn"
             onClick={onCloseMobile}
-            aria-label="Close sidebar"
+            aria-label="Close navigation"
           >
             <X size={18} />
           </button>
@@ -106,19 +101,17 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
           {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <div className="user-info">
-          <div className="user-name">{user?.name || 'Staff User'}</div>
-          <span className={`glass-badge ${
-            user?.role === 'Admin' ? 'badge-rose' :
+          <div className="user-name">{user?.name || 'Staff user'}</div>
+          <span className={`glass-badge ${user?.role === 'Admin' ? 'badge-rose' :
             user?.role === 'Manager' ? 'badge-purple' :
-            user?.role === 'Operator' ? 'badge-cyan' : 'badge-emerald'
-          }`}>
-            <UserCheck size={11} /> {user?.role}
+              user?.role === 'Operator' ? 'badge-cyan' : 'badge-emerald'
+            }`}>
+            {user?.role}
           </span>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        <div className="nav-section-title">Core Operations</div>
         {navItems.filter(item => item.show).map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -127,8 +120,9 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
               key={item.id}
               onClick={() => handleSelectTab(item.id)}
               className={`nav-link ${isActive ? 'active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
             >
-              <Icon size={18} className="nav-icon" />
+              <Icon size={17} className="nav-icon" />
               <span>{item.label}</span>
               {isActive && <div className="active-indicator" />}
             </button>
@@ -139,11 +133,10 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
       <div className="sidebar-footer">
         <div className="system-status">
           <span className="status-dot"></span>
-          <span>Atlas Honda Authorized Sync</span>
+          <span>Connected to Atlas Honda</span>
         </div>
         <div className="system-version">
-          <span>Engine v2.4.0</span>
-          <span className="text-cyan">14ms latency</span>
+          <span>Version 2.4.0</span>
         </div>
       </div>
     </aside>

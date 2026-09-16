@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileCheck2, 
-  Search, 
+import {
+  FileCheck2,
+  Search,
   Printer,
-  ArrowLeft, 
-  Clock, 
-  CheckCircle2, 
-  FileText, 
-  ArrowRight, 
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  FileText,
+  ArrowRight,
   X,
   Edit,
   Building,
@@ -225,7 +225,7 @@ export default function Documents() {
     }
   };
 
-    if (statusEditDoc) {
+  if (statusEditDoc) {
     return (
       <div className="documents-view">
         <div className="page-form-view">
@@ -265,7 +265,7 @@ export default function Documents() {
 
               <div className="form-field">
                 <label>Progress Notes / Tracking Reference</label>
-                <textarea 
+                <textarea
                   rows="4"
                   placeholder="e.g. Challan paid, Smart Card batch expected from Lahore Excise on Friday..."
                   value={statusNotes}
@@ -289,14 +289,13 @@ export default function Documents() {
     );
   }
 
-return (
+  return (
     <div className="documents-view">
       {/* Registration Pipeline Overview */}
       <div className="kpi-grid no-print mb-2">
-        <div 
-          className="kpi-card glass-panel cursor-pointer"
+        <div
+          className={`kpi-card glass-panel cursor-pointer ${statusFilter === 'PENDING_MANUFACTURER' ? 'stage-rose' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'PENDING_MANUFACTURER' ? '' : 'PENDING_MANUFACTURER')}
-          style={{ cursor: 'pointer', borderLeft: statusFilter === 'PENDING_MANUFACTURER' ? '3px solid #fb7185' : undefined }}
         >
           <div className="kpi-header">
             <span className="kpi-title">Factory Pipeline</span>
@@ -308,10 +307,9 @@ return (
           </div>
         </div>
 
-        <div 
-          className="kpi-card glass-panel cursor-pointer"
+        <div
+          className={`kpi-card glass-panel cursor-pointer ${statusFilter === 'PROCESSING_EXCISE' ? 'stage-amber' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'PROCESSING_EXCISE' ? '' : 'PROCESSING_EXCISE')}
-          style={{ cursor: 'pointer', borderLeft: statusFilter === 'PROCESSING_EXCISE' ? '3px solid #fbbf24' : undefined }}
         >
           <div className="kpi-header">
             <span className="kpi-title">Excise Office</span>
@@ -323,10 +321,9 @@ return (
           </div>
         </div>
 
-        <div 
-          className="kpi-card glass-panel cursor-pointer"
+        <div
+          className={`kpi-card glass-panel cursor-pointer ${statusFilter === 'READY_FOR_PICKUP' ? 'stage-cyan' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'READY_FOR_PICKUP' ? '' : 'READY_FOR_PICKUP')}
-          style={{ cursor: 'pointer', borderLeft: statusFilter === 'READY_FOR_PICKUP' ? '3px solid #38bdf8' : undefined }}
         >
           <div className="kpi-header">
             <span className="kpi-title">Ready for Delivery</span>
@@ -338,10 +335,9 @@ return (
           </div>
         </div>
 
-        <div 
-          className="kpi-card glass-panel cursor-pointer"
+        <div
+          className={`kpi-card glass-panel cursor-pointer ${statusFilter === 'DELIVERED' ? 'stage-emerald' : ''}`}
           onClick={() => setStatusFilter(statusFilter === 'DELIVERED' ? '' : 'DELIVERED')}
-          style={{ cursor: 'pointer', borderLeft: statusFilter === 'DELIVERED' ? '3px solid #34d399' : undefined }}
         >
           <div className="kpi-header">
             <span className="kpi-title">Completed Documents</span>
@@ -357,7 +353,7 @@ return (
       {/* Control Bar */}
       <div className="control-bar glass-panel no-print">
         <div className="filter-group">
-          <select 
+          <select
             className="filter-select"
             value={docTypeFilter}
             onChange={(e) => setDocTypeFilter(e.target.value)}
@@ -370,7 +366,7 @@ return (
             <option value="REGISTRATION_APPLICATION">Registration Application</option>
           </select>
 
-          <select 
+          <select
             className="filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -386,9 +382,9 @@ return (
         <div className="action-group">
           <div className="search-input-wrap">
             <Search size={16} className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search by Invoice, Chassis, Customer..." 
+            <input
+              type="text"
+              placeholder="Search by Invoice, Chassis, Customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -456,7 +452,7 @@ return (
                       </td>
                       <td className="text-right">
                         <div className="table-actions">
-                          <button 
+                          <button
                             className="btn-action-icon"
                             onClick={() => setSelectedDoc(doc)}
                             title="Preview & Print Official Letter"
@@ -464,7 +460,7 @@ return (
                             <Printer size={15} />
                           </button>
                           {hasPermission('MANAGE_DOCS') && (
-                            <button 
+                            <button
                               className="btn btn-sm btn-outline"
                               onClick={() => {
                                 setStatusEditDoc(doc);

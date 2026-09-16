@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   ShieldCheck,
-  ArrowLeft, 
-  Users, 
-  Plus, 
-  Check, 
-  KeyRound, 
-  X, 
-  Lock, 
-  Activity, 
-  CheckCircle2, 
-  Edit3, 
+  ArrowLeft,
+  Users,
+  Plus,
+  Check,
+  Activity,
+  CheckCircle2,
+  Edit3,
   Trash2,
   Shield
 } from 'lucide-react';
@@ -133,34 +130,34 @@ export default function UserManagement() {
       const exists = prev.permissionIds.includes(pId);
       return {
         ...prev,
-        permissionIds: exists 
+        permissionIds: exists
           ? prev.permissionIds.filter(id => id !== pId)
           : [...prev.permissionIds, pId]
       };
     });
   };
 
-    if (subView === 'add-user') {
+  if (subView === 'add-user') {
     return (
       <div className="usermgmt-view">
         <div className="page-form-view">
           <div className="page-form-header">
             <button className="page-form-back-btn" onClick={() => setSubView(null)}>
-              <ArrowLeft size={16} /> Back to Users
+              <ArrowLeft size={16} /> Back to staff
             </button>
             <div className="page-form-title-group">
-              <h2 className="page-form-title">Create Staff Account</h2>
-              <div className="page-form-subtitle">Register dealership employee, set system credentials, and assign role</div>
+              <h2 className="page-form-title">Add staff member</h2>
+              <div className="page-form-subtitle">Set their login details and assign a role</div>
             </div>
           </div>
 
           <form onSubmit={handleCreateUser} className="page-form-container narrow">
             <div className="page-form-card">
-              <div className="page-form-card-title">User Account Details</div>
+              <div className="page-form-card-title">Account details</div>
 
               <div className="form-field">
-                <label>Full Name *</label>
-                <input 
+                <label>Full name</label>
+                <input
                   type="text"
                   placeholder="e.g. Bilal Farooq"
                   value={userFormData.name}
@@ -172,8 +169,8 @@ export default function UserManagement() {
 
               <div className="form-group-row">
                 <div className="form-field">
-                  <label>Username *</label>
-                  <input 
+                  <label>Username</label>
+                  <input
                     type="text"
                     placeholder="e.g. operator2"
                     value={userFormData.username}
@@ -183,8 +180,8 @@ export default function UserManagement() {
                   />
                 </div>
                 <div className="form-field">
-                  <label>Email Address *</label>
-                  <input 
+                  <label>Email</label>
+                  <input
                     type="email"
                     placeholder="bilal@autosuite.com"
                     value={userFormData.email}
@@ -197,8 +194,8 @@ export default function UserManagement() {
 
               <div className="form-group-row">
                 <div className="form-field">
-                  <label>Initial Password *</label>
-                  <input 
+                  <label>Password</label>
+                  <input
                     type="password"
                     placeholder="••••••••"
                     value={userFormData.password}
@@ -208,14 +205,14 @@ export default function UserManagement() {
                   />
                 </div>
                 <div className="form-field">
-                  <label>Assigned Role *</label>
+                  <label>Role</label>
                   <select
                     value={userFormData.roleId}
                     onChange={(e) => setUserFormData({ ...userFormData, roleId: e.target.value })}
                     required
                     className="form-input"
                   >
-                    <option value="">-- Choose Role --</option>
+                    <option value="">Select a role</option>
                     {roles.map(r => (
                       <option key={r.id} value={r.id}>{r.name}</option>
                     ))}
@@ -228,7 +225,7 @@ export default function UserManagement() {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  <Plus size={16} /> Create User Account
+                  <Plus size={16} /> Add staff member
                 </button>
               </div>
             </div>
@@ -244,22 +241,22 @@ export default function UserManagement() {
         <div className="page-form-view">
           <div className="page-form-header">
             <button className="page-form-back-btn" onClick={() => setSubView(null)}>
-              <ArrowLeft size={16} /> Back to Roles
+              <ArrowLeft size={16} /> Back to roles
             </button>
             <div className="page-form-title-group">
-              <h2 className="page-form-title">{editingRole ? ('Configure Permissions: ' + editingRole.name) : 'Define Custom Role'}</h2>
-              <div className="page-form-subtitle">Customize security privileges and granular module access control</div>
+              <h2 className="page-form-title">{editingRole ? ('Edit role: ' + editingRole.name) : 'Add role'}</h2>
+              <div className="page-form-subtitle">Set which modules and actions this role can access</div>
             </div>
           </div>
 
           <form onSubmit={handleSaveRole} className="page-form-container">
             <div className="page-form-card">
-              <div className="page-form-card-title">Role Identification</div>
+              <div className="page-form-card-title">Role details</div>
 
               <div className="form-group-row">
                 <div className="form-field" style={{ flex: 2 }}>
-                  <label>Role Name *</label>
-                  <input 
+                  <label>Role name</label>
+                  <input
                     type="text"
                     placeholder="e.g. Sales Representative"
                     value={roleFormData.name}
@@ -269,8 +266,8 @@ export default function UserManagement() {
                   />
                 </div>
                 <div className="form-field" style={{ flex: 3 }}>
-                  <label>Role Scope Description</label>
-                  <input 
+                  <label>Description</label>
+                  <input
                     type="text"
                     placeholder="e.g. Restricted to showroom floor retail sales"
                     value={roleFormData.description}
@@ -282,23 +279,23 @@ export default function UserManagement() {
             </div>
 
             <div className="page-form-card">
-              <div className="page-form-card-title">Granular Permission Matrix</div>
-              <p className="text-muted text-xs mb-3">Select the exact action-level and route-level permissions granted to users with this role:</p>
-              
+              <div className="page-form-card-title">Permissions</div>
+              <p className="text-muted text-xs mb-3">Choose what users with this role are allowed to do:</p>
+
               <div className="perms-checkbox-grid">
                 {permissions.map((p) => {
                   const isChecked = roleFormData.permissionIds.includes(p.id);
                   return (
-                    <div 
-                      key={p.id} 
+                    <div
+                      key={p.id}
                       className={'perm-toggle-card ' + (isChecked ? 'selected' : '')}
                       onClick={() => togglePermissionSelection(p.id)}
                     >
                       <div className="perm-toggle-header">
-                        <input 
+                        <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="perm-checkbox"
                         />
                         <span className="font-bold text-sm font-mono text-cyan">{p.name}</span>
@@ -317,7 +314,7 @@ export default function UserManagement() {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  <Shield size={16} /> Save Role Configuration
+                  <Shield size={16} /> Save role
                 </button>
               </div>
             </div>
@@ -327,39 +324,39 @@ export default function UserManagement() {
     );
   }
 
-return (
+  return (
     <div className="usermgmt-view">
       {/* Sub Tabs */}
       <div className="control-bar glass-panel mb-4">
         <div className="type-toggle">
-          <button 
+          <button
             className={`toggle-btn ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            <Users size={15} /> Employees & Accounts ({users.length})
+            <Users size={15} /> Staff ({users.length})
           </button>
-          <button 
+          <button
             className={`toggle-btn ${activeTab === 'roles' ? 'active' : ''}`}
             onClick={() => setActiveTab('roles')}
           >
-            <ShieldCheck size={15} /> Roles & Permission Matrix ({roles.length})
+            <ShieldCheck size={15} /> Roles ({roles.length})
           </button>
-          <button 
+          <button
             className={`toggle-btn ${activeTab === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit')}
           >
-            <Activity size={15} /> System Audit Logs
+            <Activity size={15} /> Activity log
           </button>
         </div>
 
         <div className="action-group">
           {activeTab === 'users' && (
             <button className="btn btn-primary" onClick={() => setSubView('add-user')}>
-              <Plus size={16} /> Add Employee User
+              <Plus size={16} /> Add staff
             </button>
           )}
           {activeTab === 'roles' && (
-            <button 
+            <button
               className="btn btn-primary"
               onClick={() => {
                 setEditingRole(null);
@@ -367,7 +364,7 @@ return (
                 setSubView('role-form');
               }}
             >
-              <Plus size={16} /> Define Custom Role
+              <Plus size={16} /> Add role
             </button>
           )}
         </div>
@@ -380,11 +377,11 @@ return (
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Employee Name</th>
+                  <th>Name</th>
                   <th>Username</th>
                   <th>Email</th>
-                  <th>Assigned Role</th>
-                  <th>Permissions Summary</th>
+                  <th>Role</th>
+                  <th>Permissions</th>
                   <th>Status</th>
                   <th className="text-right">Action</th>
                 </tr>
@@ -394,23 +391,22 @@ return (
                   <tr key={u.id}>
                     <td>
                       <div className="font-bold">{u.name}</div>
-                      <div className="text-muted text-xs">Joined: {new Date(u.createdAt).toLocaleDateString()}</div>
+                      <div className="text-muted text-xs">Joined {new Date(u.createdAt).toLocaleDateString()}</div>
                     </td>
                     <td className="font-mono text-cyan">{u.username}</td>
                     <td className="text-muted">{u.email}</td>
                     <td>
-                      <span className={`glass-badge ${
-                        u.role.name === 'Admin' ? 'badge-rose' :
+                      <span className={`glass-badge ${u.role.name === 'Admin' ? 'badge-rose' :
                         u.role.name === 'Manager' ? 'badge-purple' :
-                        u.role.name === 'Operator' ? 'badge-cyan' : 'badge-emerald'
-                      }`}>
+                          u.role.name === 'Operator' ? 'badge-cyan' : 'badge-emerald'
+                        }`}>
                         {u.role.name}
                       </span>
                     </td>
                     <td>
                       <div className="perms-tag-cloud text-xs">
                         {u.role.name === 'Admin' ? (
-                          <span className="badge-rose glass-badge">Full System Access (Unrestricted)</span>
+                          <span className="badge-rose glass-badge">Full access</span>
                         ) : (
                           u.role.permissions.map((p, idx) => (
                             <span key={idx} className="glass-badge badge-muted mr-1 mb-1">
@@ -421,7 +417,7 @@ return (
                       </div>
                     </td>
                     <td>
-                      <button 
+                      <button
                         className={`glass-badge ${u.active ? 'badge-emerald' : 'badge-rose'}`}
                         onClick={() => handleToggleUserActive(u)}
                         disabled={currentUser?.username === u.username}
@@ -431,10 +427,10 @@ return (
                     </td>
                     <td className="text-right">
                       {currentUser?.username !== u.username && (
-                        <button 
+                        <button
                           className="btn-action-icon text-rose"
                           onClick={() => handleDeleteUser(u.id)}
-                          title="Delete User"
+                          title="Delete user"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -456,25 +452,25 @@ return (
               <div className="role-card-header">
                 <div>
                   <h4 className="role-title font-bold text-cyan">{r.name}</h4>
-                  <p className="role-desc text-xs text-muted">{r.description || 'No description provided.'}</p>
+                  <p className="role-desc text-xs text-muted">{r.description || 'No description.'}</p>
                 </div>
                 <div className="role-actions">
-                  <button className="action-icon-btn" onClick={() => openEditRole(r)} title="Edit Permissions">
+                  <button className="action-icon-btn" onClick={() => openEditRole(r)} title="Edit role">
                     <Edit3 size={15} />
                   </button>
                 </div>
               </div>
 
               <div className="role-user-count text-xs text-muted mt-2">
-                <strong>Assigned Staff:</strong> {r.userCount} Active Users
+                {r.userCount} staff assigned
               </div>
 
               <div className="role-perms-section mt-3">
-                <div className="section-subtitle text-xs text-muted font-bold">GRANTED PERMISSIONS:</div>
+                <div className="section-subtitle text-xs text-muted">Permissions</div>
                 <div className="role-perms-list mt-2">
                   {r.name === 'Admin' ? (
                     <div className="perm-chip-admin">
-                      <CheckCircle2 size={12} /> Master Root Bypass (All Action & Route Permissions)
+                      <CheckCircle2 size={12} /> All permissions
                     </div>
                   ) : r.permissions.length > 0 ? (
                     r.permissions.map((p) => (
@@ -483,7 +479,7 @@ return (
                       </span>
                     ))
                   ) : (
-                    <span className="text-muted text-xs">No permissions assigned.</span>
+                    <span className="text-muted text-xs">No permissions assigned yet.</span>
                   )}
                 </div>
               </div>
@@ -496,19 +492,19 @@ return (
       {activeTab === 'audit' && (
         <div className="card glass-panel">
           <div className="card-header">
-            <h3>Security & Activity Audit Logs</h3>
-            <span className="header-tag">Live System Stream</span>
+            <h3>Activity log</h3>
+            <span className="header-tag">Most recent first</span>
           </div>
           <div className="table-responsive">
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Timestamp</th>
-                  <th>Actor</th>
+                  <th>Time</th>
+                  <th>User</th>
                   <th>Action</th>
                   <th>Module</th>
-                  <th>Activity Description</th>
-                  <th>IP Address</th>
+                  <th>Details</th>
+                  <th>IP address</th>
                 </tr>
               </thead>
               <tbody>
@@ -518,8 +514,8 @@ return (
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
                     <td>
-                      <span className="font-bold text-cyan">
-                        {log.user?.username || 'SYSTEM'}
+                      <span className="font-medium text-cyan">
+                        {log.user?.username || 'System'}
                       </span>
                     </td>
                     <td>
@@ -538,6 +534,6 @@ return (
         </div>
       )}
 
-          </div>
+    </div>
   );
 }

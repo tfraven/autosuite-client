@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Wrench, 
-  Search, 
-  Plus, 
-  AlertTriangle, 
-  Truck, 
-  Package, 
-  FileSpreadsheet, 
-  ShoppingBag, 
-  CheckCircle2, 
+import {
+  Wrench,
+  Search,
+  Plus,
+  AlertTriangle,
+  Truck,
+  Package,
+  FileSpreadsheet,
+  ShoppingBag,
+  CheckCircle2,
   X,
   PlusCircle,
   Trash2,
@@ -146,7 +146,7 @@ export default function Parts() {
     return 'PKR ' + Number(val || 0).toLocaleString('en-PK');
   };
 
-    if (subView === 'add-part') {
+  if (subView === 'add-part') {
     return (
       <div className="parts-view">
         <div className="page-form-view">
@@ -167,7 +167,7 @@ export default function Parts() {
               <div className="form-group-row">
                 <div className="form-field">
                   <label>Part Code / Number *</label>
-                  <input 
+                  <input
                     type="text"
                     placeholder="e.g. HND-CG-CLU-04"
                     value={partFormData.partCode}
@@ -194,7 +194,7 @@ export default function Parts() {
 
               <div className="form-field">
                 <label>Part Name *</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Clutch Cable Assembly"
                   value={partFormData.partName}
@@ -206,7 +206,7 @@ export default function Parts() {
 
               <div className="form-field">
                 <label>Compatible Models *</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Honda CG125 (2020-2026)"
                   value={partFormData.compatibilityModel}
@@ -219,7 +219,7 @@ export default function Parts() {
               <div className="form-group-row">
                 <div className="form-field">
                   <label>Wholesale Depot Cost (PKR) *</label>
-                  <input 
+                  <input
                     type="number"
                     value={partFormData.wholesaleCost}
                     onChange={(e) => setPartFormData({ ...partFormData, wholesaleCost: e.target.value })}
@@ -229,7 +229,7 @@ export default function Parts() {
                 </div>
                 <div className="form-field">
                   <label>B2B Workshop Price (PKR) *</label>
-                  <input 
+                  <input
                     type="number"
                     value={partFormData.b2bSellingPrice}
                     onChange={(e) => setPartFormData({ ...partFormData, b2bSellingPrice: e.target.value })}
@@ -242,7 +242,7 @@ export default function Parts() {
               <div className="form-group-row">
                 <div className="form-field">
                   <label>Initial Shelf Stock *</label>
-                  <input 
+                  <input
                     type="number"
                     value={partFormData.quantity}
                     onChange={(e) => setPartFormData({ ...partFormData, quantity: e.target.value })}
@@ -252,7 +252,7 @@ export default function Parts() {
                 </div>
                 <div className="form-field">
                   <label>Warehouse / Bin Location</label>
-                  <input 
+                  <input
                     type="text"
                     placeholder="e.g. Rack B-12"
                     value={partFormData.location}
@@ -262,7 +262,7 @@ export default function Parts() {
                 </div>
                 <div className="form-field">
                   <label>Reorder Alert Threshold *</label>
-                  <input 
+                  <input
                     type="number"
                     value={partFormData.reorderThreshold}
                     onChange={(e) => setPartFormData({ ...partFormData, reorderThreshold: e.target.value })}
@@ -308,7 +308,7 @@ export default function Parts() {
               <div className="form-group-row">
                 <div className="form-field">
                   <label>Workshop / Dealer Name *</label>
-                  <input 
+                  <input
                     type="text"
                     placeholder="e.g. Shaheen Auto Workshop"
                     value={orderFormData.customerName}
@@ -333,7 +333,7 @@ export default function Parts() {
 
                 <div className="form-field">
                   <label>Contact Phone *</label>
-                  <input 
+                  <input
                     type="text"
                     placeholder="e.g. 0300-9876543"
                     value={orderFormData.contactNumber}
@@ -375,7 +375,7 @@ export default function Parts() {
 
                   <div className="form-field" style={{ flex: 1 }}>
                     <label>Quantity *</label>
-                    <input 
+                    <input
                       type="number"
                       min="1"
                       value={item.quantity}
@@ -391,7 +391,7 @@ export default function Parts() {
 
                   <div className="form-field" style={{ flex: 1.5 }}>
                     <label>Unit Rate (PKR) *</label>
-                    <input 
+                    <input
                       type="number"
                       value={item.unitPrice}
                       onChange={(e) => {
@@ -405,8 +405,8 @@ export default function Parts() {
                   </div>
 
                   {orderFormData.items.length > 1 && (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="action-icon-btn text-rose mt-4"
                       onClick={() => {
                         const updated = orderFormData.items.filter((_, i) => i !== idx);
@@ -419,8 +419,8 @@ export default function Parts() {
                 </div>
               ))}
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-outline btn-sm mt-2"
                 onClick={() => setOrderFormData({
                   ...orderFormData,
@@ -432,7 +432,7 @@ export default function Parts() {
 
               <div className="form-field mt-3">
                 <label>Order Dispatch Remarks</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Sent via courier or driver counter pickup"
                   value={orderFormData.notes}
@@ -477,7 +477,7 @@ export default function Parts() {
               <div className="form-group-row">
                 <div className="form-field" style={{ flex: 2 }}>
                   <label>Vendor / Parts Supplier *</label>
-                  <input 
+                  <input
                     type="text"
                     value={poFormData.vendorName}
                     onChange={(e) => setPoFormData({ ...poFormData, vendorName: e.target.value })}
@@ -488,7 +488,7 @@ export default function Parts() {
 
                 <div className="form-field">
                   <label>Supplier Contact *</label>
-                  <input 
+                  <input
                     type="text"
                     value={poFormData.contactNumber}
                     onChange={(e) => setPoFormData({ ...poFormData, contactNumber: e.target.value })}
@@ -529,7 +529,7 @@ export default function Parts() {
 
                   <div className="form-field" style={{ flex: 1 }}>
                     <label>Quantity Ordered *</label>
-                    <input 
+                    <input
                       type="number"
                       min="1"
                       value={item.quantityOrdered}
@@ -545,7 +545,7 @@ export default function Parts() {
 
                   <div className="form-field" style={{ flex: 1.5 }}>
                     <label>Contract Unit Cost (PKR) *</label>
-                    <input 
+                    <input
                       type="number"
                       value={item.unitCost}
                       onChange={(e) => {
@@ -559,8 +559,8 @@ export default function Parts() {
                   </div>
 
                   {poFormData.items.length > 1 && (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="action-icon-btn text-rose mt-4"
                       onClick={() => {
                         const updated = poFormData.items.filter((_, i) => i !== idx);
@@ -573,8 +573,8 @@ export default function Parts() {
                 </div>
               ))}
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-outline btn-sm mt-2"
                 onClick={() => setPoFormData({
                   ...poFormData,
@@ -586,7 +586,7 @@ export default function Parts() {
 
               <div className="form-field mt-3">
                 <label>Purchase Order Terms & Instructions</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Urgent shipment via freight depot"
                   value={poFormData.notes}
@@ -610,20 +610,20 @@ export default function Parts() {
     );
   }
 
-return (
+  return (
     <div className="parts-view">
       {/* Low Stock Warning Banner */}
       {lowStockParts.length > 0 && (
-        <div className="welcome-banner glass-panel" style={{ borderLeftColor: '#fbbf24', background: 'linear-gradient(135deg, rgba(14,21,38,0.95) 0%, rgba(245,158,11,0.12) 100%)' }}>
+        <div className="welcome-banner glass-panel banner-warn">
           <div className="welcome-content">
             <h2 className="text-amber flex items-center gap-2">
-              <AlertTriangle size={22} /> Critical Low Stock Thresholds ({lowStockParts.length} Items)
+              <AlertTriangle size={18} /> {lowStockParts.length} parts are below their reorder level
             </h2>
             <p>
               The following parts require urgent procurement: {lowStockParts.map(p => `${p.partName} (${p.quantity} units left)`).join(', ')}.
             </p>
           </div>
-          <button 
+          <button
             className="btn btn-secondary"
             onClick={() => {
               setActiveSubTab('pos');
@@ -638,19 +638,19 @@ return (
       {/* Sub-nav tabs & Actions */}
       <div className="control-bar glass-panel">
         <div className="type-toggle">
-          <button 
+          <button
             className={`toggle-btn ${activeSubTab === 'catalog' ? 'active' : ''}`}
             onClick={() => setActiveSubTab('catalog')}
           >
             <Package size={15} /> Catalog ({parts.length})
           </button>
-          <button 
+          <button
             className={`toggle-btn ${activeSubTab === 'orders' ? 'active' : ''}`}
             onClick={() => setActiveSubTab('orders')}
           >
             <ShoppingBag size={15} /> Workshop Sales ({orders.length})
           </button>
-          <button 
+          <button
             className={`toggle-btn ${activeSubTab === 'pos' ? 'active' : ''}`}
             onClick={() => setActiveSubTab('pos')}
           >
@@ -663,9 +663,9 @@ return (
             <>
               <div className="search-input-wrap">
                 <Search size={16} className="search-icon" />
-                <input 
-                  type="text" 
-                  placeholder="Search Part Code, Name, Model..." 
+                <input
+                  type="text"
+                  placeholder="Search Part Code, Name, Model..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="search-input"
@@ -739,8 +739,8 @@ return (
                           </div>
                           {/* Stock Health Progress Bar */}
                           <div className="part-progress-bar-wrap mt-1" style={{ width: 120 }}>
-                            <div 
-                              className={`part-progress-bar ${isZero ? 'bar-red' : isLow ? 'bar-amber' : 'bar-green'}`} 
+                            <div
+                              className={`part-progress-bar ${isZero ? 'bar-red' : isLow ? 'bar-amber' : 'bar-green'}`}
                               style={{ width: `${Math.min(100, Math.max(8, (p.quantity / (p.reorderThreshold * 3)) * 100))}%` }}
                             />
                           </div>
@@ -861,7 +861,7 @@ return (
                       <td className="text-muted text-xs font-mono">{new Date(po.createdAt).toLocaleDateString('en-GB')}</td>
                       <td className="text-right">
                         {po.status === 'ORDERED' && hasPermission('MANAGE_PARTS') && (
-                          <button 
+                          <button
                             className="btn btn-sm btn-primary"
                             onClick={() => handleReceivePo(po.id)}
                           >
@@ -880,6 +880,6 @@ return (
         </div>
       )}
 
-          </div>
+    </div>
   );
 }

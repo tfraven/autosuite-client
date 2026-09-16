@@ -10,14 +10,14 @@ import Documents from './components/Documents';
 import Parts from './components/Parts';
 import Reports from './components/Reports';
 import UserManagement from './components/UserManagement';
-import { Lock, LogIn, Bike, ShieldAlert, Sparkles, UserCheck, Shield } from 'lucide-react';
+import { LogIn, Bike, ShieldAlert, Shield } from 'lucide-react';
 import './App.css';
 
 function MainApp() {
   const { user, loading, login, switchUser, hasPermission, isRole } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  
+
   // Shortcuts
   const [openNewSale, setOpenNewSale] = useState(false);
   const [openNewBike, setOpenNewBike] = useState(false);
@@ -46,8 +46,8 @@ function MainApp() {
     return (
       <div className="full-screen-loader">
         <div className="spinner"></div>
-        <h2>Initializing AutoSuite Dealership ERP...</h2>
-        <span className="text-muted text-xs">Authenticating user privileges & database connection</span>
+        <h2>Loading AutoSuite</h2>
+        <span className="text-muted text-xs">Checking your account and permissions</span>
       </div>
     );
   }
@@ -60,27 +60,27 @@ function MainApp() {
   return (
     <div className="app-layout">
       {/* Mobile Drawer Overlay */}
-      <div 
+      <div
         className={`sidebar-overlay ${isMobileSidebarOpen ? 'active' : ''}`}
         onClick={() => setIsMobileSidebarOpen(false)}
       />
 
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
-      
+
       <div className="app-main-content">
-        <Header 
-          activeTab={activeTab} 
+        <Header
+          activeTab={activeTab}
           onOpenMobile={() => setIsMobileSidebarOpen(true)}
         />
 
         <main className="module-container">
           {activeTab === 'dashboard' && (
-            <Dashboard 
+            <Dashboard
               setActiveTab={setActiveTab}
               onOpenNewSale={() => {
                 setActiveTab('sales');
@@ -94,14 +94,14 @@ function MainApp() {
           )}
 
           {activeTab === 'inventory' && (
-            <Inventory 
+            <Inventory
               isOpenAddModal={openNewBike}
               onCloseAddModal={() => setOpenNewBike(false)}
             />
           )}
 
           {activeTab === 'sales' && (
-            <Sales 
+            <Sales
               isOpenNewSaleModal={openNewSale}
               onCloseNewSaleModal={() => setOpenNewSale(false)}
             />
@@ -115,8 +115,8 @@ function MainApp() {
             hasPermission('MANAGE_PARTS') ? (
               <Parts />
             ) : (
-              <UnauthorizedWarning 
-                module="Spare Parts Management (Manager / Admin Role Required)" 
+              <UnauthorizedWarning
+                module="Spare Parts Management (Manager / Admin Role Required)"
                 onSwitchAdmin={() => switchUser('admin')}
               />
             )
@@ -128,8 +128,8 @@ function MainApp() {
             isRole('Admin') ? (
               <UserManagement />
             ) : (
-              <UnauthorizedWarning 
-                module="User & RBAC Administration (Admin Role Required)" 
+              <UnauthorizedWarning
+                module="User & RBAC Administration (Admin Role Required)"
                 onSwitchAdmin={() => switchUser('admin')}
               />
             )
@@ -143,15 +143,15 @@ function MainApp() {
 function UnauthorizedWarning({ module, onSwitchAdmin }) {
   return (
     <div className="unauthorized-card glass-panel">
-      <ShieldAlert size={48} className="text-rose mb-3" />
-      <h3>Access Restricted</h3>
-      <p>Your current user persona does not possess the required permissions to access <strong>{module}</strong>.</p>
+      <ShieldAlert size={28} className="mb-3" />
+      <h3>You don't have access to this</h3>
+      <p>{module} is limited to other roles. Switch accounts to continue.</p>
       <p className="text-muted text-xs mt-2">
-        Please use the top-right persona switcher to test as <strong>Admin</strong> or <strong>Manager</strong>.
+        Use the account switcher in the top right to change role.
       </p>
       {onSwitchAdmin && (
         <button className="btn btn-secondary mt-3" onClick={onSwitchAdmin}>
-          <Shield size={16} className="text-cyan" /> Switch to Admin Persona
+          <Shield size={16} /> Switch to Admin
         </button>
       )}
     </div>
@@ -178,10 +178,10 @@ function LoginPortal({ onLogin }) {
   };
 
   const quickLogins = [
-    { label: 'Admin (Full Access)', u: 'admin', p: 'admin123', color: 'badge-rose' },
-    { label: 'Manager (Parts & B2B)', u: 'manager', p: 'manager123', color: 'badge-purple' },
-    { label: 'Operator (Sales Entry)', u: 'operator', p: 'operator123', color: 'badge-cyan' },
-    { label: 'Sales Rep (Sales & Docs)', u: 'sales', p: 'sales123', color: 'badge-emerald' }
+    { label: 'Full access', u: 'admin', p: 'admin123', color: 'badge-rose' },
+    { label: 'Parts and B2B orders', u: 'manager', p: 'manager123', color: 'badge-purple' },
+    { label: 'Sales entry only', u: 'operator', p: 'operator123', color: 'badge-cyan' },
+    { label: 'Sales and documents', u: 'sales', p: 'sales123', color: 'badge-emerald' }
   ];
 
   return (
@@ -189,10 +189,10 @@ function LoginPortal({ onLogin }) {
       <div className="login-card glass-panel">
         <div className="login-header">
           <div className="login-brand-icon">
-            <Bike size={34} color="#38bdf8" />
+            <Bike size={22} />
           </div>
-          <h2>AutoSuite ERP</h2>
-          <p>Motorcycle Dealership & Inventory Management System</p>
+          <h2>AutoSuite</h2>
+          <p>Dealership inventory, sales and accounts</p>
         </div>
 
         {error && <div className="modal-error-banner mb-3">{error}</div>}
@@ -200,7 +200,7 @@ function LoginPortal({ onLogin }) {
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-field">
             <label>Username</label>
-            <input 
+            <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -212,7 +212,7 @@ function LoginPortal({ onLogin }) {
 
           <div className="form-field">
             <label>Password</label>
-            <input 
+            <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -223,12 +223,12 @@ function LoginPortal({ onLogin }) {
           </div>
 
           <button type="submit" className="btn btn-primary btn-block mt-3" disabled={submitting}>
-            <LogIn size={16} /> {submitting ? 'Authenticating...' : 'Sign In to AutoSuite'}
+            <LogIn size={16} /> {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
         <div className="quick-access-section mt-4">
-          <div className="section-title text-xs text-muted">Instant Demo Personas (1-Click Test)</div>
+          <div className="section-title text-xs">Or sign in with a demo account</div>
           <div className="quick-accounts-grid mt-2">
             {quickLogins.map((q) => (
               <button

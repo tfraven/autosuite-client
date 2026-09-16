@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Shield, 
-  ChevronDown, 
-  LogOut, 
-  Menu, 
-  Activity, 
-  Check, 
-  Store,
-  Sparkles
+import {
+  ChevronDown,
+  LogOut,
+  Menu,
+  Activity,
+  Check,
+  Store
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,43 +18,14 @@ export default function Header({ activeTab, onOpenMobile }) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setCurrentTime(now.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' }));
     };
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+    const interval = setInterval(updateTime, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowRoleMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const tabTitles = {
-    dashboard: { full: 'Operations Hub & Financial Intelligence', short: 'Operations Hub' },
-    inventory: { full: 'Motorcycle Fleet & Inventory Control', short: 'Fleet Stock' },
-    sales: { full: 'Sales Engine & Installment Billing', short: 'Sales & Billing' },
-    customers: { full: 'Customer Directory & Accounts Ledger', short: 'Customer Ledger' },
-    documents: { full: 'Motorcycle Letters & Excise Documentation', short: 'Letters & Docs' },
-    parts: { full: 'B2B Spare Parts & Supplier Logistics', short: 'Spare Parts B2B' },
-    reports: { full: 'Business Intelligence & Excel Stream Exports', short: 'Reports & Exports' },
-    users: { full: 'Access Control & Granular RBAC Matrix', short: 'Staff & RBAC' }
-  };
-
-  const roles = [
-    { username: 'admin', role: 'Admin', label: 'Admin (Full CRUD & RBAC)', color: 'badge-rose' },
-    { username: 'manager', role: 'Manager', label: 'Manager (Parts & B2B Orders)', color: 'badge-purple' },
-    { username: 'operator', role: 'Operator', label: 'Operator (Sales Entry Only)', color: 'badge-cyan' },
-    { username: 'sales', role: 'Sales Representative', label: 'Sales Rep (Sales & Letters)', color: 'badge-emerald' }
-  ];
-
-  // Close dropdown on outside click or Escape key
+  // Close the role menu on outside click or Escape
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -76,16 +45,34 @@ export default function Header({ activeTab, onOpenMobile }) {
     };
   }, []);
 
-  const currentTitle = tabTitles[activeTab] || { full: 'AutoSuite Dealership ERP', short: 'AutoSuite ERP' };
+  const tabTitles = {
+    dashboard: { full: 'Dashboard', short: 'Dashboard' },
+    inventory: { full: 'Motorcycle stock', short: 'Stock' },
+    sales: { full: 'Sales and billing', short: 'Sales' },
+    customers: { full: 'Customers', short: 'Customers' },
+    documents: { full: 'Letters and documents', short: 'Documents' },
+    parts: { full: 'Spare parts', short: 'Parts' },
+    reports: { full: 'Reports and exports', short: 'Reports' },
+    users: { full: 'Staff and access', short: 'Staff' }
+  };
+
+  const roles = [
+    { username: 'admin', role: 'Admin', label: 'Admin', desc: 'Everything, including staff and access' },
+    { username: 'manager', role: 'Manager', label: 'Manager', desc: 'Parts and B2B orders' },
+    { username: 'operator', role: 'Operator', label: 'Operator', desc: 'Sales entry only' },
+    { username: 'sales', role: 'Sales Representative', label: 'Sales representative', desc: 'Sales and documents' }
+  ];
+
+  const currentTitle = tabTitles[activeTab] || { full: 'AutoSuite', short: 'AutoSuite' };
 
   return (
     <header className="top-header no-print">
       <div className="header-left">
         {onOpenMobile && (
-          <button 
-            className="mobile-menu-btn" 
+          <button
+            className="mobile-menu-btn"
             onClick={onOpenMobile}
-            aria-label="Toggle navigation drawer"
+            aria-label="Open navigation"
           >
             <Menu size={20} />
           </button>
@@ -98,51 +85,50 @@ export default function Header({ activeTab, onOpenMobile }) {
           </h1>
           <div className="header-subtitle">
             <span className="branch-chip">
-              <Store size={11} style={{ display: 'inline', marginRight: 4 }} />
-              Falcon Honda Motors • Main Campus
+              <Store size={11} />
+              Main campus branch
             </span>
-            <span className="subtitle-divider">•</span>
-            <span className="text-cyan font-mono header-time">{currentTime}</span>
+            <span className="subtitle-divider">·</span>
+            <span className="header-time font-mono">{currentTime}</span>
           </div>
         </div>
       </div>
 
       <div className="header-right">
-        {/* Dealership Live Status Indicator */}
-        <div className="glass-badge badge-emerald system-status-badge" title="Real-time telemetry active">
+        <div className="glass-badge badge-emerald system-status-badge" title="Connected to the dealership database">
           <Activity size={12} className="live-activity-icon" />
-          <span className="status-text">System Online</span>
+          <span className="status-text">Online</span>
         </div>
 
-        {/* Quick RBAC Role Switcher */}
         <div className="rbac-switcher" ref={dropdownRef}>
           <div className="switcher-label">
-            <Shield size={14} className="text-cyan" /> 
-            <span>Persona:</span>
+            <span>Signed in as</span>
           </div>
           <div className="role-dropdown-container">
-            <button 
+            <button
               className="role-selector-btn"
               onClick={() => setShowRoleMenu(!showRoleMenu)}
               aria-expanded={showRoleMenu}
               aria-haspopup="true"
-              title="Switch user role for testing"
+              title="Change role"
             >
-              <span className={`glass-badge ${
-                user?.role === 'Admin' ? 'badge-rose' :
+              <span className={`glass-badge ${user?.role === 'Admin' ? 'badge-rose' :
                 user?.role === 'Manager' ? 'badge-purple' :
-                user?.role === 'Operator' ? 'badge-cyan' : 'badge-emerald'
-              }`}>
+                  user?.role === 'Operator' ? 'badge-cyan' : 'badge-emerald'
+                }`}>
                 {user?.role || 'Guest'}
               </span>
-              <ChevronDown size={14} style={{ transform: showRoleMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+              <ChevronDown
+                size={14}
+                style={{ transform: showRoleMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.16s ease' }}
+              />
             </button>
 
             {showRoleMenu && (
               <div className="role-dropdown-menu">
-                <div className="dropdown-header">Switch Demo Persona (RBAC Testing)</div>
+                <div className="dropdown-header">Switch role</div>
                 {roles.map((r) => {
-                  const isSelected = user?.role === r.role || (r.role === 'Sales Representative' && user?.role === 'Sales Representative');
+                  const isSelected = user?.role === r.role;
                   return (
                     <button
                       key={r.username}
@@ -154,9 +140,9 @@ export default function Header({ activeTab, onOpenMobile }) {
                     >
                       <div className="role-item-main">
                         <span className="role-name">{r.label}</span>
-                        <span className="role-user font-mono">login: {r.username}</span>
+                        <span className="role-user">{r.desc}</span>
                       </div>
-                      {isSelected && <Check size={16} className="text-cyan" />}
+                      {isSelected && <Check size={16} />}
                     </button>
                   );
                 })}
@@ -165,11 +151,11 @@ export default function Header({ activeTab, onOpenMobile }) {
           </div>
         </div>
 
-        <button 
+        <button
           className="logout-btn"
           onClick={logout}
-          title="Sign Out of AutoSuite"
-          aria-label="Sign Out"
+          title="Sign out"
+          aria-label="Sign out"
         >
           <LogOut size={17} />
         </button>

@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Bike, 
-  Search, 
-  Plus, 
-  LayoutGrid, 
-  List, 
-  Copy, 
-  Check, 
-  Edit3, 
-  Trash2, 
-  FileSpreadsheet, 
+import {
+  Bike,
+  Search,
+  Plus,
+  LayoutGrid,
+  List,
+  Copy,
+  Check,
+  Edit3,
+  Trash2,
+  FileSpreadsheet,
   X,
   Tag,
   ShieldCheck,
   Fuel,
-  Sparkles,
   ArrowRight,
   ArrowLeft
 } from 'lucide-react';
@@ -167,17 +166,17 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     return '#38bdf8';
   };
 
-    if (subView === 'bike-form') {
+  if (subView === 'bike-form') {
     return (
       <div className="inventory-view">
         <div className="page-form-view">
           <div className="page-form-header">
             <button className="page-form-back-btn" onClick={() => { setSubView(null); setEditingBike(null); if (onCloseAddModal) onCloseAddModal(); }}>
-              <ArrowLeft size={16} /> Back to Inventory
+              <ArrowLeft size={16} /> Back to stock
             </button>
             <div className="page-form-title-group">
-              <h2 className="page-form-title">{editingBike ? 'Edit Motorcycle Specifications' : 'Register New Motorcycle to Fleet'}</h2>
-              <div className="page-form-subtitle">Enter technical specs, chassis numbers, pricing, and ownership history</div>
+              <h2 className="page-form-title">{editingBike ? 'Edit motorcycle' : 'Add motorcycle'}</h2>
+              <div className="page-form-subtitle">Specifications, chassis numbers, pricing and ownership history</div>
             </div>
           </div>
 
@@ -187,42 +186,42 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2">
               {/* Card 1: Core Specifications */}
               <div className="page-form-card">
-                <div className="page-form-card-title">1. Vehicle Category & Identifiers</div>
+                <div className="page-form-card-title">Category and identifiers</div>
 
                 <div className="form-group-row">
                   <div className="form-field">
-                    <label>Category *</label>
+                    <label>Category</label>
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                       disabled={!!editingBike}
                       className="form-input"
                     >
-                      <option value="BRAND_NEW">Brand New OEM</option>
-                      <option value="USED">Certified Pre-Owned</option>
+                      <option value="BRAND_NEW">Brand new</option>
+                      <option value="USED">Used, certified</option>
                     </select>
                   </div>
 
                   <div className="form-field">
-                    <label>Target Channel *</label>
+                    <label>Sold through</label>
                     <select
                       value={formData.marketTarget}
                       onChange={(e) => setFormData({ ...formData, marketTarget: e.target.value })}
                       className="form-input"
                     >
-                      <option value="BOTH">Universal (Both B2B & B2C)</option>
-                      <option value="B2C">Retail Customer (B2C Only)</option>
-                      <option value="B2B">Wholesale Dealer (B2B Only)</option>
+                      <option value="BOTH">Retail and wholesale</option>
+                      <option value="B2C">Retail only</option>
+                      <option value="B2B">Wholesale only</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="form-group-row">
                   <div className="form-field">
-                    <label>Model Name *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Honda CG125 Special Edition" 
+                    <label>Model name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Honda CG125 Special Edition"
                       value={formData.modelName}
                       onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
                       required
@@ -231,10 +230,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="form-field">
-                    <label>Color *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Gloss Red, Matte Black" 
+                    <label>Color</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Gloss red, matte black"
                       value={formData.color}
                       onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                       required
@@ -245,9 +244,9 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
                 <div className="form-group-row">
                   <div className="form-field">
-                    <label>Model Year *</label>
-                    <input 
-                      type="number" 
+                    <label>Model year</label>
+                    <input
+                      type="number"
                       value={formData.modelYear}
                       onChange={(e) => setFormData({ ...formData, modelYear: Number(e.target.value) })}
                       required
@@ -256,10 +255,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="form-field">
-                    <label>Fleet Batch / Container No</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. BATCH-2026-Q1" 
+                    <label>Batch or container number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. BATCH-2026-Q1"
                       value={formData.batchNumber}
                       onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
                       className="form-input font-mono"
@@ -270,13 +269,13 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
               {/* Card 2: Technical Engine & Chassis Numbers */}
               <div className="page-form-card">
-                <div className="page-form-card-title">2. Engine & Chassis Numbers</div>
+                <div className="page-form-card-title">Chassis and engine numbers</div>
 
                 <div className="form-field">
-                  <label>Frame / Chassis Number *</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. HND-CG125-982310" 
+                  <label>Chassis number</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. HND-CG125-982310"
                     value={formData.chassisNumber}
                     onChange={(e) => setFormData({ ...formData, chassisNumber: e.target.value })}
                     required
@@ -286,10 +285,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
 
                 <div className="form-field">
-                  <label>Engine Number *</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. ENG-992384-A" 
+                  <label>Engine number</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ENG-992384-A"
                     value={formData.engineNumber}
                     onChange={(e) => setFormData({ ...formData, engineNumber: e.target.value })}
                     required
@@ -299,16 +298,16 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
 
                 <div className="form-field">
-                  <label>Initial Stock Status *</label>
+                  <label>Starting status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     className="form-input"
                   >
-                    <option value="IN_STOCK">In-Stock Ready</option>
+                    <option value="IN_STOCK">In stock</option>
                     <option value="RESERVED">Reserved</option>
                     <option value="SOLD">Sold</option>
-                    <option value="PENDING_DELIVERY">Pending Delivery</option>
+                    <option value="PENDING_DELIVERY">Pending delivery</option>
                   </select>
                 </div>
               </div>
@@ -317,14 +316,14 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2">
               {/* Card 3: Pricing & Commercials */}
               <div className="page-form-card">
-                <div className="page-form-card-title">3. Pricing & Valuation</div>
+                <div className="page-form-card-title">Pricing</div>
 
                 <div className="form-group-row">
                   <div className="form-field">
-                    <label>Dealer Invoice / Cost (PKR) *</label>
-                    <input 
-                      type="number" 
-                      placeholder="Cost from factory or seller" 
+                    <label>Dealer cost (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="Cost from factory or seller"
                       value={formData.dealerInvoicePrice}
                       onChange={(e) => setFormData({ ...formData, dealerInvoicePrice: e.target.value })}
                       required
@@ -333,10 +332,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="form-field">
-                    <label>Showroom Retail Price (PKR) *</label>
-                    <input 
-                      type="number" 
-                      placeholder="Public retail tag" 
+                    <label>Retail price (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="Showroom price"
                       value={formData.retailPrice}
                       onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
                       required
@@ -346,10 +345,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
 
                 <div className="form-field">
-                  <label>Vehicle Condition & Inspection Notes</label>
-                  <textarea 
+                  <label>Condition and inspection notes</label>
+                  <textarea
                     rows="3"
-                    placeholder="Key inspection remarks, accessories included..."
+                    placeholder="Inspection remarks, accessories included…"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     className="form-textarea"
@@ -360,12 +359,12 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
               {/* Card 4: Pre-Owned Specifics or Warranty */}
               {formData.type === 'USED' ? (
                 <div className="page-form-card">
-                  <div className="page-form-card-title">4. Pre-Owned Verification & History</div>
+                  <div className="page-form-card-title">Trade-in history</div>
 
                   <div className="form-group-row">
                     <div className="form-field">
-                      <label>Registration Number</label>
-                      <input 
+                      <label>Registration number</label>
+                      <input
                         type="text"
                         placeholder="e.g. LHR-24-1234"
                         value={formData.registrationNumber}
@@ -374,33 +373,33 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       />
                     </div>
                     <div className="form-field">
-                      <label>Condition Grading</label>
+                      <label>Condition grade</label>
                       <select
                         value={formData.conditionGrade}
                         onChange={(e) => setFormData({ ...formData, conditionGrade: e.target.value })}
                         className="form-input"
                       >
-                        <option value="GRADE_A">Grade A (Showroom Condition / Low Mileage)</option>
-                        <option value="GRADE_B">Grade B (Good Condition / Normal Wear)</option>
-                        <option value="GRADE_C">Grade C (Refurbishment Required)</option>
+                        <option value="GRADE_A">Grade A — showroom condition, low mileage</option>
+                        <option value="GRADE_B">Grade B — good condition, normal wear</option>
+                        <option value="GRADE_C">Grade C — needs refurbishment</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="form-group-row">
                     <div className="form-field">
-                      <label>Previous Owner Name</label>
-                      <input 
+                      <label>Previous owner name</label>
+                      <input
                         type="text"
-                        placeholder="Full Name"
+                        placeholder="Full name"
                         value={formData.prevOwnerName}
                         onChange={(e) => setFormData({ ...formData, prevOwnerName: e.target.value })}
                         className="form-input"
                       />
                     </div>
                     <div className="form-field">
-                      <label>Previous Owner Phone</label>
-                      <input 
+                      <label>Previous owner phone</label>
+                      <input
                         type="text"
                         placeholder="0300-XXXXXXX"
                         value={formData.prevOwnerPhone}
@@ -412,8 +411,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
                   <div className="form-group-row">
                     <div className="form-field">
-                      <label>Purchase / Trade-in Cost (PKR)</label>
-                      <input 
+                      <label>Trade-in cost (PKR)</label>
+                      <input
                         type="number"
                         value={formData.purchaseCost}
                         onChange={(e) => setFormData({ ...formData, purchaseCost: e.target.value })}
@@ -421,8 +420,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       />
                     </div>
                     <div className="form-field">
-                      <label>Refurbishment Expenses (PKR)</label>
-                      <input 
+                      <label>Refurbishment cost (PKR)</label>
+                      <input
                         type="number"
                         value={formData.refurbishmentCost}
                         onChange={(e) => setFormData({ ...formData, refurbishmentCost: e.target.value })}
@@ -433,11 +432,11 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
               ) : (
                 <div className="page-form-card">
-                  <div className="page-form-card-title">4. Warranty & Showroom Ready Checklist</div>
-                  <p className="text-muted text-sm">Brand New OEM motorcycles are automatically enrolled into factory warranty tracking upon sales finalization.</p>
+                  <div className="page-form-card-title">Warranty</div>
+                  <p className="text-muted text-sm">Brand new motorcycles are enrolled in factory warranty tracking once the sale is finalized.</p>
                   <div className="read-only-field mt-3">
                     <ShieldCheck size={16} className="text-emerald" />
-                    <span>Atlas Honda OEM Warranty Validation Active</span>
+                    <span>Atlas Honda warranty active</span>
                   </div>
                 </div>
               )}
@@ -448,7 +447,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary">
-                <Plus size={16} /> {editingBike ? 'Save Vehicle Updates' : 'Confirm Registration'}
+                <Plus size={16} /> {editingBike ? 'Save changes' : 'Add motorcycle'}
               </button>
             </div>
           </form>
@@ -457,67 +456,67 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     );
   }
 
-return (
+  return (
     <div className="inventory-view">
       {/* Control Bar */}
       <div className="control-bar glass-panel">
         <div className="filter-group">
           <div className="type-toggle">
-            <button 
+            <button
               className={`toggle-btn ${activeFilter === 'ALL' ? 'active' : ''}`}
               onClick={() => setActiveFilter('ALL')}
             >
-              All Stock ({bikes.length})
+              All ({bikes.length})
             </button>
-            <button 
+            <button
               className={`toggle-btn ${activeFilter === 'BRAND_NEW' ? 'active' : ''}`}
               onClick={() => setActiveFilter('BRAND_NEW')}
             >
-              Brand New
+              Brand new
             </button>
-            <button 
+            <button
               className={`toggle-btn ${activeFilter === 'USED' ? 'active' : ''}`}
               onClick={() => setActiveFilter('USED')}
             >
-              Certified Pre-Owned
+              Used
             </button>
           </div>
 
-          <select 
+          <select
             className="filter-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="">Status: All Conditions</option>
-            <option value="IN_STOCK">In-Stock Ready</option>
+            <option value="">Any status</option>
+            <option value="IN_STOCK">In stock</option>
             <option value="RESERVED">Reserved</option>
             <option value="SOLD">Sold</option>
-            <option value="PENDING_DELIVERY">Pending Delivery</option>
+            <option value="PENDING_DELIVERY">Pending delivery</option>
           </select>
 
-          <select 
+          <select
             className="filter-select"
             value={marketFilter}
             onChange={(e) => setMarketFilter(e.target.value)}
           >
-            <option value="">Target: Universal</option>
-            <option value="B2C">Retail Customer (B2C)</option>
-            <option value="B2B">Wholesale Dealer (B2B)</option>
-            <option value="BOTH">Universal (Both)</option>
+            <option value="">Any channel</option>
+            <option value="B2C">Retail</option>
+            <option value="B2B">Wholesale</option>
+            <option value="BOTH">Retail and wholesale</option>
           </select>
         </div>
 
         <div className="action-group">
           {/* Grid vs Table View Switcher */}
           <div className="type-toggle">
-            <button 
+            <button
               className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
               onClick={() => setViewMode('grid')}
               title="Card Grid View"
             >
               <LayoutGrid size={15} />
             </button>
-            <button 
+            <button
               className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
               onClick={() => setViewMode('table')}
               title="Table View"
@@ -528,9 +527,9 @@ return (
 
           <div className="search-input-wrap">
             <Search size={16} className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search Chassis, Engine, Model..." 
+            <input
+              type="text"
+              placeholder="Search chassis, engine or model"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -538,7 +537,7 @@ return (
           </div>
 
           {hasPermission('EXPORT_EXCEL') && (
-            <button 
+            <button
               className="btn btn-outline"
               onClick={() => api.downloadExcel('bikes')}
             >
@@ -547,7 +546,7 @@ return (
           )}
 
           {hasPermission('MANAGE_BIKES') && (
-            <button 
+            <button
               className="btn btn-primary"
               onClick={() => {
                 setEditingBike(null);
@@ -555,7 +554,7 @@ return (
                 setSubView('bike-form');
               }}
             >
-              <Plus size={16} /> Add Bike
+              <Plus size={16} /> Add motorcycle
             </button>
           )}
         </div>
@@ -566,7 +565,7 @@ return (
         <div className="bike-cards-grid">
           {loading ? (
             <div className="col-span-full module-loading">
-              <div className="spinner"></div> Loading motorcycle catalog...
+              <div className="spinner"></div> Loading stock
             </div>
           ) : bikes.length > 0 ? (
             bikes.map((bike) => {
@@ -580,13 +579,12 @@ return (
                   {/* Card Header & Badges */}
                   <div className="bike-card-header">
                     <span className={`glass-badge ${isNew ? 'badge-cyan' : 'badge-purple'}`}>
-                      {isNew ? 'Brand New OEM' : 'Certified Pre-Owned'}
+                      {isNew ? 'Brand new' : 'Used'}
                     </span>
-                    <span className={`glass-badge ${
-                      bike.status === 'IN_STOCK' ? 'badge-emerald' :
+                    <span className={`glass-badge ${bike.status === 'IN_STOCK' ? 'badge-emerald' :
                       bike.status === 'RESERVED' ? 'badge-amber' :
-                      bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
-                    }`}>
+                        bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
+                      }`}>
                       <span className="status-dot" style={{ width: 6, height: 6, marginRight: 3 }} />
                       {bike.status.replace('_', ' ')}
                     </span>
@@ -594,34 +592,38 @@ return (
 
                   {/* Vehicle Graphic & Title */}
                   <div className="bike-card-body">
-                    <div className="bike-card-icon-wrap">
-                      <Bike size={28} />
-                    </div>
-                    <h3 className="bike-card-title">{bike.modelName}</h3>
-                    
-                    <div className="bike-card-specs">
-                      <span className="spec-tag color-indicator-chip">
-                        <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
-                        {bike.color}
-                      </span>
-                      <span className="spec-tag">Year {bike.modelYear}</span>
-                      <span className="spec-tag">{bike.marketTarget}</span>
-                      {bike.conditionGrade && (
-                        <span className="spec-tag text-amber">
-                          ★ {bike.conditionGrade.replace('GRADE_', 'Grade ')}
-                        </span>
-                      )}
+                    <div className="bike-card-head">
+                      <div className="bike-card-icon-wrap">
+                        <Bike size={28} />
+                      </div>
+                      <div className="bike-card-headings">
+                        <h3 className="bike-card-title">{bike.modelName}</h3>
+
+                        <div className="bike-card-specs">
+                          <span className="spec-tag color-indicator-chip">
+                            <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
+                            {bike.color}
+                          </span>
+                          <span className="spec-tag">{bike.modelYear}</span>
+                          <span className="spec-tag">{bike.marketTarget}</span>
+                          {bike.conditionGrade && (
+                            <span className="spec-tag text-amber">
+                              {bike.conditionGrade.replace('GRADE_', 'Grade ')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Technical IDs Box */}
                     <div className="bike-ids-box">
                       <div className="id-row">
-                        <span className="id-title">CHASSIS</span>
+                        <span className="id-title">Chassis</span>
                         <span className="font-mono text-cyan text-xs font-bold">{bike.chassisNumber}</span>
-                        <button 
-                          className="copy-btn" 
+                        <button
+                          className="copy-btn"
                           onClick={() => copyToClipboard(bike.chassisNumber)}
-                          title="Copy Chassis Number"
+                          title="Copy chassis number"
                         >
                           {copiedChassis === bike.chassisNumber ? (
                             <>
@@ -634,12 +636,12 @@ return (
                         </button>
                       </div>
                       <div className="id-row">
-                        <span className="id-title">ENGINE</span>
+                        <span className="id-title">Engine</span>
                         <span className="font-mono text-muted text-xs">{bike.engineNumber}</span>
                       </div>
                       {bike.registrationNumber && (
                         <div className="id-row">
-                          <span className="id-title">REG NO</span>
+                          <span className="id-title">Reg no</span>
                           <span className="font-mono text-amber text-xs font-bold">{bike.registrationNumber}</span>
                         </div>
                       )}
@@ -648,11 +650,11 @@ return (
                     {/* Price & Margins */}
                     <div className="bike-price-footer">
                       <div>
-                        <span className="price-label">Retail Selling Price</span>
+                        <span className="price-label">Retail price</span>
                         <div className="price-val">{formatPKR(bike.retailPrice)}</div>
                       </div>
                       <div className="text-right">
-                        <span className="price-label">Dealer Cost</span>
+                        <span className="price-label">Dealer cost</span>
                         <div className="cost-val text-muted text-xs font-mono">
                           {formatPKR(cost)}
                         </div>
@@ -669,7 +671,7 @@ return (
                   {hasPermission('MANAGE_BIKES') && (
                     <div className="bike-card-actions">
                       <button className="btn-card-action" onClick={() => handleEdit(bike)}>
-                        <Edit3 size={14} /> Edit Specs
+                        <Edit3 size={14} /> Edit
                       </button>
                       {bike.status !== 'SOLD' && (
                         <button className="btn-card-action danger" onClick={() => handleDelete(bike.id)}>
@@ -683,7 +685,7 @@ return (
             })
           ) : (
             <div className="col-span-full empty-placeholder">
-              No motorcycles found matching current filter criteria.
+              No motorcycles match the current filters.
             </div>
           )}
         </div>
@@ -696,11 +698,11 @@ return (
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>Vehicle & Model</th>
-                  <th>Chassis & Engine</th>
-                  <th>Specs & Color</th>
-                  <th>Commercials</th>
-                  <th>Target Channel</th>
+                  <th>Model</th>
+                  <th>Chassis and engine</th>
+                  <th>Color and year</th>
+                  <th>Price</th>
+                  <th>Channel</th>
                   <th>Status</th>
                   {hasPermission('MANAGE_BIKES') && <th className="text-right">Actions</th>}
                 </tr>
@@ -712,7 +714,7 @@ return (
                       <div className="font-bold text-main">{bike.modelName}</div>
                       <div className="flex items-center gap-1 mt-1">
                         <span className={`glass-badge text-xs ${bike.type === 'BRAND_NEW' ? 'badge-cyan' : 'badge-purple'}`}>
-                          {bike.type === 'BRAND_NEW' ? 'Brand New' : 'Used'}
+                          {bike.type === 'BRAND_NEW' ? 'Brand new' : 'Used'}
                         </span>
                         {bike.conditionGrade && (
                           <span className="glass-badge badge-amber text-xs">
@@ -728,39 +730,38 @@ return (
                           {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
                         </button>
                       </div>
-                      <div className="font-mono text-muted text-xs mt-1">Eng: {bike.engineNumber}</div>
+                      <div className="font-mono text-muted text-xs mt-1">{bike.engineNumber}</div>
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
                         <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
                         <span>{bike.color}</span>
                       </div>
-                      <div className="text-muted text-xs mt-1">Year {bike.modelYear}</div>
+                      <div className="text-muted text-xs mt-1">{bike.modelYear}</div>
                     </td>
                     <td>
                       <div className="font-bold text-main">{formatPKR(bike.retailPrice)}</div>
-                      <div className="text-muted text-xs font-mono">Cost: {formatPKR(bike.dealerInvoicePrice || bike.purchaseCost)}</div>
+                      <div className="text-muted text-xs font-mono">Cost {formatPKR(bike.dealerInvoicePrice || bike.purchaseCost)}</div>
                     </td>
                     <td>
                       <span className="glass-badge badge-muted">{bike.marketTarget}</span>
                     </td>
                     <td>
-                      <span className={`glass-badge ${
-                        bike.status === 'IN_STOCK' ? 'badge-emerald' :
+                      <span className={`glass-badge ${bike.status === 'IN_STOCK' ? 'badge-emerald' :
                         bike.status === 'RESERVED' ? 'badge-amber' :
-                        bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
-                      }`}>
+                          bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
+                        }`}>
                         {bike.status.replace('_', ' ')}
                       </span>
                     </td>
                     {hasPermission('MANAGE_BIKES') && (
                       <td className="text-right">
                         <div className="table-actions">
-                          <button className="action-icon-btn" onClick={() => handleEdit(bike)} title="Edit Vehicle">
+                          <button className="action-icon-btn" onClick={() => handleEdit(bike)} title="Edit">
                             <Edit3 size={15} />
                           </button>
                           {bike.status !== 'SOLD' && (
-                            <button className="action-icon-btn text-rose" onClick={() => handleDelete(bike.id)} title="Delete Vehicle">
+                            <button className="action-icon-btn text-rose" onClick={() => handleDelete(bike.id)} title="Delete">
                               <Trash2 size={15} />
                             </button>
                           )}
@@ -775,6 +776,6 @@ return (
         </div>
       )}
 
-          </div>
+    </div>
   );
 }
