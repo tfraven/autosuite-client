@@ -314,59 +314,71 @@ export default function Customers() {
     <div className="customers-view">
       {/* KPI Cards Row */}
       <div className="kpi-grid mb-4">
-        <div className="stat-card glass-panel">
-          <div className="stat-icon-wrapper cyan">
-            <Users size={22} />
-          </div>
-          <div className="stat-details">
-            <span className="stat-label">Registered Customers</span>
-            <div className="stat-value">{summary.totalCustomers}</div>
-            <span className="badge-cyan glass-badge text-xs mt-1">
-              Active Directory
-            </span>
-          </div>
-        </div>
-
-        <div className="stat-card glass-panel">
-          <div className="stat-icon-wrapper emerald">
-            <DollarSign size={22} />
-          </div>
-          <div className="stat-details">
-            <span className="stat-label">Total Client Volume</span>
-            <div className="stat-value text-emerald font-mono">
-              {formatPKR(summary.totalRevenue)}
+        <div className="kpi-card glass-panel">
+          <div className="kpi-header">
+            <span className="kpi-title">Registered Customers</span>
+            <div className="kpi-icon icon-cyan">
+              <Users size={20} />
             </div>
-            <span className="badge-emerald glass-badge text-xs mt-1">
-              Lifetime Billings
+          </div>
+          <div className="kpi-value font-mono">{summary.totalCustomers}</div>
+          <div className="kpi-footer">
+            <span className="badge-cyan glass-badge">
+              <span className="status-dot" /> Active Directory
             </span>
+            <span className="kpi-subtext font-medium">Retail & Dealership Clients</span>
           </div>
         </div>
 
-        <div className="stat-card glass-panel">
-          <div className="stat-icon-wrapper rose">
-            <AlertTriangle size={22} />
-          </div>
-          <div className="stat-details">
-            <span className="stat-label">Total Receivables</span>
-            <div className="stat-value text-rose font-mono">
-              {formatPKR(summary.totalOutstanding)}
+        <div className="kpi-card glass-panel">
+          <div className="kpi-header">
+            <span className="kpi-title">Total Client Volume</span>
+            <div className="kpi-icon icon-emerald">
+              <DollarSign size={20} />
             </div>
-            <span className="badge-rose glass-badge text-xs mt-1">
-              Credit Balance Due
+          </div>
+          <div className="kpi-value text-emerald font-mono">
+            {formatPKR(summary.totalRevenue)}
+          </div>
+          <div className="kpi-footer">
+            <span className="badge-emerald glass-badge">
+              <span className="status-dot" /> Lifetime Billings
             </span>
+            <span className="kpi-subtext font-medium">Completed Deliveries</span>
           </div>
         </div>
 
-        <div className="stat-card glass-panel">
-          <div className="stat-icon-wrapper amber">
-            <Building2 size={22} />
+        <div className="kpi-card glass-panel">
+          <div className="kpi-header">
+            <span className="kpi-title">Total Receivables</span>
+            <div className="kpi-icon icon-rose">
+              <AlertTriangle size={20} />
+            </div>
           </div>
-          <div className="stat-details">
-            <span className="stat-label">Active Debtors</span>
-            <div className="stat-value text-amber">{summary.debtorsCount}</div>
-            <span className="badge-amber glass-badge text-xs mt-1">
-              Pending Collections
+          <div className="kpi-value text-rose font-mono">
+            {formatPKR(summary.totalOutstanding)}
+          </div>
+          <div className="kpi-footer">
+            <span className="badge-rose glass-badge">
+              <span className="status-dot" /> Credit Balance Due
             </span>
+            <span className="kpi-subtext font-medium">Scheduled monthly dues</span>
+          </div>
+        </div>
+
+        <div className="kpi-card glass-panel">
+          <div className="kpi-header">
+            <span className="kpi-title">Active Debtors</span>
+            <div className="kpi-icon icon-amber">
+              <Building2 size={20} />
+            </div>
+          </div>
+          <div className="kpi-value text-amber font-mono">{summary.debtorsCount}</div>
+          <div className="kpi-footer">
+            <span className="badge-amber glass-badge">
+              <span className="status-dot" /> Pending Collections
+            </span>
+            <span className="kpi-subtext font-medium">Accounts with dues</span>
           </div>
         </div>
       </div>
@@ -430,7 +442,7 @@ export default function Customers() {
             <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search Name, Phone, CNIC, Chassis..."
+              placeholder="Search clients by name, phone, CNIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -521,7 +533,7 @@ export default function Customers() {
         </div>
       ) : (
         <div className="table-responsive glass-panel">
-          <table className="data-table">
+          <table className="custom-table">
             <thead>
               <tr>
                 <th>Customer Name</th>
