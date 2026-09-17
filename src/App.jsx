@@ -219,8 +219,8 @@ function UnauthorizedWarning({ module, onSwitchAdmin }) {
 }
 
 function LoginPortal({ onLogin }) {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -236,13 +236,6 @@ function LoginPortal({ onLogin }) {
       setSubmitting(false);
     }
   };
-
-  const quickLogins = [
-    { label: 'Full access', u: 'admin', p: 'admin123', color: 'badge-rose' },
-    { label: 'Parts and B2B orders', u: 'manager', p: 'manager123', color: 'badge-purple' },
-    { label: 'Sales entry only', u: 'operator', p: 'operator123', color: 'badge-cyan' },
-    { label: 'Sales and documents', u: 'sales', p: 'sales123', color: 'badge-emerald' }
-  ];
 
   return (
     <div className="login-portal-bg">
@@ -266,7 +259,7 @@ function LoginPortal({ onLogin }) {
               onChange={(e) => setUsername(e.target.value)}
               required
               className="form-input"
-              placeholder="e.g. admin"
+              placeholder="Enter your username"
             />
           </div>
 
@@ -286,27 +279,6 @@ function LoginPortal({ onLogin }) {
             <LogIn size={16} /> {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
-
-        <div className="quick-access-section mt-4">
-          <div className="section-title text-xs">Or sign in with a demo account</div>
-          <div className="quick-accounts-grid mt-2">
-            {quickLogins.map((q) => (
-              <button
-                key={q.u}
-                type="button"
-                className="quick-account-btn"
-                onClick={() => {
-                  setUsername(q.u);
-                  setPassword(q.p);
-                  onLogin(q.u, q.p);
-                }}
-              >
-                <span className={`glass-badge ${q.color} text-xs`}>{q.u}</span>
-                <span className="quick-label text-xs">{q.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
