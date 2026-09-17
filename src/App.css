@@ -1031,6 +1031,8 @@ select.form-input {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   padding: var(--sp-5);
+  min-width: 0;
+  /* 🔥 Added: Prevents grid blowout from wide content */
 }
 
 .card-header {
@@ -1337,6 +1339,10 @@ select.form-input {
   border-radius: var(--radius-lg);
   background: var(--surface);
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  /* 🔥 Added */
+  max-width: 100%;
+  /* 🔥 Added */
 }
 
 .custom-table {
@@ -5799,8 +5805,14 @@ Inventory refinement
   min-height: 30px;
 }
 
-.custom-table {
+/* ✅ Scoped only to the Inventory module */
+.inventory-table-card .custom-table {
   min-width: 940px;
+}
+
+/* ✅ Ensures tables inside .table-responsive scroll nicely on mobile */
+.table-responsive .custom-table {
+  min-width: 600px;
 }
 
 .custom-table th {
