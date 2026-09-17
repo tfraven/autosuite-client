@@ -1,12 +1,11 @@
 /* ==========================================================================
-   AutoSuite ERP — Component layer
-   Depends on tokens from index.css.
-   Class names match the existing components exactly; only the styling changed.
-   ========================================================================== */
-
+AutoSuite ERP — Component layer
+Depends on tokens from index.css.
+Class names match the existing components exactly; only the styling changed.
+========================================================================== */
 /* --------------------------------------------------------------------------
-   1. Shell
-   -------------------------------------------------------------------------- */
+Shell
+-------------------------------------------------------------------------- */
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -27,8 +26,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   2. Sidebar
-   -------------------------------------------------------------------------- */
+2. Sidebar
+-------------------------------------------------------------------------- */
 .sidebar {
   width: var(--sidebar-w);
   background: var(--surface);
@@ -263,8 +262,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. Header
-   -------------------------------------------------------------------------- */
+3. Header
+-------------------------------------------------------------------------- */
 .app-main-content {
   margin-left: var(--sidebar-w);
   flex: 1;
@@ -516,8 +515,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   4. Module container & control bar
-   -------------------------------------------------------------------------- */
+4. Module container & control bar
+-------------------------------------------------------------------------- */
 .module-container {
   padding: var(--sp-6);
   flex: 1;
@@ -647,8 +646,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. Buttons
-   -------------------------------------------------------------------------- */
+5. Buttons
+-------------------------------------------------------------------------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -666,7 +665,7 @@
 }
 
 /* Icons inside buttons always match the button's own text colour, even if a
-   component hardcoded a colour on the icon. */
+component hardcoded a colour on the icon. */
 .btn svg,
 .btn-icon svg,
 .btn-card-action svg {
@@ -819,8 +818,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   6. Forms
-   -------------------------------------------------------------------------- */
+6. Forms
+-------------------------------------------------------------------------- */
 .form-field {
   display: flex;
   flex-direction: column;
@@ -1025,8 +1024,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   7. Cards & panels
-   -------------------------------------------------------------------------- */
+7. Cards & panels
+-------------------------------------------------------------------------- */
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1051,8 +1050,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   8. Dashboard
-   -------------------------------------------------------------------------- */
+8. Dashboard
+-------------------------------------------------------------------------- */
 .dashboard-view {
   display: flex;
   flex-direction: column;
@@ -1330,8 +1329,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   9. Tables
-   -------------------------------------------------------------------------- */
+9. Tables
+-------------------------------------------------------------------------- */
 .table-responsive {
   overflow-x: auto;
   border: 1px solid var(--line);
@@ -1403,8 +1402,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   10. Inventory
-   -------------------------------------------------------------------------- */
+10. Inventory
+-------------------------------------------------------------------------- */
 .bike-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
@@ -1451,7 +1450,7 @@ select.form-input {
 }
 
 /* Card interior stacks; the identifier well absorbs any height difference
-   between cards in a row so every card bottom lines up. */
+between cards in a row so every card bottom lines up. */
 .bike-card-body {
   display: flex;
   flex-direction: column;
@@ -1489,7 +1488,7 @@ select.form-input {
 }
 
 /* Quiet outline chips instead of filled blocks — less visual weight than the
-   status badges above them, which is the correct hierarchy. */
+status badges above them, which is the correct hierarchy. */
 .spec-tag {
   display: inline-flex;
   align-items: center;
@@ -1532,7 +1531,7 @@ select.form-input {
 }
 
 /* Identifier block — the thing staff copy all day.
-   flex: 1 lets it soak up leftover height so cards end flush. */
+flex: 1 lets it soak up leftover height so cards end flush. */
 .bike-ids-box {
   background: var(--surface-inset);
   border: 1px solid var(--line-soft);
@@ -1618,7 +1617,7 @@ select.form-input {
 }
 
 /* Money block: one big number leads, cost and margin support it.
-   No floating labels at mismatched heights. */
+No floating labels at mismatched heights. */
 .bike-price-footer {
   display: flex;
   align-items: baseline;
@@ -1688,8 +1687,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   11. Sales
-   -------------------------------------------------------------------------- */
+11. Sales
+-------------------------------------------------------------------------- */
 .sales-view,
 .documents-view,
 .parts-view,
@@ -1826,8 +1825,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   12. Documents
-   -------------------------------------------------------------------------- */
+12. Documents
+-------------------------------------------------------------------------- */
 .docs-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
@@ -1895,8 +1894,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   13. Parts
-   -------------------------------------------------------------------------- */
+13. Parts
+-------------------------------------------------------------------------- */
 .parts-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
@@ -2017,8 +2016,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   14. Reports
-   -------------------------------------------------------------------------- */
+14. Reports
+-------------------------------------------------------------------------- */
 .export-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
@@ -2072,8 +2071,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   15. Users & roles
-   -------------------------------------------------------------------------- */
+15. Users & roles
+-------------------------------------------------------------------------- */
 .roles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
@@ -2129,8 +2128,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   16. Modals
-   -------------------------------------------------------------------------- */
+16. Modals
+-------------------------------------------------------------------------- */
 .modal-backdrop,
 .modal-overlay {
   position: fixed;
@@ -2250,8 +2249,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   17. Full-page forms
-   -------------------------------------------------------------------------- */
+17. Full-page forms
+-------------------------------------------------------------------------- */
 .page-form-view {
   display: flex;
   flex-direction: column;
@@ -2381,8 +2380,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   18. Sign in
-   -------------------------------------------------------------------------- */
+18. Sign in
+-------------------------------------------------------------------------- */
 .login-portal-bg {
   min-height: 100vh;
   min-height: 100dvh;
@@ -2521,7 +2520,7 @@ select.form-input {
 }
 
 /* Inline variant for use inside badges, buttons and other single-line rows
-   where the default spinner's size and bottom margin don't fit. */
+where the default spinner's size and bottom margin don't fit. */
 .spinner-xs {
   width: 11px;
   height: 11px;
@@ -2536,8 +2535,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   19. Customers
-   -------------------------------------------------------------------------- */
+19. Customers
+-------------------------------------------------------------------------- */
 .customer-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
@@ -2748,7 +2747,7 @@ select.form-input {
 }
 
 /* Owned motorcycles read as full-width rows, matching the invoice list below.
-   A customer owns one to three bikes, so narrow tiles left the panel stranded. */
+A customer owns one to three bikes, so narrow tiles left the panel stranded. */
 .bikes-registered-grid {
   display: flex;
   flex-direction: column;
@@ -2887,8 +2886,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   20. Printable documents — real paper
-   -------------------------------------------------------------------------- */
+20. Printable documents — real paper
+-------------------------------------------------------------------------- */
 .printable-document {
   padding: var(--sp-8);
   background: #ffffff !important;
@@ -2972,8 +2971,8 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   21. Responsive
-   -------------------------------------------------------------------------- */
+21. Responsive
+-------------------------------------------------------------------------- */
 @media (max-width: 1280px) {
   .top-header {
     padding: 0 var(--sp-5);
@@ -3171,7 +3170,6 @@ select.form-input {
   }
 
   /* prevents iOS zoom on focus */
-
   .quick-actions .btn,
   .action-group .btn {
     width: 100%;
@@ -3258,11 +3256,10 @@ select.form-input {
 }
 
 /* --------------------------------------------------------------------------
-   22. Component coverage
-   Classes the module components use that had no styles in the original
-   stylesheet. They were rendering unstyled; they are defined here.
-   -------------------------------------------------------------------------- */
-
+22. Component coverage
+Classes the module components use that had no styles in the original
+stylesheet. They were rendering unstyled; they are defined here.
+-------------------------------------------------------------------------- */
 /* Module roots — same vertical rhythm as the other views */
 .inventory-view,
 .customers-view {
@@ -3272,8 +3269,8 @@ select.form-input {
 }
 
 /* Loading & empty states ---------------------------------------------------
-   An empty screen should say what to do next, so these are readable rather
-   than apologetic grey mush. */
+An empty screen should say what to do next, so these are readable rather
+than apologetic grey mush. */
 .module-loading,
 .loading-state {
   display: flex;
@@ -3460,7 +3457,6 @@ td.empty-placeholder {
 }
 
 /* Inventory card interior lives in section 10 (Inventory) */
-
 .badge-header {
   display: flex;
   align-items: center;
@@ -3601,8 +3597,8 @@ td.empty-placeholder {
 }
 
 /* Printed invoice & letterhead --------------------------------------------
-   These render on white paper in both screen preview and print, so they use
-   fixed ink values rather than theme tokens. */
+These render on white paper in both screen preview and print, so they use
+fixed ink values rather than theme tokens. */
 .invoice-modal-content {
   background: var(--surface-3);
 }
@@ -3845,9 +3841,8 @@ td.empty-placeholder {
 }
 
 /* ==========================================================================
-   AutoSuite ERP — Comprehensive Component & Utility Styles
-   ========================================================================== */
-
+AutoSuite ERP — Comprehensive Component & Utility Styles
+========================================================================== */
 /* Layout & Utility Helpers */
 .border {
   border: 1px solid var(--line);
@@ -3975,7 +3970,7 @@ td.empty-placeholder {
 }
 
 /* Solid semantic fills — used for meters/bars where a tinted "-soft" tone
-   would be invisible (e.g. the password strength indicator). */
+would be invisible (e.g. the password strength indicator). */
 .bg-muted {
   background-color: var(--ink-4) !important;
 }
@@ -3997,33 +3992,33 @@ td.empty-placeholder {
 }
 
 /* Hover-state fills for list/menu rows */
-.hover\:bg-surface-2:hover {
+.hover:bg-surface-2:hover {
   background-color: var(--surface-2);
 }
 
-.hover\:bg-surface-3:hover {
+.hover:bg-surface-3:hover {
   background-color: var(--surface-3);
 }
 
 /* Responsive display helpers (Tailwind-style breakpoint prefixes used by a
-   couple of header controls). Mobile-first: hidden below the breakpoint,
-   shown at and above it. Pair with .hidden on the same element. */
+couple of header controls). Mobile-first: hidden below the breakpoint,
+shown at and above it. Pair with .hidden on the same element. */
 @media (min-width: 640px) {
-  .sm\:flex {
+  .sm:flex {
     display: flex !important;
   }
 
-  .sm\:inline {
+  .sm:inline {
     display: inline !important;
   }
 }
 
 @media (min-width: 768px) {
-  .md\:flex {
+  .md:flex {
     display: flex !important;
   }
 
-  .md\:inline {
+  .md:inline {
     display: inline !important;
   }
 }
@@ -5071,8 +5066,8 @@ td.empty-placeholder {
 }
 
 /* --------------------------------------------------------------------------
-   Legal page — refinement & motion
-   -------------------------------------------------------------------------- */
+Legal page — refinement & motion
+-------------------------------------------------------------------------- */
 .legal-page {
   animation: fadeIn 0.3s var(--ease);
 }
@@ -5571,7 +5566,7 @@ td.empty-placeholder {
 }
 
 /* Subtle low-stock row tint — a lighter wash than the full "-soft" tone,
-   used on table rows rather than badges. */
+used on table rows rather than badges. */
 .bg-bad-soft\/20 {
   background-color: color-mix(in srgb, var(--bad-soft) 55%, var(--surface));
 }
@@ -5653,9 +5648,8 @@ td.empty-placeholder {
 }
 
 /* ==========================================================================
-   Inventory refinement
-   ========================================================================== */
-
+Inventory refinement
+========================================================================== */
 .inventory-view {
   min-width: 0;
 }
@@ -5930,9 +5924,8 @@ td.empty-placeholder {
 }
 
 /* ==========================================================================
-   Header, Inventory, Settings, Calendar — responsive polish
-   ========================================================================== */
-
+Header, Inventory, Settings, Calendar — responsive polish
+========================================================================== */
 .header-tools,
 .header-account {
   display: flex;
@@ -6264,9 +6257,8 @@ td.empty-placeholder {
 }
 
 /* ==========================================================================
-   Analytics charts
-   ========================================================================== */
-
+Analytics charts
+========================================================================== */
 .chart-panel {
   min-width: 0;
 }
@@ -6654,9 +6646,21 @@ Respects prefers-reduced-motion for accessibility.
   animation-delay: 0.46s;
 }
 
-/* --- Sidebar polish ------------------------------------------------------ */
-.sidebar {
-  animation: slideInRight 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* --- Sidebar polish ------------------------------------------------------
+   Desktop only. On mobile the sidebar uses transform: translateX(-100%)
+   to hide, so we must NOT apply a transform-based animation there, or
+   the animation's final state will override the hide transform and the
+   drawer gets stuck open. */
+@media (min-width: 769px) {
+  .sidebar {
+    animation: slideInRight 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    animation: none;
+  }
 }
 
 .sidebar-brand {
@@ -6937,15 +6941,18 @@ Respects prefers-reduced-motion for accessibility.
   animation-delay: 0.16s;
 }
 
-/* --- Mobile sidebar overlay fade ---------------------------------------- */
-.sidebar-overlay.active {
-  animation: fadeIn 0.22s ease-out both;
+/* --- Mobile sidebar overlay fade ----------------------------------------
+   Desktop only. On mobile the overlay uses an opacity transition (defined
+   in the responsive block). Don't let the fadeIn animation override it. */
+@media (min-width: 769px) {
+  .sidebar-overlay.active {
+    animation: fadeIn 0.22s ease-out both;
+  }
 }
 
 /* ==========================================================================
 Inventory motion — professional, alive, data-dense friendly
 ========================================================================== */
-
 /* View container entrance */
 .inventory-view {
   animation: fadeIn 0.3s ease-out both;
@@ -7271,4 +7278,485 @@ Inventory motion — professional, alive, data-dense friendly
 /* Sold card — muted entrance */
 .bike-card.is-sold {
   animation: fadeIn 0.5s ease-out both;
+}
+
+/* ==========================================================================
+Calendar motion — professional, alive, schedule-focused
+========================================================================== */
+/* View container entrance */
+.calendar-view {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+/* Header bar slides down */
+.calendar-header-bar {
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Month title float-in */
+.calendar-title-wrap {
+  animation: floatIn 0.45s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Navigation buttons stagger in */
+.calendar-month-arrows .btn {
+  animation: floatIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.calendar-month-arrows .btn:nth-child(1) {
+  animation-delay: 0.12s;
+}
+
+.calendar-month-arrows .btn:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.calendar-month-arrows .btn:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+/* Navigation button micro-interactions */
+.calendar-month-arrows .btn {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+
+.calendar-month-arrows .btn:hover {
+  transform: translateY(-1px);
+}
+
+.calendar-month-arrows .btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Filter pills stagger in */
+.calendar-filter-pills .pill-btn {
+  animation: floatIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.calendar-filter-pills .pill-btn:nth-child(1) {
+  animation-delay: 0.20s;
+}
+
+.calendar-filter-pills .pill-btn:nth-child(2) {
+  animation-delay: 0.26s;
+}
+
+.calendar-filter-pills .pill-btn:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.calendar-filter-pills .pill-btn:nth-child(4) {
+  animation-delay: 0.38s;
+}
+
+.calendar-filter-pills .pill-btn:nth-child(5) {
+  animation-delay: 0.44s;
+}
+
+/* Filter pill active state animation */
+.calendar-filter-pills .pill-btn.active {
+  animation: scaleIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Filter pill hover micro-interaction */
+.calendar-filter-pills .pill-btn {
+  transition: background 0.18s var(--ease),
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.calendar-filter-pills .pill-btn:hover {
+  transform: translateY(-1px);
+}
+
+.calendar-filter-pills .pill-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Calendar grid card entrance */
+.calendar-grid-card {
+  animation: fadeUp 0.45s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Weekday headers fade in */
+.calendar-weekday-header {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+.calendar-weekday-header:nth-child(1) {
+  animation-delay: 0.20s;
+}
+
+.calendar-weekday-header:nth-child(2) {
+  animation-delay: 0.24s;
+}
+
+.calendar-weekday-header:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+.calendar-weekday-header:nth-child(4) {
+  animation-delay: 0.32s;
+}
+
+.calendar-weekday-header:nth-child(5) {
+  animation-delay: 0.36s;
+}
+
+.calendar-weekday-header:nth-child(6) {
+  animation-delay: 0.40s;
+}
+
+.calendar-weekday-header:nth-child(7) {
+  animation-delay: 0.44s;
+}
+
+/* Day cells stagger in (7 columns × 6 rows max = 42 cells) */
+.calendar-day-cell {
+  animation: scaleIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Row-by-row stagger for natural reading flow */
+.calendar-day-cell:nth-child(1) {
+  animation-delay: 0.25s;
+}
+
+.calendar-day-cell:nth-child(2) {
+  animation-delay: 0.27s;
+}
+
+.calendar-day-cell:nth-child(3) {
+  animation-delay: 0.29s;
+}
+
+.calendar-day-cell:nth-child(4) {
+  animation-delay: 0.31s;
+}
+
+.calendar-day-cell:nth-child(5) {
+  animation-delay: 0.33s;
+}
+
+.calendar-day-cell:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+.calendar-day-cell:nth-child(7) {
+  animation-delay: 0.37s;
+}
+
+.calendar-day-cell:nth-child(8) {
+  animation-delay: 0.39s;
+}
+
+.calendar-day-cell:nth-child(9) {
+  animation-delay: 0.41s;
+}
+
+.calendar-day-cell:nth-child(10) {
+  animation-delay: 0.43s;
+}
+
+.calendar-day-cell:nth-child(11) {
+  animation-delay: 0.45s;
+}
+
+.calendar-day-cell:nth-child(12) {
+  animation-delay: 0.47s;
+}
+
+.calendar-day-cell:nth-child(13) {
+  animation-delay: 0.49s;
+}
+
+.calendar-day-cell:nth-child(14) {
+  animation-delay: 0.51s;
+}
+
+.calendar-day-cell:nth-child(15) {
+  animation-delay: 0.53s;
+}
+
+.calendar-day-cell:nth-child(16) {
+  animation-delay: 0.55s;
+}
+
+.calendar-day-cell:nth-child(17) {
+  animation-delay: 0.57s;
+}
+
+.calendar-day-cell:nth-child(18) {
+  animation-delay: 0.59s;
+}
+
+.calendar-day-cell:nth-child(19) {
+  animation-delay: 0.61s;
+}
+
+.calendar-day-cell:nth-child(20) {
+  animation-delay: 0.63s;
+}
+
+.calendar-day-cell:nth-child(21) {
+  animation-delay: 0.65s;
+}
+
+.calendar-day-cell:nth-child(22) {
+  animation-delay: 0.67s;
+}
+
+.calendar-day-cell:nth-child(23) {
+  animation-delay: 0.69s;
+}
+
+.calendar-day-cell:nth-child(24) {
+  animation-delay: 0.71s;
+}
+
+.calendar-day-cell:nth-child(25) {
+  animation-delay: 0.73s;
+}
+
+.calendar-day-cell:nth-child(26) {
+  animation-delay: 0.75s;
+}
+
+.calendar-day-cell:nth-child(27) {
+  animation-delay: 0.77s;
+}
+
+.calendar-day-cell:nth-child(28) {
+  animation-delay: 0.79s;
+}
+
+.calendar-day-cell:nth-child(29) {
+  animation-delay: 0.81s;
+}
+
+.calendar-day-cell:nth-child(30) {
+  animation-delay: 0.83s;
+}
+
+.calendar-day-cell:nth-child(31) {
+  animation-delay: 0.85s;
+}
+
+.calendar-day-cell:nth-child(32) {
+  animation-delay: 0.87s;
+}
+
+.calendar-day-cell:nth-child(33) {
+  animation-delay: 0.89s;
+}
+
+.calendar-day-cell:nth-child(34) {
+  animation-delay: 0.91s;
+}
+
+.calendar-day-cell:nth-child(35) {
+  animation-delay: 0.93s;
+}
+
+.calendar-day-cell:nth-child(36) {
+  animation-delay: 0.95s;
+}
+
+.calendar-day-cell:nth-child(37) {
+  animation-delay: 0.97s;
+}
+
+.calendar-day-cell:nth-child(38) {
+  animation-delay: 0.99s;
+}
+
+.calendar-day-cell:nth-child(39) {
+  animation-delay: 1.01s;
+}
+
+.calendar-day-cell:nth-child(40) {
+  animation-delay: 1.03s;
+}
+
+.calendar-day-cell:nth-child(41) {
+  animation-delay: 1.05s;
+}
+
+.calendar-day-cell:nth-child(42) {
+  animation-delay: 1.07s;
+}
+
+/* Day cell hover micro-interaction */
+.calendar-day-cell {
+  transition: background 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.calendar-day-cell:hover {
+  transform: translateY(-1px);
+}
+
+.calendar-day-cell:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Today cell gets a subtle pulse */
+.calendar-day-cell.is-today {
+  animation: scaleIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both,
+    softPulse 2.6s ease-in-out 1.2s 1;
+}
+
+/* Selected cell scale-in */
+.calendar-day-cell.is-selected {
+  animation: scaleIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Event dots stagger in within each cell */
+.day-event-dot {
+  animation: scaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.day-event-dot:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.day-event-dot:nth-child(2) {
+  animation-delay: 0.10s;
+}
+
+.day-event-dot:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.day-event-dot:nth-child(4) {
+  animation-delay: 0.20s;
+}
+
+/* Event chips in preview stagger */
+.day-event-chip {
+  animation: floatIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.day-event-chip:nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.day-event-chip:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.day-event-chip:nth-child(3) {
+  animation-delay: 0.20s;
+}
+
+/* Event chip hover */
+.day-event-chip {
+  transition: filter 0.18s var(--ease),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.day-event-chip:hover {
+  transform: translateY(-1px);
+}
+
+/* "More events" text fade-in */
+.more-events-text {
+  animation: fadeIn 0.4s 0.25s ease-out both;
+}
+
+/* Sidebar panel slides in from right */
+.calendar-day-sidebar {
+  animation: slideInRight 0.4s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Sidebar header float-in */
+.day-sidebar-header {
+  animation: floatIn 0.45s 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Event cards in sidebar stagger in */
+.day-event-card {
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.day-event-card:nth-child(1) {
+  animation-delay: 0.32s;
+}
+
+.day-event-card:nth-child(2) {
+  animation-delay: 0.38s;
+}
+
+.day-event-card:nth-child(3) {
+  animation-delay: 0.44s;
+}
+
+.day-event-card:nth-child(4) {
+  animation-delay: 0.50s;
+}
+
+.day-event-card:nth-child(5) {
+  animation-delay: 0.56s;
+}
+
+.day-event-card:nth-child(6) {
+  animation-delay: 0.62s;
+}
+
+/* Event card hover micro-interaction */
+.day-event-card {
+  transition: border-color 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.day-event-card:hover {
+  transform: translateY(-2px);
+}
+
+.day-event-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Highlighted event card scale-in */
+.day-event-card.highlighted {
+  animation: scaleIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Empty day state fade-in */
+.empty-day-state {
+  animation: fadeIn 0.5s 0.35s ease-out both;
+}
+
+/* Empty day icon subtle pulse */
+.empty-day-icon {
+  animation: softPulse 2.6s ease-in-out infinite;
+}
+
+/* View button in event card */
+.day-event-card .btn {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s var(--ease);
+}
+
+.day-event-card .btn:hover {
+  transform: translateY(-1px);
+}
+
+.day-event-card .btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+/* Month change animation — when currentDate changes, replay grid entrance */
+.calendar-view .calendar-grid-card {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Filter change animation — when activeFilter changes, replay day cell entrance */
+.calendar-view .calendar-days-grid {
+  animation: fadeIn 0.3s ease-out both;
 }

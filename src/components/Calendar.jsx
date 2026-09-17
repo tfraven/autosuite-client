@@ -22,7 +22,7 @@ export default function Calendar({ onNavigateToSale }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('ALL'); // ALL, INSTALLMENTS, DELIVERIES, DOCS, POS
+  const [activeFilter, setActiveFilter] = useState('ALL');
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -147,8 +147,8 @@ export default function Calendar({ onNavigateToSale }) {
   };
 
   // Month stats
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sun
-  const adjustedFirstDay = (firstDayIndex + 6) % 7; // 0 = Mon
+  const firstDayIndex = new Date(year, month, 1).getDay();
+  const adjustedFirstDay = (firstDayIndex + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
@@ -156,12 +156,10 @@ export default function Calendar({ onNavigateToSale }) {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-
   const monthNamesRu = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   // Filter events for the month
@@ -201,7 +199,7 @@ export default function Calendar({ onNavigateToSale }) {
   };
 
   return (
-    <div className="calendar-view">
+    <div className="calendar-view anim-fade-in">
       {/* Top Controls */}
       <div className="calendar-header-bar glass-panel mb-4">
         <div className="calendar-nav-group">
@@ -264,7 +262,7 @@ export default function Calendar({ onNavigateToSale }) {
       {/* Main Calendar Layout */}
       <div className="calendar-layout-grid">
         {/* Month Grid */}
-        <div className="calendar-grid-card glass-panel">
+        <div className="calendar-grid-card glass-panel" key={`grid-${year}-${month}-${activeFilter}`}>
           <div className="calendar-weekdays-row">
             {dayNames.map((day) => (
               <div key={day} className="calendar-weekday-header">
@@ -273,7 +271,6 @@ export default function Calendar({ onNavigateToSale }) {
               </div>
             ))}
           </div>
-
           <div className="calendar-days-grid">
             {/* Prev month fill days */}
             {Array.from({ length: adjustedFirstDay }).map((_, i) => (
@@ -353,11 +350,13 @@ export default function Calendar({ onNavigateToSale }) {
         </div>
 
         {/* Day Events Inspector Side-Panel */}
-        <div className="calendar-day-sidebar glass-panel">
+        <div className="calendar-day-sidebar glass-panel" key={`sidebar-${selectedDay}-${year}-${month}`}>
           <div className="day-sidebar-header">
             <div>
               <h3>
-                {isRomanUrdu ? `${selectedDay} Tareekh ke Waqiat` : `Schedule for Day ${selectedDay}`}
+                {isRomanUrdu
+                  ? `${selectedDay} Tareekh ke Waqiat`
+                  : `Schedule for Day ${selectedDay}`}
               </h3>
               <span className="text-xs text-muted">
                 {isRomanUrdu ? monthNamesRu[month] : monthNames[month]} {selectedDay}, {year}
@@ -399,27 +398,22 @@ export default function Calendar({ onNavigateToSale }) {
                       </strong>
                     )}
                   </div>
-
                   <h4 className="mt-2 text-sm">{ev.title}</h4>
-
                   {ev.customerName && (
                     <div className="text-xs text-muted flex items-center gap-1 mt-1">
                       <User size={12} /> {ev.customerName}
                     </div>
                   )}
-
                   {ev.customerPhone && (
                     <div className="text-xs text-muted flex items-center gap-1">
                       <Phone size={12} /> {ev.customerPhone}
                     </div>
                   )}
-
                   {ev.invoiceNumber && (
                     <div className="text-xs text-cyan font-mono mt-1">
                       Invoice: {ev.invoiceNumber}
                     </div>
                   )}
-
                   {ev.saleId && onNavigateToSale && (
                     <button
                       className="btn btn-primary btn-xs mt-2 w-full"
