@@ -663,8 +663,8 @@
   line-height: 1.4;
   white-space: nowrap;
   border: 1px solid transparent;
-  transition: background 0.14s var(--ease), border-color 0.14s var(--ease),
-    color 0.14s var(--ease), box-shadow 0.14s var(--ease);
+  transition: background 0.16s var(--ease), border-color 0.16s var(--ease),
+    color 0.16s var(--ease), box-shadow 0.16s var(--ease), transform 0.16s var(--ease);
 }
 
 /* Icons inside buttons always match the button's own text colour, even if a
@@ -675,8 +675,13 @@
   color: currentColor !important;
 }
 
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
 .btn:active:not(:disabled) {
-  transform: translateY(0.5px);
+  transform: translateY(1px);
+  box-shadow: none !important;
 }
 
 .btn:disabled {
@@ -713,11 +718,13 @@
   background: var(--accent);
   color: #ffffff;
   border-color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+  box-shadow: 0 4px 12px rgba(26, 61, 92, 0.22);
 }
 
 .btn-secondary {
@@ -730,6 +737,7 @@
 .btn-secondary:hover:not(:disabled) {
   background: var(--surface-2);
   border-color: var(--ink-4);
+  box-shadow: var(--shadow-2);
 }
 
 .btn-outline {
@@ -747,11 +755,13 @@
   background: var(--bad);
   color: #ffffff;
   border-color: var(--bad);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .btn-danger:hover:not(:disabled) {
   background: #8e1e17;
   border-color: #8e1e17;
+  box-shadow: 0 4px 12px rgba(179, 38, 30, 0.25);
 }
 
 .btn-card-action {
