@@ -7772,3 +7772,81 @@ Calendar motion — professional, alive, schedule-focused
 .calendar-view .calendar-days-grid {
   animation: fadeIn 0.3s ease-out both;
 }
+
+/* Fix for mobile control bar - add this after existing mobile styles */
+@media (max-width: 768px) {
+  .control-bar {
+    padding: var(--sp-3);
+    gap: var(--sp-3);
+  }
+
+  .filter-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Make type-toggle scrollable on mobile */
+  .type-toggle {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+    flex-wrap: nowrap;
+    padding: 2px;
+  }
+
+  .type-toggle::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+  }
+
+  .type-toggle .toggle-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: var(--fs-12);
+  }
+
+  .action-group {
+    width: 100%;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+
+  .search-input-wrap {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .action-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* View toggle buttons */
+  .action-group .type-toggle {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
+
+  .action-group .type-toggle .toggle-btn {
+    flex: 1;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 480px) {
+  .control-bar {
+    padding: var(--sp-2);
+  }
+
+  .type-toggle .toggle-btn {
+    padding: 5px 8px;
+    font-size: var(--fs-11);
+  }
+}
