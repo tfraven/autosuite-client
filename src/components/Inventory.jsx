@@ -399,11 +399,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   return (
     <div className="inventory-view">
       {/* Control Bar */}
-      <div className="control-bar glass-panel no-print mb-4">
-        {/* <div className="inventory-toolbar-context">
-          <div className="inventory-toolbar-title">Stock inventory</div>
-          <div className="inventory-toolbar-count">{totalCount.toLocaleString('en-PK')} records</div>
-        </div> */}
+      <div className="control-bar glass-panel no-print inventory-toolbar">
         <div className="inventory-toolbar-controls">
           <div className="filter-group">
             <div className="type-toggle">
@@ -452,11 +448,12 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
           </div>
 
           <div className="action-group">
-            <div className="type-toggle">
+            <div className="type-toggle view-toggle">
               <button
                 className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => setViewMode('grid')}
                 title="Card Grid View"
+                aria-label="Card grid view"
               >
                 <LayoutGrid size={15} />
               </button>
@@ -464,6 +461,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
                 onClick={() => setViewMode('table')}
                 title="Table View"
+                aria-label="Table view"
               >
                 <List size={15} />
               </button>
@@ -485,7 +483,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 className="btn btn-outline"
                 onClick={() => api.downloadExcel('bikes')}
               >
-                <FileSpreadsheet size={16} /> Export
+                <FileSpreadsheet size={16} /> <span className="btn-label">Export</span>
               </button>
             )}
 
@@ -498,7 +496,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   setSubView('bike-form');
                 }}
               >
-                <Plus size={16} /> {isRomanUrdu ? 'Nayi Bike Shamil Karein' : 'Add motorcycle'}
+                <Plus size={16} /> <span className="btn-label">{isRomanUrdu ? 'Nayi Bike Shamil Karein' : 'Add motorcycle'}</span>
               </button>
             )}
           </div>
@@ -624,7 +622,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="card glass-panel no-print">
+        <div className="card glass-panel no-print inventory-table-card">
           <div className="table-responsive">
             <table className="custom-table">
               <thead>

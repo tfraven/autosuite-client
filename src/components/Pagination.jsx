@@ -12,10 +12,18 @@ export default function Pagination({
 }) {
   const { isRomanUrdu } = useLanguage();
 
-  if (totalItems === 0) return null;
+  const pageSize = Math.max(1, Number(itemsPerPage) || 1);
 
-  const startItem = Math.min((currentPage - 1) * itemsPerPage + 1, totalItems);
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+  // Hide until the result set is larger than one page.
+  if (!totalItems || totalItems <= pageSize) return null;
+
+  const startItem = Math.min((currentPage - 1) * pageSize + 1, totalItems);
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+  const limitOptions = [10, 12, 20, 50, 100];
+  if (!limitOptions.includes(pageSize)) {
+    limitOptions.push(pageSize);
+    limitOptions.sort((a, b) => a - b);
+  }
 
   // Generate page numbers array with ellipsis
   const getPageNumbers = () => {
@@ -55,14 +63,14 @@ export default function Pagination({
               {isRomanUrdu ? 'Tadad:' : 'Rows:'}
             </span>
             <select
-              value={itemsPerPage}
+              value={pageSize}
               onChange={(e) => onLimitChange(Number(e.target.value))}
               className="form-select select-xs"
+              aria-label={isRomanUrdu ? 'Rows per page' : 'Rows per page'}
             >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
+              {limitOptions.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
             </select>
           </div>
         )}

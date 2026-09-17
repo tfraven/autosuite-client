@@ -12,7 +12,6 @@ import {
   Bell,
   Search,
   AlertTriangle,
-  CreditCard,
   FileCheck2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -140,14 +139,16 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
       </div>
 
       <div className="header-right">
+        <div className="header-tools">
         {/* Command Palette Trigger (Task 8) */}
         <button
           className="header-icon-action-btn"
           onClick={onOpenCommandPalette}
           title="Search (Ctrl+K)"
+          aria-label="Open search"
         >
           <Search size={16} />
-          <span className="text-xs font-mono hidden md:inline ml-1">Ctrl+K</span>
+          <span className="header-kbd-hint">Ctrl+K</span>
         </button>
 
         {/* Language Switcher (Task 15) */}
@@ -155,9 +156,10 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
           className="header-icon-action-btn lang-toggle-btn"
           onClick={toggleLanguage}
           title="Toggle Roman Urdu / English"
+          aria-label="Toggle language"
         >
           <Globe size={16} />
-          <span className="text-xs font-semibold uppercase">{lang}</span>
+          <span className="header-lang-code">{lang}</span>
         </button>
 
         {/* Theme Switcher (Task 6) */}
@@ -165,6 +167,7 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
           className="header-icon-action-btn theme-toggle-btn"
           onClick={toggleTheme}
           title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label="Toggle theme"
         >
           {isDark ? <Sun size={17} className="text-amber" /> : <Moon size={17} className="text-cyan" />}
         </button>
@@ -175,6 +178,8 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
             className="header-icon-action-btn relative"
             onClick={() => setShowNotifications(!showNotifications)}
             title="Notifications"
+            aria-expanded={showNotifications}
+            aria-haspopup="true"
           >
             <Bell size={17} />
             {totalNotifCount > 0 && (
@@ -219,9 +224,11 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
             </div>
           )}
         </div>
+        </div>
 
+        <div className="header-account">
         {/* Online Status */}
-        <div className="glass-badge badge-emerald system-status-badge hidden sm:flex" title="Connected to database">
+        <div className="glass-badge badge-emerald system-status-badge" title="Connected to database">
           <Activity size={12} className="live-activity-icon" />
           <span className="status-text">{t('system_online')}</span>
         </div>
@@ -289,6 +296,7 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
         >
           <LogOut size={17} />
         </button>
+        </div>
       </div>
     </header>
   );

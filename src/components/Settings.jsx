@@ -158,30 +158,32 @@ export default function Settings() {
 
   return (
     <div className="settings-view">
-      {/* Top Header & Tabs */}
-      <div className="settings-header glass-panel mb-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold text-main">
+      <div className="settings-header glass-panel">
+        <div className="settings-header-copy">
+          <h2>
             {isRomanUrdu ? 'Settings aur Tarmeemat' : 'Platform & Account Settings'}
           </h2>
-          <span className="text-sm text-muted">
+          <p>
             {isRomanUrdu
               ? 'Account profile, password aur dealership ki markazi settings'
               : 'Manage credentials, security preferences, and dealership configuration'}
-          </span>
+          </p>
         </div>
 
-        <div className="settings-tabs-bar mt-3 sm:mt-0">
+        <div className="settings-tabs-bar" role="tablist">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-outline'}`}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 <Icon size={15} />
-                {tab.label}
+                <span className="settings-tab-label">{tab.label}</span>
               </button>
             );
           })}
@@ -190,15 +192,15 @@ export default function Settings() {
 
       {/* Tab 1: Profile Settings */}
       {activeTab === 'profile' && (
-        <div className="settings-card glass-panel max-w-2xl slide-in">
-          <div className="card-header border-b border-line-soft pb-3 mb-4">
+        <div className="settings-card glass-panel slide-in">
+          <div className="settings-card-header">
             <div>
               <h3>{isRomanUrdu ? 'Account Ki Maloomat' : 'User Account Profile'}</h3>
-              <span className="text-xs text-muted">View and modify your public contact details</span>
+              <span>View and modify your public contact details</span>
             </div>
           </div>
-          <form onSubmit={handleUpdateProfile} className="settings-form p-5 pt-0">
-            <div className="user-profile-badge-row flex items-center gap-4 p-4 bg-surface-2 rounded-md mb-5 border border-line-soft">
+          <form onSubmit={handleUpdateProfile} className="settings-form">
+            <div className="user-profile-badge-row">
               <div className="user-avatar avatar-lg">
                 {(user?.name || 'U').charAt(0).toUpperCase()}
               </div>
@@ -244,7 +246,7 @@ export default function Settings() {
               />
             </div>
 
-            <div className="page-form-footer border-t border-line-soft pt-4">
+            <div className="page-form-footer">
               <button type="submit" className="btn btn-primary" disabled={savingProfile}>
                 <Save size={16} />
                 {savingProfile ? (isRomanUrdu ? 'Mehfooz ho raha hai…' : 'Saving…') : (isRomanUrdu ? 'Profile Mehfooz Karein' : 'Save Profile Changes')}
@@ -256,14 +258,14 @@ export default function Settings() {
 
       {/* Tab 2: Password Change */}
       {activeTab === 'password' && (
-        <div className="settings-card glass-panel max-w-2xl slide-in">
-          <div className="card-header border-b border-line-soft pb-3 mb-4">
+        <div className="settings-card glass-panel slide-in">
+          <div className="settings-card-header">
             <div>
               <h3>{isRomanUrdu ? 'Password Tabdeel Karein' : 'Change Password'}</h3>
-              <span className="text-xs text-muted">Ensure your account uses a strong, complex password</span>
+              <span>Ensure your account uses a strong, complex password</span>
             </div>
           </div>
-          <form onSubmit={handleUpdatePassword} className="settings-form p-5 pt-0">
+          <form onSubmit={handleUpdatePassword} className="settings-form">
             <div className="form-field mb-4">
               <label>{isRomanUrdu ? 'Mojooda Password' : 'Current Password'}</label>
               <input
@@ -321,7 +323,7 @@ export default function Settings() {
               )}
             </div>
 
-            <div className="page-form-footer border-t border-line-soft pt-4">
+            <div className="page-form-footer">
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -337,26 +339,24 @@ export default function Settings() {
 
       {/* Tab 3: Platform Settings (Admin Only) */}
       {activeTab === 'platform' && isRole('Admin') && (
-        <div className="settings-card glass-panel max-w-3xl slide-in">
-          <div className="card-header border-b border-line-soft pb-3 mb-4">
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <h3>{isRomanUrdu ? 'Dealership Platform Configuration' : 'Dealership Platform Configuration'}</h3>
-                <span className="text-xs text-muted">System-wide parameters for invoicing, branches, taxes and alerts</span>
-              </div>
-              {loadingSettings ? (
-                <span className="glass-badge badge-cyan text-xs flex items-center gap-1">
-                  <span className="spinner spinner-xs" /> {isRomanUrdu ? 'Load ho raha hai…' : 'Loading…'}
-                </span>
-              ) : (
-                <span className="glass-badge badge-purple text-xs flex items-center gap-1">
-                  <ShieldCheck size={12} /> Admin Privilege
-                </span>
-              )}
+        <div className="settings-card settings-card-wide glass-panel slide-in">
+          <div className="settings-card-header">
+            <div>
+              <h3>{isRomanUrdu ? 'Dealership Platform Configuration' : 'Dealership Platform Configuration'}</h3>
+              <span>System-wide parameters for invoicing, branches, taxes and alerts</span>
             </div>
+            {loadingSettings ? (
+              <span className="glass-badge badge-cyan text-xs">
+                <span className="spinner spinner-xs" /> {isRomanUrdu ? 'Load ho raha hai…' : 'Loading…'}
+              </span>
+            ) : (
+              <span className="glass-badge badge-purple text-xs">
+                <ShieldCheck size={12} /> Admin Privilege
+              </span>
+            )}
           </div>
 
-          <form onSubmit={handleUpdatePlatformSettings} className={`settings-form p-5 pt-0 ${loadingSettings ? 'is-loading' : ''}`}>
+          <form onSubmit={handleUpdatePlatformSettings} className={`settings-form ${loadingSettings ? 'is-loading' : ''}`}>
             {/* Business Identity */}
             <div className="mb-6">
               <div className="section-title mb-3">
@@ -386,12 +386,11 @@ export default function Settings() {
                 </div>
                 <div className="form-field">
                   <label>{isRomanUrdu ? 'Rabta Phone' : 'Official Telephone'}</label>
-                  <div style={{ position: 'relative' }}>
-                    <Phone size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                  <div className="input-icon-wrap">
+                    <Phone size={14} />
                     <input
                       type="text"
                       className="form-input font-mono"
-                      style={{ paddingLeft: '32px' }}
                       value={platformSettings.contactPhone}
                       onChange={(e) => setPlatformSettings({ ...platformSettings, contactPhone: e.target.value })}
                     />
@@ -460,12 +459,11 @@ export default function Settings() {
               <div className="page-form-grid-2">
                 <div className="form-field">
                   <label>{isRomanUrdu ? 'Timezone' : 'System Timezone'}</label>
-                  <div style={{ position: 'relative' }}>
-                    <Globe size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                  <div className="input-icon-wrap">
+                    <Globe size={14} />
                     <input
                       type="text"
                       className="form-input font-mono"
-                      style={{ paddingLeft: '32px' }}
                       value={platformSettings.timezone}
                       onChange={(e) => setPlatformSettings({ ...platformSettings, timezone: e.target.value })}
                       required
@@ -485,12 +483,11 @@ export default function Settings() {
                 </div>
                 <div className="form-field">
                   <label>{isRomanUrdu ? 'Audit Log Retention (Days)' : 'Audit Log Retention (Days)'}</label>
-                  <div style={{ position: 'relative' }}>
-                    <Clock size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                  <div className="input-icon-wrap">
+                    <Clock size={14} />
                     <input
                       type="number"
                       className="form-input font-mono"
-                      style={{ paddingLeft: '32px' }}
                       value={platformSettings.logRetentionDays}
                       onChange={(e) => setPlatformSettings({ ...platformSettings, logRetentionDays: e.target.value })}
                       min="30"
@@ -501,17 +498,15 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="p-4 bg-emerald-glow rounded-md border border-ok-line mt-4 flex items-center justify-between gap-3">
-              <div className="flex items-start gap-3 text-xs text-emerald">
-                <ShieldCheck size={18} className="shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold mb-0.5">ISO Dealership Compliant</div>
-                  <div className="opacity-90">Audit logs are cryptographically sealed and retained for a guaranteed minimum of {platformSettings.logRetentionDays} days.</div>
-                </div>
+            <div className="settings-compliance-note">
+              <ShieldCheck size={18} />
+              <div>
+                <strong>ISO Dealership Compliant</strong>
+                <p>Audit logs are cryptographically sealed and retained for a guaranteed minimum of {platformSettings.logRetentionDays} days.</p>
               </div>
             </div>
 
-            <div className="page-form-footer border-t border-line-soft pt-4 mt-5">
+            <div className="page-form-footer">
               <button type="submit" className="btn btn-primary" disabled={savingSettings || loadingSettings}>
                 <Save size={16} />
                 {savingSettings ? (isRomanUrdu ? 'Settings mehfooz ho rahi hain…' : 'Saving Configuration…') : (isRomanUrdu ? 'Settings Mehfooz Karein' : 'Save Platform Settings')}

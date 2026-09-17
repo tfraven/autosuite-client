@@ -127,11 +127,17 @@ export default function Calendar({ onNavigateToSale }) {
   const month = currentDate.getMonth();
 
   const prevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+    const next = new Date(year, month - 1, 1);
+    const dim = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+    setCurrentDate(next);
+    setSelectedDay((d) => Math.min(d, dim));
   };
 
   const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+    const next = new Date(year, month + 1, 1);
+    const dim = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+    setCurrentDate(next);
+    setSelectedDay((d) => Math.min(d, dim));
   };
 
   const goToToday = () => {
@@ -262,7 +268,8 @@ export default function Calendar({ onNavigateToSale }) {
           <div className="calendar-weekdays-row">
             {dayNames.map((day) => (
               <div key={day} className="calendar-weekday-header">
-                {day}
+                <span className="wd-full">{day}</span>
+                <span className="wd-short">{day.charAt(0)}</span>
               </div>
             ))}
           </div>
@@ -300,6 +307,17 @@ export default function Calendar({ onNavigateToSale }) {
                       <span className="day-event-count">{dayEvents.length}</span>
                     )}
                   </div>
+
+                  {dayEvents.length > 0 && (
+                    <div className="day-event-dots" aria-hidden="true">
+                      {dayEvents.slice(0, 4).map((ev) => (
+                        <span
+                          key={ev.id}
+                          className={`day-event-dot ${getBadgeClass(ev.type, ev.status)}`}
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   <div className="day-events-preview">
                     {dayEvents.slice(0, 3).map((ev) => (
