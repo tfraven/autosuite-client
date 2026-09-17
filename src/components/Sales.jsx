@@ -10,29 +10,55 @@ import {
   X,
   DollarSign,
   Bike,
-  ArrowLeft
+  ArrowLeft,
+  Trash2,
+  CheckCircle2,
+  UserCheck,
+  Calculator,
+  User
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import Pagination from './Pagination';
+import FinancingCalculatorModal from './FinancingCalculatorModal';
 
 export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const { hasPermission } = useAuth();
+  const { t, isRomanUrdu } = useLanguage();
+  const toast = useToast();
+
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saleTypeFilter, setSaleTypeFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Page View States ('new-sale' | 'record-payment' | null for list view)
-  const [subView, setSubView] = useState(null);
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Modals & Sub-views
+  const [subView, setSubView] = useState(null); // 'new-sale' | 'record-payment' | null
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [activeSaleForPayment, setActiveSaleForPayment] = useState(null);
+  const [saleToDelete, setSaleToDelete] = useState(null);
+  const [isCalcOpen, setIsCalcOpen] = useState(false);
 
   // Available in-stock bikes for Chassis selection
   const [availableBikes, setAvailableBikes] = useState([]);
   const [selectedBike, setSelectedBike] = useState(null);
   const [chassisSearch, setChassisSearch] = useState('');
   const [chassisError, setChassisError] = useState('');
+
+  // Task 10: Customer Autocomplete & Autofill
+  const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [selectedExistingCustomer, setSelectedExistingCustomer] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // New Sale Form
   const initialSaleForm = {
@@ -68,15 +94,28 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const fetchSales = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = {
+        page,
+        limit
+      };
       if (saleTypeFilter) params.saleType = saleTypeFilter;
       if (paymentFilter) params.paymentType = paymentFilter;
       if (searchQuery) params.search = searchQuery;
 
-      const data = await api.getSales(params);
-      setSales(data);
+      const res = await api.getSales(params);
+      if (res.pagination) {
+        setSales(res.data || res.sales || []);
+        setTotalPages(res.pagination.totalPages || 1);
+        setTotalCount(res.pagination.total || 0);
+      } else {
+        const list = Array.isArray(res) ? res : [];
+        setSales(list);
+        setTotalCount(list.length);
+        setTotalPages(1);
+      }
     } catch (err) {
       console.error('Error fetching sales:', err);
+      toast.error('Failed to retrieve sales records');
     } finally {
       setLoading(false);
     }
@@ -85,7 +124,8 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const fetchAvailableBikes = async () => {
     try {
       const data = await api.getBikes({ status: 'IN_STOCK' });
-      setAvailableBikes(data);
+      const bikesList = Array.isArray(data) ? data : data?.bikes || data?.data || [];
+      setAvailableBikes(bikesList);
     } catch (err) {
       console.error('Error fetching in-stock bikes:', err);
     }
@@ -93,7 +133,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
 
   useEffect(() => {
     fetchSales();
-  }, [saleTypeFilter, paymentFilter, searchQuery]);
+  }, [saleTypeFilter, paymentFilter, searchQuery, page, limit]);
 
   useEffect(() => {
     if (isOpenNewSaleModal) {
@@ -107,6 +147,8 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     setChassisSearch('');
     setChassisError('');
     setSaleForm(initialSaleForm);
+    setSelectedExistingCustomer(null);
+    setCustomerSuggestions([]);
     setSaleFormError('');
     setSubView('new-sale');
   };
@@ -116,11 +158,57 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     if (onCloseNewSaleModal) onCloseNewSaleModal();
   };
 
+  // Task 10: Fast Customer Lookup & Autofill
+  const handleCustomerLookup = async (queryText) => {
+    if (!queryText || queryText.trim().length < 2) {
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    try {
+      const matches = await api.customerLookup(queryText.trim());
+      setCustomerSuggestions(matches || []);
+      setShowSuggestions((matches && matches.length > 0) || false);
+    } catch (err) {
+      console.error('Lookup failed', err);
+    }
+  };
+
+  const selectCustomer = (cust) => {
+    setSaleForm((prev) => ({
+      ...prev,
+      customerName: cust.name,
+      customerPhone: cust.phone,
+      customerCnic: cust.cnic || '',
+      customerAddress: cust.address || '',
+      customerType: cust.customerType || 'RETAIL'
+    }));
+    setSelectedExistingCustomer(cust);
+    setShowSuggestions(false);
+    toast.info(
+      isRomanUrdu
+        ? `Kharidar ${cust.name} ka record mil gaya! Details auto-fill ho gayi hain.`
+        : `Customer ${cust.name} found! Profile auto-filled.`
+    );
+  };
+
+  const clearSelectedCustomer = () => {
+    setSelectedExistingCustomer(null);
+    setSaleForm((prev) => ({
+      ...prev,
+      customerName: '',
+      customerPhone: '',
+      customerCnic: '',
+      customerAddress: '',
+      customerType: 'RETAIL'
+    }));
+  };
+
   const handleChassisSelect = (bikeId) => {
-    const bike = availableBikes.find(b => b.id === bikeId);
+    const bike = availableBikes.find((b) => b.id === bikeId);
     if (bike) {
       setSelectedBike(bike);
-      setSaleForm(prev => ({
+      setSaleForm((prev) => ({
         ...prev,
         salePrice: bike.retailPrice,
         initialDeposit: prev.paymentType === 'CASH' ? bike.retailPrice : Math.round(bike.retailPrice * 0.3)
@@ -135,7 +223,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
       setChassisError('');
       const bike = await api.searchChassis(chassisSearch.trim());
       setSelectedBike(bike);
-      setSaleForm(prev => ({
+      setSaleForm((prev) => ({
         ...prev,
         salePrice: bike.retailPrice,
         initialDeposit: prev.paymentType === 'CASH' ? bike.retailPrice : Math.round(bike.retailPrice * 0.3)
@@ -166,6 +254,11 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
       };
 
       const newSale = await api.createSale(payload);
+      toast.success(
+        isRomanUrdu
+          ? `Invoice ${newSale.invoiceNumber} kamyabi se issue ho gayi!`
+          : `Invoice ${newSale.invoiceNumber} issued successfully!`
+      );
       setSubView(null);
       if (onCloseNewSaleModal) onCloseNewSaleModal();
       fetchSales();
@@ -197,12 +290,17 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     if (!activeSaleForPayment) return;
     try {
       const updated = await api.recordPayment(activeSaleForPayment.id, paymentFormData);
+      toast.success(
+        isRomanUrdu
+          ? `PKR ${paymentFormData.amount} ki adaigi mehfooz ho gayi`
+          : `Payment of PKR ${paymentFormData.amount} recorded successfully`
+      );
       setSubView(null);
       setActiveSaleForPayment(null);
       fetchSales();
       setSelectedInvoice(updated);
     } catch (err) {
-      alert(err.message || 'Failed to record payment');
+      toast.error(err.message || 'Failed to record payment');
     }
   };
 
@@ -227,8 +325,10 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
               <ArrowLeft size={16} /> Back to sales
             </button>
             <div className="page-form-title-group">
-              <h2 className="page-form-title">New sale</h2>
-              <div className="page-form-subtitle">Select the motorcycle, enter the buyer's details and set the payment plan</div>
+              <h2 className="page-form-title">{isRomanUrdu ? 'Nayi Sale Darj Karein' : 'New sale'}</h2>
+              <div className="page-form-subtitle">
+                Select the motorcycle, enter buyer's details, or auto-fetch existing customer records
+              </div>
             </div>
           </div>
 
@@ -238,7 +338,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
             <div className="page-form-grid-2">
               {/* Step 1: Chassis Selection */}
               <div className="page-form-card">
-                <div className="page-form-card-title">Motorcycle</div>
+                <div className="page-form-card-title">Motorcycle Selection</div>
 
                 <div className="chassis-lookup-card">
                   <label>Choose from in-stock motorcycles</label>
@@ -250,7 +350,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     <option value="">Select a motorcycle</option>
                     {availableBikes.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {b.modelName} — {b.chassisNumber} — {b.color} ({b.retailPrice})
+                        {b.modelName} — Chassis: {b.chassisNumber} — {b.color} (PKR {b.retailPrice.toLocaleString()})
                       </option>
                     ))}
                   </select>
@@ -260,97 +360,125 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                   <div className="chassis-search-row">
                     <input
                       type="text"
-                      placeholder="Scan or type chassis number"
+                      placeholder="e.g. CD70-2026-94812"
                       value={chassisSearch}
                       onChange={(e) => setChassisSearch(e.target.value)}
                       className="form-input font-mono"
                     />
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={handleChassisLookup}
-                    >
-                      Verify
+                    <button type="button" className="btn btn-secondary" onClick={handleChassisLookup}>
+                      Search
                     </button>
                   </div>
-                  {chassisError && <div className="text-rose text-xs mt-1">{chassisError}</div>}
-                </div>
 
-                {selectedBike && (
-                  <div className="selected-bike-badge glass-panel mt-3">
-                    <div className="badge-header">
-                      <Bike size={18} className="text-cyan" />
-                      <strong>{selectedBike.modelName} ({selectedBike.modelYear})</strong>
-                      <span className="badge-cyan glass-badge">{selectedBike.type}</span>
+                  {chassisError && <div className="error-text text-xs text-rose mt-1">{chassisError}</div>}
+
+                  {selectedBike && (
+                    <div className="selected-bike-preview glass-panel mt-3 p-3 rounded-md border border-line-soft">
+                      <div className="flex items-center gap-2 text-cyan font-bold">
+                        <Bike size={18} />
+                        {selectedBike.modelName} ({selectedBike.modelYear})
+                      </div>
+                      <div className="text-xs text-muted mt-1 font-mono">
+                        Chassis: {selectedBike.chassisNumber} | Engine: {selectedBike.engineNumber} | Color: {selectedBike.color}
+                      </div>
+                      <div className="mt-2 text-sm font-bold text-emerald">
+                        Standard Price: {formatPKR(selectedBike.retailPrice)}
+                      </div>
                     </div>
-                    <div className="badge-specs-grid">
-                      <div><span>Chassis:</span> <strong className="font-mono">{selectedBike.chassisNumber}</strong></div>
-                      <div><span>Engine:</span> <strong className="font-mono">{selectedBike.engineNumber}</strong></div>
-                      <div><span>Color:</span> <strong>{selectedBike.color}</strong></div>
-                      <div><span>Retail price:</span> <strong className="text-emerald">{formatPKR(selectedBike.retailPrice)}</strong></div>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              {/* Buyer information */}
-              <div className="page-form-card">
-                <div className="page-form-card-title">Buyer</div>
-
-                <div className="form-group-row">
-                  <div className="form-field">
-                    <label>Sale channel</label>
-                    <select
-                      value={saleForm.saleType}
-                      onChange={(e) => setSaleForm({ ...saleForm, saleType: e.target.value })}
-                      className="form-input"
-                    >
-                      <option value="B2C">Retail</option>
-                      <option value="B2B">Wholesale</option>
-                    </select>
-                  </div>
-
-                  <div className="form-field">
-                    <label>Customer type</label>
-                    <select
-                      value={saleForm.customerType}
-                      onChange={(e) => setSaleForm({ ...saleForm, customerType: e.target.value })}
-                      className="form-input"
-                    >
-                      <option value="RETAIL">Individual</option>
-                      <option value="DEALER">Sub-dealer</option>
-                      <option value="WORKSHOP">Fleet or workshop</option>
-                    </select>
-                  </div>
+              {/* Step 2: Buyer Details (Task 10: Auto-fill) */}
+              <div className="page-form-card relative">
+                <div className="page-form-card-title flex items-center justify-between">
+                  <span>Buyer Information</span>
+                  {selectedExistingCustomer ? (
+                    <span className="glass-badge badge-emerald text-xs flex items-center gap-1">
+                      <UserCheck size={12} /> Existing Profile Loaded
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted">Auto-searches previous records</span>
+                  )}
                 </div>
 
-                <div className="form-field">
-                  <label>Customer or business name</label>
-                  <input
-                    type="text"
-                    placeholder="Full legal name or business name"
-                    value={saleForm.customerName}
-                    onChange={(e) => setSaleForm({ ...saleForm, customerName: e.target.value })}
-                    required
-                    className="form-input"
-                  />
-                </div>
+                {selectedExistingCustomer && (
+                  <div className="existing-customer-alert p-2 mb-3 bg-ok-soft rounded border border-ok-line flex items-center justify-between">
+                    <div className="text-xs text-ink-1">
+                      <strong>Customer Found:</strong> {selectedExistingCustomer.name} · {selectedExistingCustomer.totalPurchases} prior purchases · Balance: {formatPKR(selectedExistingCustomer.remainingBalance)}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-xs"
+                      onClick={clearSelectedCustomer}
+                    >
+                      Clear / New
+                    </button>
+                  </div>
+                )}
 
-                <div className="form-group-row">
-                  <div className="form-field">
-                    <label>Phone</label>
+                <div className="form-group-row mb-3">
+                  <div className="form-field relative">
+                    <label>{isRomanUrdu ? 'Rabta Phone Number' : 'Phone Number'}</label>
                     <input
                       type="text"
                       placeholder="e.g. 0300-1234567"
                       value={saleForm.customerPhone}
-                      onChange={(e) => setSaleForm({ ...saleForm, customerPhone: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSaleForm({ ...saleForm, customerPhone: val });
+                        handleCustomerLookup(val);
+                      }}
+                      required
+                      className="form-input font-mono"
+                    />
+
+                    {/* Autocomplete dropdown */}
+                    {showSuggestions && customerSuggestions.length > 0 && (
+                      <div className="customer-autocomplete-dropdown glass-panel">
+                        <div className="text-xs text-muted px-3 py-1 bg-surface-2 border-b border-line-soft">
+                          Matching Previous Buyers (Click to auto-fill)
+                        </div>
+                        {customerSuggestions.map((cust, idx) => (
+                          <div
+                            key={idx}
+                            className="autocomplete-item p-2 hover:bg-surface-3 cursor-pointer border-b border-line-soft"
+                            onClick={() => selectCustomer(cust)}
+                          >
+                            <div className="flex items-center justify-between text-xs font-semibold">
+                              <span>{cust.name}</span>
+                              <span className="font-mono text-cyan">{cust.phone}</span>
+                            </div>
+                            <div className="text-xs text-muted mt-1 flex justify-between">
+                              <span>CNIC: {cust.cnic || '-'}</span>
+                              <span>Purchases: {cust.totalPurchases}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-field relative">
+                    <label>{isRomanUrdu ? 'Kharidar Ka Naam' : 'Customer Name'}</label>
+                    <input
+                      type="text"
+                      placeholder="Full legal name"
+                      value={saleForm.customerName}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSaleForm({ ...saleForm, customerName: val });
+                        handleCustomerLookup(val);
+                      }}
                       required
                       className="form-input"
                     />
                   </div>
+                </div>
 
+                <div className="form-group-row mb-3">
                   <div className="form-field">
-                    <label>CNIC</label>
+                    <label>{isRomanUrdu ? 'Shanakhti Card (CNIC)' : 'CNIC / National ID'}</label>
                     <input
                       type="text"
                       placeholder="XXXXX-XXXXXXX-X"
@@ -359,10 +487,23 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                       className="form-input font-mono"
                     />
                   </div>
+
+                  <div className="form-field">
+                    <label>Customer Category</label>
+                    <select
+                      value={saleForm.customerType}
+                      onChange={(e) => setSaleForm({ ...saleForm, customerType: e.target.value })}
+                      className="form-input"
+                    >
+                      <option value="RETAIL">Retail Individual</option>
+                      <option value="DEALER">Sub-dealer (B2B)</option>
+                      <option value="WORKSHOP">Fleet or Workshop</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="form-field">
-                  <label>Address</label>
+                  <label>Residential / Business Address</label>
                   <input
                     type="text"
                     placeholder="Street address, city"
@@ -374,263 +515,141 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
               </div>
             </div>
 
-            <div className="page-form-grid-2">
-              {/* Pricing */}
+            {/* Pricing & Financing */}
+            <div className="page-form-grid-2 mt-4">
               <div className="page-form-card">
-                <div className="page-form-card-title">Price</div>
-
-                <div className="pricing-box glass-panel mb-3">
-                  <div className="form-field">
-                    <label>Selling price (PKR)</label>
+                <div className="page-form-card-title">Commercial Terms</div>
+                <div className="pricing-box glass-panel p-3 rounded-md">
+                  <div className="form-field mb-3">
+                    <label>Selling Price (PKR)</label>
                     <input
                       type="number"
                       value={saleForm.salePrice}
                       onChange={(e) => setSaleForm({ ...saleForm, salePrice: e.target.value })}
                       required
-                      className="form-input text-lg font-bold"
+                      className="form-input text-lg font-bold font-mono"
                     />
                   </div>
 
-                  <div className="form-group-row">
+                  <div className="form-group-row mb-3">
                     <div className="form-field">
                       <label>Discount (PKR)</label>
                       <input
                         type="number"
                         value={saleForm.discount}
                         onChange={(e) => setSaleForm({ ...saleForm, discount: e.target.value })}
-                        className="form-input"
+                        className="form-input font-mono"
                       />
                     </div>
-
                     <div className="form-field">
-                      <label>Tax and registration fee (PKR)</label>
+                      <label>Tax & Reg Fee (PKR)</label>
                       <input
                         type="number"
                         value={saleForm.tax}
                         onChange={(e) => setSaleForm({ ...saleForm, tax: e.target.value })}
-                        className="form-input"
+                        className="form-input font-mono"
                       />
                     </div>
                   </div>
 
-                  <div className="final-calc-row">
-                    <span>Total due</span>
-                    <strong className="text-cyan text-xl font-bold font-mono">{formatPKR(finalAmount)}</strong>
+                  <div className="final-calc-row p-3 bg-surface-2 rounded-md flex items-center justify-between">
+                    <span className="font-semibold">Total Amount Due</span>
+                    <strong className="text-cyan text-xl font-mono">{formatPKR(finalAmount)}</strong>
                   </div>
                 </div>
               </div>
 
-              {/* Payment */}
               <div className="page-form-card">
-                <div className="page-form-card-title">Payment</div>
+                <div className="page-form-card-title flex items-center justify-between">
+                  <span>Payment Plan</span>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-xs flex items-center gap-1"
+                    onClick={() => setIsCalcOpen(true)}
+                  >
+                    <Calculator size={13} /> Financing Calculator
+                  </button>
+                </div>
 
-                <div className="form-field">
-                  <label>Payment method</label>
+                <div className="form-field mb-3">
+                  <label>Payment Method</label>
                   <select
                     value={saleForm.paymentType}
                     onChange={(e) => {
                       const mode = e.target.value;
-                      setSaleForm(prev => ({
+                      setSaleForm((prev) => ({
                         ...prev,
                         paymentType: mode,
-                        initialDeposit: mode === 'CASH' ? prev.salePrice : Math.round(prev.salePrice * 0.3)
+                        initialDeposit: mode === 'CASH' ? prev.salePrice : Math.round(Number(prev.salePrice || 0) * 0.3)
                       }));
                     }}
                     className="form-input"
                   >
-                    <option value="CASH">Cash, paid in full</option>
-                    <option value="BANK_TRANSFER">Bank transfer</option>
-                    <option value="CHEQUE">Cheque</option>
-                    <option value="CREDIT_INSTALLMENT">Installments</option>
+                    <option value="CASH">Cash (Paid in Full)</option>
+                    <option value="BANK_TRANSFER">Bank Transfer / Pay Order</option>
+                    <option value="CHEQUE">Bank Cheque</option>
+                    <option value="CREDIT_INSTALLMENT">Installments (Financed)</option>
                   </select>
                 </div>
 
-                <div className="form-group-row">
+                <div className="form-group-row mb-3">
                   <div className="form-field">
-                    <label>Deposit received (PKR)</label>
+                    <label>Initial Deposit (PKR)</label>
                     <input
                       type="number"
                       value={saleForm.initialDeposit}
                       onChange={(e) => setSaleForm({ ...saleForm, initialDeposit: e.target.value })}
-                      required
-                      className="form-input"
+                      className="form-input font-mono"
                     />
                   </div>
-
                   <div className="form-field">
-                    <label>Balance remaining</label>
-                    <div className="read-only-field font-bold text-rose">
-                      {formatPKR(remainingDue)}
-                    </div>
+                    <label>Payment Reference</label>
+                    <input
+                      type="text"
+                      placeholder="Receipt/Slip #"
+                      value={saleForm.paymentReference}
+                      onChange={(e) => setSaleForm({ ...saleForm, paymentReference: e.target.value })}
+                      className="form-input font-mono"
+                    />
                   </div>
                 </div>
 
                 {saleForm.paymentType === 'CREDIT_INSTALLMENT' && (
-                  <div className="installment-settings-box glass-panel mt-3">
-                    <div className="installment-box-header">
-                      <Calendar size={16} />
-                      <span>Installment schedule</span>
-                    </div>
-
+                  <div className="installments-config-box p-3 bg-surface-2 rounded-md border border-line-soft">
                     <div className="form-group-row">
                       <div className="form-field">
-                        <label>Term</label>
-                        <select
+                        <label>Tenure (Months)</label>
+                        <input
+                          type="number"
                           value={saleForm.installmentsCount}
-                          onChange={(e) => setSaleForm({ ...saleForm, installmentsCount: Number(e.target.value) })}
-                          className="form-input"
-                        >
-                          <option value={3}>3 months</option>
-                          <option value={6}>6 months</option>
-                          <option value={12}>12 months</option>
-                          <option value={18}>18 months</option>
-                          <option value={24}>24 months</option>
-                        </select>
+                          onChange={(e) => setSaleForm({ ...saleForm, installmentsCount: e.target.value })}
+                          min="1"
+                          max="36"
+                          className="form-input font-mono"
+                        />
                       </div>
-
                       <div className="form-field">
-                        <label>First due date</label>
+                        <label>First Due Date</label>
                         <input
                           type="date"
                           value={saleForm.firstInstallmentDueDate}
                           onChange={(e) => setSaleForm({ ...saleForm, firstInstallmentDueDate: e.target.value })}
-                          className="form-input"
+                          className="form-input font-mono"
                         />
                       </div>
-                    </div>
-
-                    <div className="installment-calc-preview">
-                      <span>Estimated monthly installment</span>
-                      <strong className="text-amber font-mono font-bold">
-                        {formatPKR(Math.ceil(remainingDue / (saleForm.installmentsCount || 1)))} / mo
-                      </strong>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="page-form-footer">
+            <div className="page-form-footer mt-4 flex items-center justify-end gap-3">
               <button type="button" className="btn btn-secondary" onClick={closeNewSaleModal}>
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary">
-                <Receipt size={16} /> Complete sale
+                <Receipt size={16} /> Complete & Issue Invoice
               </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  if (subView === 'record-payment' && activeSaleForPayment) {
-    return (
-      <div className="sales-view">
-        <div className="page-form-view">
-          <div className="page-form-header">
-            <button className="page-form-back-btn" onClick={closePaymentModal}>
-              <ArrowLeft size={16} /> Back to sales
-            </button>
-            <div className="page-form-title-group">
-              <h2 className="page-form-title">Record payment</h2>
-              <div className="page-form-subtitle">Cash, bank transfer or cheque against invoice {activeSaleForPayment.invoiceNumber}</div>
-            </div>
-          </div>
-
-          <form onSubmit={handleRecordPayment} className="page-form-container narrow">
-            <div className="page-form-card">
-              <div className="page-form-card-title">Payment details</div>
-
-              <div className="payment-target-info mb-2">
-                <div><strong>Customer:</strong> {activeSaleForPayment.customerName} ({activeSaleForPayment.customerPhone})</div>
-                <div><strong>Invoice:</strong> <span className="font-mono text-cyan">{activeSaleForPayment.invoiceNumber}</span></div>
-                <div><strong>Balance:</strong> <span className="text-rose font-bold">{formatPKR(activeSaleForPayment.remainingBalance)}</span></div>
-              </div>
-
-              {activeSaleForPayment.installments && activeSaleForPayment.installments.length > 0 && (
-                <div className="form-field">
-                  <label>Apply to installment</label>
-                  <select
-                    value={paymentFormData.installmentId}
-                    onChange={(e) => {
-                      const inst = activeSaleForPayment.installments.find(i => i.id === e.target.value);
-                      setPaymentFormData({
-                        ...paymentFormData,
-                        installmentId: e.target.value,
-                        amount: inst ? (inst.amount - inst.paidAmount) : activeSaleForPayment.remainingBalance
-                      });
-                    }}
-                    className="form-input"
-                  >
-                    <option value="">Oldest due installment</option>
-                    {activeSaleForPayment.installments
-                      .filter(i => i.status !== 'PAID')
-                      .map((inst) => (
-                        <option key={inst.id} value={inst.id}>
-                          Installment {inst.installmentNumber} — due {new Date(inst.dueDate).toLocaleDateString()} ({inst.amount - inst.paidAmount})
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="form-group-row">
-                <div className="form-field">
-                  <label>Amount received (PKR)</label>
-                  <input
-                    type="number"
-                    value={paymentFormData.amount}
-                    onChange={(e) => setPaymentFormData({ ...paymentFormData, amount: e.target.value })}
-                    required
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label>Method</label>
-                  <select
-                    value={paymentFormData.paymentMethod}
-                    onChange={(e) => setPaymentFormData({ ...paymentFormData, paymentMethod: e.target.value })}
-                    className="form-input"
-                  >
-                    <option value="CASH">Cash</option>
-                    <option value="BANK_TRANSFER">Bank transfer</option>
-                    <option value="CHEQUE">Cheque</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-field">
-                <label>Reference or cheque number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. TR-982103 or cheque #44921"
-                  value={paymentFormData.referenceNumber}
-                  onChange={(e) => setPaymentFormData({ ...paymentFormData, referenceNumber: e.target.value })}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-field">
-                <label>Notes</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Collected at the counter"
-                  value={paymentFormData.notes}
-                  onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}
-                  className="form-input"
-                />
-              </div>
-
-              <div className="page-form-footer">
-                <button type="button" className="btn btn-secondary" onClick={closePaymentModal}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  <CreditCard size={16} /> Record payment
-                </button>
-              </div>
             </div>
           </form>
         </div>
@@ -641,12 +660,12 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   return (
     <div className="sales-view">
       {/* Control Bar */}
-      <div className="control-bar glass-panel no-print">
+      <div className="control-bar glass-panel no-print mb-4">
         <div className="filter-group">
           <select
             className="filter-select"
             value={saleTypeFilter}
-            onChange={(e) => setSaleTypeFilter(e.target.value)}
+            onChange={(e) => { setSaleTypeFilter(e.target.value); setPage(1); }}
           >
             <option value="">All channels</option>
             <option value="B2C">Retail</option>
@@ -656,9 +675,9 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
           <select
             className="filter-select"
             value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
+            onChange={(e) => { setPaymentFilter(e.target.value); setPage(1); }}
           >
-            <option value="">All payment methods</option>
+            <option value="">All payment modes</option>
             <option value="CASH">Cash</option>
             <option value="BANK_TRANSFER">Bank transfer</option>
             <option value="CHEQUE">Cheque</option>
@@ -671,12 +690,20 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
             <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search invoice, customer or chassis"
+              placeholder="Search invoice, customer or chassis…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
               className="search-input"
             />
           </div>
+
+          <button
+            className="btn btn-outline"
+            onClick={() => setIsCalcOpen(true)}
+            title="Open Financing Calculator"
+          >
+            <Calculator size={15} /> Calculator
+          </button>
 
           {hasPermission('EXPORT_EXCEL') && (
             <button
@@ -689,7 +716,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
 
           {hasPermission('CREATE_SALE') && (
             <button className="btn btn-primary" onClick={openNewSaleModal}>
-              <Plus size={16} /> New sale
+              <Plus size={16} /> {isRomanUrdu ? 'Nayi Sale' : 'New sale'}
             </button>
           )}
         </div>
@@ -704,8 +731,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                 <th>Invoice</th>
                 <th>Customer</th>
                 <th>Motorcycle</th>
-                <th>Amount</th>
-                <th>Payment</th>
+                <th>Total</th>
                 <th>Balance</th>
                 <th>Status</th>
                 <th className="text-right">Actions</th>
@@ -714,8 +740,8 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="loading-cell">
-                    <div className="spinner"></div> Loading sales
+                  <td colSpan="7" className="loading-cell">
+                    <div className="spinner"></div> Loading sales records…
                   </td>
                 </tr>
               ) : sales.length > 0 ? (
@@ -747,49 +773,49 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                       </div>
                     </td>
                     <td>
-                      <div className="font-bold text-main">{formatPKR(sale.finalAmount)}</div>
-                      {sale.discount > 0 && (
-                        <span className="text-rose text-xs font-mono">-{formatPKR(sale.discount)} discount</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`glass-badge ${sale.paymentType === 'CASH' ? 'badge-emerald' :
-                          sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-cyan'
-                        }`}>
-                        {sale.paymentType.replace('_', ' ').toLowerCase()}
-                      </span>
+                      <div className="font-bold font-mono">{formatPKR(sale.finalAmount)}</div>
+                      <span className="text-xs text-muted">{sale.paymentType.replace('_', ' ')}</span>
                     </td>
                     <td>
                       {sale.remainingBalance > 0 ? (
-                        <div className="credit-cell">
-                          <span className="font-bold text-rose">{formatPKR(sale.remainingBalance)}</span>
-                          <span className="text-muted text-xs">In installments</span>
+                        <div>
+                          <span className="font-bold text-rose font-mono">{formatPKR(sale.remainingBalance)}</span>
+                          <span className="text-muted text-xs block">Installment Due</span>
                         </div>
                       ) : (
-                        <span className="glass-badge badge-emerald">Paid in full</span>
+                        <span className="glass-badge badge-emerald">Settled</span>
                       )}
                     </td>
                     <td>
                       <span className={`glass-badge ${sale.status === 'COMPLETED' ? 'badge-emerald' : 'badge-amber'}`}>
-                        {sale.status === 'COMPLETED' ? 'Completed' : 'Pending'}
+                        {sale.status}
                       </span>
                     </td>
                     <td className="text-right">
-                      <div className="table-actions">
+                      <div className="table-actions flex items-center justify-end gap-1">
                         <button
                           className="btn-action-icon"
                           onClick={() => setSelectedInvoice(sale)}
-                          title="View invoice"
+                          title="View & Print Invoice / Gate Pass"
                         >
                           <Printer size={15} />
                         </button>
                         {sale.remainingBalance > 0 && hasPermission('CREATE_SALE') && (
                           <button
-                            className="btn btn-sm btn-outline"
+                            className="btn btn-xs btn-outline"
                             onClick={() => openPaymentModal(sale)}
-                            title="Record payment"
+                            title="Collect Payment"
                           >
                             <DollarSign size={13} /> Collect
+                          </button>
+                        )}
+                        {hasPermission('CREATE_SALE') && (
+                          <button
+                            className="btn-action-icon text-rose"
+                            onClick={() => setSaleToDelete(sale)}
+                            title="Cancel & Soft Delete Sale"
+                          >
+                            <Trash2 size={15} />
                           </button>
                         )}
                       </div>
@@ -798,23 +824,71 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="empty-placeholder">No sales match the current filters.</td>
+                  <td colSpan="7" className="empty-placeholder">
+                    No sales records match current filters.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Server-Side Pagination */}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalCount}
+          itemsPerPage={limit}
+          onPageChange={(p) => setPage(p)}
+          onLimitChange={(l) => {
+            setLimit(l);
+            setPage(1);
+          }}
+        />
       </div>
 
-      {/* Invoice & Printable Receipt Modal */}
+      {/* GitHub-Style Soft Delete Confirmation Modal (Task 13) */}
+      <ConfirmDeleteModal
+        isOpen={!!saleToDelete}
+        onClose={() => setSaleToDelete(null)}
+        title="Cancel & Delete Sale Transaction"
+        itemName="Sale Invoice"
+        targetValue={saleToDelete?.invoiceNumber || ''}
+        promptLabel="Type invoice number to confirm soft deletion and return motorcycle to stock:"
+        onConfirm={async () => {
+          if (!saleToDelete) return;
+          await api.deleteSale(saleToDelete.id);
+          toast.success(`Sale ${saleToDelete.invoiceNumber} cancelled. Motorcycle returned to inventory.`);
+          fetchSales();
+        }}
+      />
+
+      {/* Financing Calculator Modal */}
+      <FinancingCalculatorModal
+        isOpen={isCalcOpen}
+        onClose={() => setIsCalcOpen(false)}
+        initialPrice={185000}
+        onApplyPlan={(plan) => {
+          openNewSaleModal();
+          setSaleForm((prev) => ({
+            ...prev,
+            paymentType: 'CREDIT_INSTALLMENT',
+            salePrice: plan.bikePrice,
+            initialDeposit: plan.downPayment,
+            installmentsCount: plan.tenureMonths
+          }));
+        }}
+      />
+
+      {/* Invoice & Gate Pass Modal */}
       {selectedInvoice && (
         <div className="modal-backdrop">
           <div className="modal-content glass-panel modal-lg invoice-modal-content">
             <div className="modal-header no-print">
-              <h3>Invoice</h3>
-              <div className="header-actions">
+              <h3>Official Dealership Invoice & Gate Pass</h3>
+              <div className="header-actions flex items-center gap-2">
                 <button className="btn btn-primary" onClick={() => window.print()}>
-                  <Printer size={16} /> Print
+                  <Printer size={16} /> Print Document
                 </button>
                 <button className="close-btn" onClick={() => setSelectedInvoice(null)}>
                   <X size={20} />
@@ -826,12 +900,12 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
             <div className="printable-document invoice-sheet">
               <div className="invoice-header">
                 <div className="dealership-info">
-                  <h2>AutoSuite Motorcycles</h2>
-                  <p>Authorized sales, service and spare parts dealership — Atlas Honda</p>
-                  <p className="text-xs">Main Showroom Boulevard, Lahore · 042-35990000 · NTN 4829103-8</p>
+                  <h2>Falcon Honda Motors</h2>
+                  <p>Authorized Sales, Service & Spare Parts Dealership · Atlas Honda OEM</p>
+                  <p className="text-xs">Main Showroom Boulevard, Lahore · Phone: 042-35990000 · NTN: 4829103-8</p>
                 </div>
                 <div className="invoice-badge">
-                  <div className="inv-title">Sales invoice</div>
+                  <div className="inv-title">SALES INVOICE & GATE PASS</div>
                   <div className="inv-num font-mono">{selectedInvoice.invoiceNumber}</div>
                   <div className="inv-date">{new Date(selectedInvoice.saleDate).toLocaleDateString('en-GB')}</div>
                 </div>
@@ -841,20 +915,20 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
 
               <div className="invoice-grid-2">
                 <div className="info-block">
-                  <div className="info-block-title">Buyer</div>
+                  <div className="info-block-title">BUYER / CUSTOMER PROFILE</div>
                   <div><strong>Name:</strong> {selectedInvoice.customerName}</div>
                   <div><strong>Phone:</strong> {selectedInvoice.customerPhone}</div>
                   {selectedInvoice.customerCnic && <div><strong>CNIC:</strong> {selectedInvoice.customerCnic}</div>}
                   {selectedInvoice.customerAddress && <div><strong>Address:</strong> {selectedInvoice.customerAddress}</div>}
-                  <div><strong>Channel:</strong> {selectedInvoice.customerType}</div>
+                  <div><strong>Customer Type:</strong> {selectedInvoice.customerType}</div>
                 </div>
 
                 <div className="info-block">
-                  <div className="info-block-title">Vehicle</div>
-                  <div><strong>Model:</strong> {selectedInvoice.bike?.modelName}</div>
-                  <div><strong>Color:</strong> {selectedInvoice.bike?.color} ({selectedInvoice.bike?.modelYear})</div>
+                  <div className="info-block-title">MOTORCYCLE SPECIFICATION</div>
+                  <div><strong>Model:</strong> {selectedInvoice.bike?.modelName} ({selectedInvoice.bike?.modelYear})</div>
+                  <div><strong>Color:</strong> {selectedInvoice.bike?.color}</div>
                   <div><strong>Chassis No:</strong> <span className="font-mono font-bold">{selectedInvoice.bike?.chassisNumber}</span></div>
-                  <div><strong>Engine No:</strong> <span className="font-mono">{selectedInvoice.bike?.engineNumber}</span></div>
+                  <div><strong>Engine No:</strong> <span className="font-mono font-bold">{selectedInvoice.bike?.engineNumber}</span></div>
                 </div>
               </div>
 
@@ -864,7 +938,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     <tr>
                       <th>Description</th>
                       <th>Type</th>
-                      <th>Chassis number</th>
+                      <th>Chassis Number</th>
                       <th className="text-right">Amount (PKR)</th>
                     </tr>
                   </thead>
@@ -877,50 +951,48 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     </tr>
                     {selectedInvoice.discount > 0 && (
                       <tr>
-                        <td colSpan="3" className="text-right">Discount:</td>
+                        <td colSpan="3" className="text-right">Special Discount:</td>
                         <td className="text-right text-rose font-bold">-{formatPKR(selectedInvoice.discount)}</td>
                       </tr>
                     )}
                     <tr className="total-row">
-                      <td colSpan="3" className="text-right font-bold">Total:</td>
+                      <td colSpan="3" className="text-right font-bold">Total Invoice Amount:</td>
                       <td className="text-right font-bold text-cyan">{formatPKR(selectedInvoice.finalAmount)}</td>
                     </tr>
                     <tr>
-                      <td colSpan="3" className="text-right">Paid ({selectedInvoice.paymentType.replace('_', ' ').toLowerCase()}):</td>
+                      <td colSpan="3" className="text-right">Deposit Received ({selectedInvoice.paymentType}):</td>
                       <td className="text-right text-emerald font-bold">{formatPKR(selectedInvoice.initialDeposit)}</td>
                     </tr>
                     <tr className="balance-row">
-                      <td colSpan="3" className="text-right font-bold">Balance:</td>
+                      <td colSpan="3" className="text-right font-bold">Balance Receivable:</td>
                       <td className="text-right font-bold text-rose">{formatPKR(selectedInvoice.remainingBalance)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* Installments Table if credit */}
+              {/* Installments Table */}
               {selectedInvoice.installments && selectedInvoice.installments.length > 0 && (
                 <div className="installments-doc-section mt-4">
-                  <div className="info-block-title">Installment schedule</div>
+                  <div className="info-block-title">OFFICIAL INSTALLMENT PAYMENT SCHEDULE</div>
                   <table className="doc-table">
                     <thead>
                       <tr>
-                        <th>#</th>
-                        <th>Due date</th>
-                        <th>Amount</th>
-                        <th>Paid</th>
+                        <th>Inst #</th>
+                        <th>Due Date</th>
+                        <th>Scheduled (PKR)</th>
+                        <th>Paid (PKR)</th>
                         <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedInvoice.installments.map((inst) => (
                         <tr key={inst.id}>
-                          <td>{inst.installmentNumber}</td>
+                          <td>#{inst.installmentNumber}</td>
                           <td>{new Date(inst.dueDate).toLocaleDateString('en-GB')}</td>
                           <td>{formatPKR(inst.amount)}</td>
                           <td>{formatPKR(inst.paidAmount)}</td>
-                          <td className="font-bold">
-                            {inst.status === 'PAID' ? 'Paid' : 'Pending'}
-                          </td>
+                          <td className="font-bold">{inst.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -931,16 +1003,16 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
               <div className="invoice-signatures mt-6">
                 <div className="sig-block">
                   <div className="sig-line"></div>
-                  <div>Customer signature</div>
+                  <div>Buyer Acknowledgment</div>
                 </div>
                 <div className="seal-round">
-                  <span>AutoSuite</span>
-                  <span>Official seal</span>
-                  <span>Lahore</span>
+                  <span>Falcon Honda</span>
+                  <span>Gate Pass Stamp</span>
+                  <span>Security Checked</span>
                 </div>
                 <div className="sig-block">
                   <div className="sig-line"></div>
-                  <div>Authorized dealership officer</div>
+                  <div>Showroom Manager Signature</div>
                 </div>
               </div>
             </div>

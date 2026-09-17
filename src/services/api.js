@@ -1,4 +1,4 @@
-const API_BASE = 'https://autosuite-server.vercel.app/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('autosuite_token');
@@ -11,13 +11,25 @@ function getAuthHeaders() {
 async function handleResponse(response) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(errorData.error || `HTTP error ${response.status}`);
+    const errMessage = errorData.error || errorData.message || `HTTP error ${response.status}`;
+
+    // Handle token expiry or unauthorized
+    if (response.status === 401 && !response.url.includes('/auth/login')) {
+      localStorage.removeItem('autosuite_token');
+      localStorage.removeItem('autosuite_user');
+      window.dispatchEvent(new Event('autosuite_unauthorized'));
+    }
+
+    const error = new Error(errMessage);
+    error.status = response.status;
+    error.details = errorData.details;
+    throw error;
   }
   return response.json();
 }
 
 export const api = {
-  // Auth
+  // Auth & Account
   login: (username, password) =>
     fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
@@ -30,7 +42,40 @@ export const api = {
       headers: getAuthHeaders()
     }).then(handleResponse),
 
-  // Bikes
+  changePassword: (passwordData) =>
+    fetch(`${API_BASE}/auth/change-password`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(passwordData)
+    }).then(handleResponse),
+
+  updateProfile: (profileData) =>
+    fetch(`${API_BASE}/auth/profile`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(profileData)
+    }).then(handleResponse),
+
+  // Platform Settings
+  getSettings: () =>
+    fetch(`${API_BASE}/settings`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  updateSettings: (settingsData) =>
+    fetch(`${API_BASE}/settings`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(settingsData)
+    }).then(handleResponse),
+
+  // System Health
+  getHealth: () =>
+    fetch(`${API_BASE}/health`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  // Bikes (Inventory)
   getBikes: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return fetch(`${API_BASE}/bikes${query ? `?${query}` : ''}`, {
@@ -68,6 +113,12 @@ export const api = {
       headers: getAuthHeaders()
     }).then(handleResponse),
 
+  restoreBike: (id) =>
+    fetch(`${API_BASE}/bikes/${id}/restore`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
   // Sales & Installments
   getSales: (params = {}) => {
     const query = new URLSearchParams(params).toString();
@@ -95,12 +146,23 @@ export const api = {
       body: JSON.stringify(paymentData)
     }).then(handleResponse),
 
+  deleteSale: (id) =>
+    fetch(`${API_BASE}/sales/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
   getCustomers: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return fetch(`${API_BASE}/sales/customers${query ? `?${query}` : ''}`, {
       headers: getAuthHeaders()
     }).then(handleResponse);
   },
+
+  customerLookup: (query) =>
+    fetch(`${API_BASE}/sales/customer-lookup?query=${encodeURIComponent(query)}`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
 
   // Motorcycle Letters & Documents
   getDocuments: (params = {}) => {
@@ -155,6 +217,12 @@ export const api = {
       headers: getAuthHeaders()
     }).then(handleResponse),
 
+  restorePart: (id) =>
+    fetch(`${API_BASE}/parts/${id}/restore`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
   getPartsOrders: () =>
     fetch(`${API_BASE}/parts/orders/all`, {
       headers: getAuthHeaders()
@@ -165,6 +233,12 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(orderData)
+    }).then(handleResponse),
+
+  deletePartOrder: (id) =>
+    fetch(`${API_BASE}/parts/orders/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
     }).then(handleResponse),
 
   getVendorPOs: () =>
@@ -182,6 +256,12 @@ export const api = {
   receiveVendorPO: (id) =>
     fetch(`${API_BASE}/parts/vendor-pos/${id}/receive`, {
       method: 'PUT',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  deleteVendorPO: (id) =>
+    fetch(`${API_BASE}/parts/vendor-pos/${id}`, {
+      method: 'DELETE',
       headers: getAuthHeaders()
     }).then(handleResponse),
 
@@ -213,10 +293,12 @@ export const api = {
   },
 
   // Users & RBAC
-  getUsers: () =>
-    fetch(`${API_BASE}/users`, {
+  getUsers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return fetch(`${API_BASE}/users${query ? `?${query}` : ''}`, {
       headers: getAuthHeaders()
-    }).then(handleResponse),
+    }).then(handleResponse);
+  },
 
   createUser: (userData) =>
     fetch(`${API_BASE}/users`, {
@@ -235,6 +317,12 @@ export const api = {
   deleteUser: (id) =>
     fetch(`${API_BASE}/users/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  restoreUser: (id) =>
+    fetch(`${API_BASE}/users/${id}/restore`, {
+      method: 'POST',
       headers: getAuthHeaders()
     }).then(handleResponse),
 
@@ -262,11 +350,37 @@ export const api = {
       headers: getAuthHeaders()
     }).then(handleResponse),
 
-  // Audit Logs
+  // Audit Logs & Retention
   getAuditLogs: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return fetch(`${API_BASE}/audit-logs${query ? `?${query}` : ''}`, {
       headers: getAuthHeaders()
     }).then(handleResponse);
+  },
+
+  getAuditRetention: () =>
+    fetch(`${API_BASE}/audit-logs/retention`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  exportAuditCsv: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    const token = localStorage.getItem('autosuite_token');
+    const url = `${API_BASE}/audit-logs/export${query ? `?${query}` : ''}`;
+
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    if (!res.ok) throw new Error('Audit export failed');
+
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `AutoSuite_AuditLog_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 };
