@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ChevronDown,
   LogOut,
   Menu,
   Activity,
-  Check,
   Store,
   Sun,
   Moon,
@@ -20,16 +18,14 @@ import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 
 export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }) {
-  const { user, switchUser, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const { lang, toggleLanguage, t, isRomanUrdu } = useLanguage();
 
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [notifications, setNotifications] = useState({ lowStock: 0, overdue: 0, docs: 0 });
 
-  const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -61,19 +57,15 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
     fetchNotifs();
   }, []);
 
-  // Close menus on outside click or Escape
+  // Close notifications menu on outside click or Escape
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowRoleMenu(false);
-      }
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
     };
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        setShowRoleMenu(false);
         setShowNotifications(false);
       }
     };
@@ -99,12 +91,7 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
     settings: { full: t('nav_settings'), short: 'Settings' }
   };
 
-  const roles = [
-    { username: 'admin', role: 'Admin', label: 'Admin', desc: 'Everything, including staff & access' },
-    { username: 'manager', role: 'Manager', label: 'Manager', desc: 'Parts and B2B orders' },
-    { username: 'operator', role: 'Operator', label: 'Operator', desc: 'Sales entry only' },
-    { username: 'sales', role: 'Sales Representative', label: 'Sales representative', desc: 'Sales and documents' }
-  ];
+
 
   const currentTitle = tabTitles[activeTab] || { full: 'AutoSuite ERP', short: 'AutoSuite' };
   const totalNotifCount = notifications.lowStock + (notifications.docs > 0 ? 1 : 0);
@@ -233,58 +220,21 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
           <span className="status-text">{t('system_online')}</span>
         </div>
 
-        {/* Role Switcher */}
-        <div className="rbac-switcher" ref={dropdownRef}>
-          <div className="role-dropdown-container">
-            <button
-              className="role-selector-btn"
-              onClick={() => setShowRoleMenu(!showRoleMenu)}
-              title="Change role"
-            >
-              <span
-                className={`glass-badge ${
-                  user?.role === 'Admin'
-                    ? 'badge-rose'
-                    : user?.role === 'Manager'
-                    ? 'badge-purple'
-                    : user?.role === 'Operator'
-                    ? 'badge-cyan'
-                    : 'badge-emerald'
-                }`}
-              >
-                {user?.role || 'Guest'}
-              </span>
-              <ChevronDown
-                size={14}
-                style={{ transform: showRoleMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.16s ease' }}
-              />
-            </button>
-
-            {showRoleMenu && (
-              <div className="role-dropdown-menu">
-                <div className="dropdown-header">Switch Role</div>
-                {roles.map((r) => {
-                  const isSelected = user?.role === r.role;
-                  return (
-                    <button
-                      key={r.username}
-                      className={`role-item ${isSelected ? 'selected' : ''}`}
-                      onClick={() => {
-                        switchUser(r.username);
-                        setShowRoleMenu(false);
-                      }}
-                    >
-                      <div className="role-item-main">
-                        <span className="role-name">{r.label}</span>
-                        <span className="role-user text-xs text-muted">{r.desc}</span>
-                      </div>
-                      {isSelected && <Check size={16} />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        {/* Current User Role Badge (Static - Switcher Removed) */}
+        <div className="user-role-badge-container" title={`Signed in as ${user?.name || user?.username || 'User'}`}>
+          <span
+            className={`glass-badge ${
+              user?.role === 'Admin'
+                ? 'badge-rose'
+                : user?.role === 'Manager'
+                ? 'badge-purple'
+                : user?.role === 'Operator'
+                ? 'badge-cyan'
+                : 'badge-emerald'
+            }`}
+          >
+            {user?.role || 'Guest'}
+          </span>
         </div>
 
         {/* Logout Button */}

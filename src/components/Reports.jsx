@@ -235,7 +235,7 @@ export default function Reports() {
             <div className="filter-item filter-btn-align">
               <button
                 className="btn btn-primary"
-                onClick={() => handleDownload('sales', salesExportFilter)}
+                onClick={() => handleDownload('sales', { ...salesExportFilter, paymentType: salesExportFilter.paymentMode })}
                 disabled={downloading === 'sales'}
               >
                 <ArrowDownToLine size={16} />

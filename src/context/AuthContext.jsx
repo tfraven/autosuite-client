@@ -21,22 +21,10 @@ export function AuthProvider({ children }) {
         })
         .finally(() => setLoading(false));
     } else {
-      // Auto login as admin initially for demonstration if no token
-      autoLoginDefault();
-    }
-  }, []);
-
-  const autoLoginDefault = async () => {
-    try {
-      const res = await api.login('admin', 'admin123');
-      localStorage.setItem('autosuite_token', res.accessToken);
-      setUser(res.user);
-    } catch (e) {
-      console.warn('Auto-login failed:', e);
-    } finally {
+      setUser(null);
       setLoading(false);
     }
-  };
+  }, []);
 
   const login = async (username, password) => {
     const res = await api.login(username, password);
@@ -48,18 +36,6 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('autosuite_token');
     setUser(null);
-  };
-
-  // Fast switch for RBAC testing
-  const switchUser = async (username) => {
-    const passwords = {
-      admin: 'admin123',
-      manager: 'manager123',
-      operator: 'operator123',
-      sales: 'sales123'
-    };
-    const pwd = passwords[username] || 'admin123';
-    return login(username, pwd);
   };
 
   const hasPermission = (permissionName) => {
@@ -80,7 +56,6 @@ export function AuthProvider({ children }) {
         loading,
         login,
         logout,
-        switchUser,
         hasPermission,
         isRole
       }}

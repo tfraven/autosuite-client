@@ -13,7 +13,8 @@ import {
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function CommandPalette({ isOpen, onClose, onSelectTab }) {
+export default function CommandPalette({ isOpen, onClose, onSelectTab, onNavigate }) {
+  const navigateTab = onSelectTab || onNavigate || (() => {});
   const { isRomanUrdu } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState({ bikes: [], sales: [], customers: [], parts: [] });
@@ -139,7 +140,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTab }) {
                   key={b.id}
                   className="palette-result-item"
                   onClick={() => {
-                    onSelectTab('inventory');
+                    navigateTab('inventory');
                     onClose();
                   }}
                 >
@@ -173,7 +174,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTab }) {
                   key={s.id}
                   className="palette-result-item"
                   onClick={() => {
-                    onSelectTab('sales');
+                    navigateTab('sales');
                     onClose();
                   }}
                 >
@@ -207,7 +208,7 @@ export default function CommandPalette({ isOpen, onClose, onSelectTab }) {
                   key={p.id}
                   className="palette-result-item"
                   onClick={() => {
-                    onSelectTab('parts');
+                    navigateTab('parts');
                     onClose();
                   }}
                 >

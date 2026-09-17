@@ -18,11 +18,11 @@ import Analytics from './components/Analytics';
 import Settings from './components/Settings';
 import LegalModal from './components/LegalModal';
 import CommandPalette from './components/CommandPalette';
-import { LogIn, Bike, ShieldAlert, Shield } from 'lucide-react';
+import { LogIn, Bike, ShieldAlert } from 'lucide-react';
 import './App.css';
 
 function MainApp() {
-  const { user, loading, login, switchUser, hasPermission, isRole } = useAuth();
+  const { user, loading, login, hasPermission, isRole } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -150,7 +150,6 @@ function MainApp() {
             ) : (
               <UnauthorizedWarning
                 module="Spare Parts Management (Manager / Admin Role Required)"
-                onSwitchAdmin={() => switchUser('admin')}
               />
             )
           )}
@@ -169,7 +168,6 @@ function MainApp() {
             ) : (
               <UnauthorizedWarning
                 module="User & RBAC Administration (Admin Role Required)"
-                onSwitchAdmin={() => switchUser('admin')}
               />
             )
           )}
@@ -181,6 +179,10 @@ function MainApp() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={(tab) => {
+          setActiveTab(tab);
+          setIsCommandPaletteOpen(false);
+        }}
+        onSelectTab={(tab) => {
           setActiveTab(tab);
           setIsCommandPaletteOpen(false);
         }}
@@ -200,20 +202,15 @@ function MainApp() {
   );
 }
 
-function UnauthorizedWarning({ module, onSwitchAdmin }) {
+function UnauthorizedWarning({ module }) {
   return (
     <div className="unauthorized-card glass-panel">
       <ShieldAlert size={28} className="mb-3" />
-      <h3>You don't have access to this</h3>
-      <p>{module} is limited to other roles. Switch accounts to continue.</p>
+      <h3>Access Restricted</h3>
+      <p>{module}</p>
       <p className="text-muted text-xs mt-2">
-        Use the account switcher in the top right to change role.
+        Your current account does not have permission to access this module. Please contact your system administrator if you require access.
       </p>
-      {onSwitchAdmin && (
-        <button className="btn btn-secondary mt-3" onClick={onSwitchAdmin}>
-          <Shield size={16} /> Switch to Admin
-        </button>
-      )}
     </div>
   );
 }

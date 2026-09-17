@@ -90,6 +90,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     installmentId: '',
     notes: ''
   });
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   const fetchSales = async () => {
     try {
@@ -288,19 +289,41 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const handleRecordPayment = async (e) => {
     e.preventDefault();
     if (!activeSaleForPayment) return;
+    const numAmount = Number(paymentFormData.amount);
+    if (!numAmount || numAmount <= 0) {
+      toast.error('Please enter a valid payment amount greater than zero');
+      return;
+    }
+    if (numAmount > activeSaleForPayment.remainingBalance) {
+      toast.error(
+        `Payment amount cannot exceed remaining balance of PKR ${activeSaleForPayment.remainingBalance.toLocaleString('en-PK')}`
+      );
+      return;
+    }
+
     try {
-      const updated = await api.recordPayment(activeSaleForPayment.id, paymentFormData);
+      setIsSubmittingPayment(true);
+      const payload = {
+        amount: numAmount,
+        paymentMethod: paymentFormData.paymentMethod || 'CASH',
+        referenceNumber: paymentFormData.referenceNumber?.trim() || null,
+        installmentId: paymentFormData.installmentId || null,
+        notes: paymentFormData.notes?.trim() || null
+      };
+
+      const updated = await api.recordPayment(activeSaleForPayment.id, payload);
       toast.success(
         isRomanUrdu
-          ? `PKR ${paymentFormData.amount} ki adaigi mehfooz ho gayi`
-          : `Payment of PKR ${paymentFormData.amount} recorded successfully`
+          ? `PKR ${numAmount.toLocaleString('en-PK')} ki adaigi mehfooz ho gayi`
+          : `Payment of PKR ${numAmount.toLocaleString('en-PK')} recorded successfully`
       );
-      setSubView(null);
-      setActiveSaleForPayment(null);
+      closePaymentModal();
       fetchSales();
       setSelectedInvoice(updated);
     } catch (err) {
       toast.error(err.message || 'Failed to record payment');
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -879,6 +902,198 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
           }));
         }}
       />
+
+      {/* Collect Payment Modal */}
+      {activeSaleForPayment && (
+        <div className="modal-overlay" onClick={closePaymentModal}>
+          <div
+            className="modal-container glass-panel slide-in"
+            style={{ maxWidth: '580px', width: '92%' }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="modal-header">
+              <div className="modal-title-with-icon">
+                <div className="modal-icon-badge icon-badge-emerald">
+                  <DollarSign size={22} className="text-emerald" />
+                </div>
+                <div>
+                  <h3>{isRomanUrdu ? 'Rakam Wasool Karein' : 'Collect Payment'}</h3>
+                  <span className="text-xs text-muted">
+                    {isRomanUrdu
+                      ? `Invoice #${activeSaleForPayment.invoiceNumber} ki wasooli darj karein`
+                      : `Record payment collection for Invoice #${activeSaleForPayment.invoiceNumber}`}
+                  </span>
+                </div>
+              </div>
+              <button type="button" className="close-btn" onClick={closePaymentModal}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordPayment}>
+              <div className="modal-body space-y-4">
+                {/* Sale Snapshot Card */}
+                <div className="glass-panel p-3 rounded-md border border-line-soft">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-muted">Customer</span>
+                    <strong className="text-main font-semibold">
+                      {activeSaleForPayment.customerName} ({activeSaleForPayment.customerPhone})
+                    </strong>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="text-muted">Motorcycle</span>
+                    <span className="font-mono text-cyan font-semibold">
+                      {activeSaleForPayment.bike?.modelName} · CH: {activeSaleForPayment.bike?.chassisNumber}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-line-soft text-center">
+                    <div>
+                      <span className="text-xs text-muted block">Invoice Total</span>
+                      <strong className="text-xs font-mono">{formatPKR(activeSaleForPayment.finalAmount)}</strong>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted block">Paid So Far</span>
+                      <strong className="text-xs font-mono text-emerald">
+                        {formatPKR(activeSaleForPayment.finalAmount - activeSaleForPayment.remainingBalance)}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-xs text-muted block">Balance Due</span>
+                      <strong className="text-sm font-mono text-rose font-bold">
+                        {formatPKR(activeSaleForPayment.remainingBalance)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Installment Link (if applicable) */}
+                {activeSaleForPayment.installments && activeSaleForPayment.installments.length > 0 && (
+                  <div className="form-field">
+                    <label>{isRomanUrdu ? 'Kis Qist Ke Mad Mein?' : 'Apply to Installment Schedule'}</label>
+                    <select
+                      className="form-input"
+                      value={paymentFormData.installmentId || ''}
+                      onChange={(e) => {
+                        const instId = e.target.value;
+                        const inst = activeSaleForPayment.installments.find((i) => i.id === instId);
+                        setPaymentFormData((prev) => ({
+                          ...prev,
+                          installmentId: instId,
+                          amount: inst
+                            ? Math.min(activeSaleForPayment.remainingBalance, Math.max(0, inst.amount - inst.paidAmount))
+                            : prev.amount
+                        }));
+                      }}
+                    >
+                      <option value="">General Balance / Non-scheduled Payment</option>
+                      {activeSaleForPayment.installments.map((inst) => {
+                        const remaining = Math.max(0, inst.amount - inst.paidAmount);
+                        return (
+                          <option key={inst.id} value={inst.id}>
+                            Installment #{inst.installmentNumber} — Due: {new Date(inst.dueDate).toLocaleDateString('en-GB')} — {formatPKR(inst.amount)} (Remaining: {formatPKR(remaining)}) [{inst.status}]
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
+
+                {/* Amount to collect */}
+                <div className="form-field">
+                  <div className="flex items-center justify-between mb-1">
+                    <label>{isRomanUrdu ? 'Wasool Shuda Rakam (PKR) *' : 'Amount to Collect (PKR) *'}</label>
+                    <button
+                      type="button"
+                      className="text-xs text-cyan hover:underline cursor-pointer bg-transparent border-0 p-0 font-medium"
+                      onClick={() =>
+                        setPaymentFormData((prev) => ({
+                          ...prev,
+                          amount: activeSaleForPayment.remainingBalance
+                        }))
+                      }
+                    >
+                      Pay Full Due ({formatPKR(activeSaleForPayment.remainingBalance)})
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    max={activeSaleForPayment.remainingBalance}
+                    step="1"
+                    required
+                    className="form-input text-lg font-mono font-bold"
+                    placeholder="Enter amount in PKR"
+                    value={paymentFormData.amount}
+                    onChange={(e) => setPaymentFormData((prev) => ({ ...prev, amount: e.target.value }))}
+                  />
+                </div>
+
+                {/* Payment Method & Reference */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="form-field">
+                    <label>{isRomanUrdu ? 'Tareeqa-e-Adaigi' : 'Payment Method'}</label>
+                    <select
+                      className="form-input"
+                      value={paymentFormData.paymentMethod}
+                      onChange={(e) => setPaymentFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                    >
+                      <option value="CASH">Cash in Hand (Naqd)</option>
+                      <option value="BANK_TRANSFER">Bank Transfer / Online / Pay Order</option>
+                      <option value="CHEQUE">Bank Cheque</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label>{isRomanUrdu ? 'Slip / Transaction Ref #' : 'Reference / Slip #'}</label>
+                    <input
+                      type="text"
+                      className="form-input font-mono"
+                      placeholder="e.g. Deposit slip #, Cheque #"
+                      value={paymentFormData.referenceNumber}
+                      onChange={(e) => setPaymentFormData((prev) => ({ ...prev, referenceNumber: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Tafseelat / Notes (Ikhtiari)' : 'Notes / Remarks (Optional)'}</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Received at counter by cashier..."
+                    value={paymentFormData.notes}
+                    onChange={(e) => setPaymentFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer flex items-center justify-end gap-2 mt-4 pt-3 border-t border-line-soft">
+                <button type="button" className="btn btn-secondary" onClick={closePaymentModal}>
+                  {isRomanUrdu ? 'Mansookh' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isSubmittingPayment || !paymentFormData.amount || Number(paymentFormData.amount) <= 0}
+                >
+                  <DollarSign size={16} />
+                  <span>
+                    {isSubmittingPayment
+                      ? 'Saving...'
+                      : isRomanUrdu
+                      ? 'Wasooli Darj Karein'
+                      : 'Confirm Collection'}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Invoice & Gate Pass Modal */}
       {selectedInvoice && (

@@ -398,16 +398,11 @@
   color: inherit;
 }
 
-/* Role switcher */
-.rbac-switcher {
+/* Current user identity badge */
+.user-role-badge-container {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: 3px 4px 3px 10px;
-  position: relative;
 }
 
 .switcher-label {

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Pagination from './Pagination';
 
 export default function Documents() {
   const { hasPermission } = useAuth();
@@ -25,6 +26,20 @@ export default function Documents() {
   const [statusFilter, setStatusFilter] = useState('');
   const [docTypeFilter, setDocTypeFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Pipeline stage counts from backend
+  const [stageCounts, setStageCounts] = useState({
+    PENDING_MANUFACTURER: 0,
+    PROCESSING_EXCISE: 0,
+    READY_FOR_PICKUP: 0,
+    DELIVERED: 0
+  });
 
   // Selected document for preview / printing
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -50,13 +65,28 @@ export default function Documents() {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = {
+        page,
+        limit
+      };
       if (statusFilter) params.status = statusFilter;
       if (docTypeFilter) params.docType = docTypeFilter;
       if (searchQuery) params.search = searchQuery;
 
       const data = await api.getDocuments(params);
-      setDocuments(data);
+      if (data?.pagination) {
+        setDocuments(data.documents || data.data || []);
+        setTotalPages(data.pagination.totalPages || 1);
+        setTotalCount(data.pagination.total || 0);
+      } else {
+        const list = Array.isArray(data) ? data : (data?.documents || data?.data || []);
+        setDocuments(list);
+        setTotalPages(1);
+        setTotalCount(list.length);
+      }
+      if (data?.stageCounts) {
+        setStageCounts(data.stageCounts);
+      }
     } catch (err) {
       console.error('Error fetching documents:', err);
     } finally {
@@ -65,8 +95,12 @@ export default function Documents() {
   };
 
   useEffect(() => {
-    fetchDocuments();
+    setPage(1);
   }, [statusFilter, docTypeFilter, searchQuery]);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [page, limit, statusFilter, docTypeFilter, searchQuery]);
 
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
@@ -81,14 +115,6 @@ export default function Documents() {
     } catch (err) {
       alert(err.message || 'Failed to update paperwork status');
     }
-  };
-
-  // Compute pipeline stage counts
-  const stageCounts = {
-    PENDING_MANUFACTURER: documents.filter(d => d.paperworkStatus === 'PENDING_MANUFACTURER').length,
-    PROCESSING_EXCISE: documents.filter(d => d.paperworkStatus === 'PROCESSING_EXCISE').length,
-    READY_FOR_PICKUP: documents.filter(d => d.paperworkStatus === 'READY_FOR_PICKUP').length,
-    DELIVERED: documents.filter(d => d.paperworkStatus === 'DELIVERED').length
   };
 
   const renderOfficialLetterContent = (doc) => {
@@ -485,6 +511,19 @@ export default function Documents() {
             </tbody>
           </table>
         </div>
+
+        {/* Server-Side Pagination */}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalCount}
+          itemsPerPage={limit}
+          onPageChange={(p) => setPage(p)}
+          onLimitChange={(l) => {
+            setLimit(l);
+            setPage(1);
+          }}
+        />
       </div>
 
       {/* Printable Official Letter Preview */}

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import Pagination from './Pagination';
 
 export default function Customers() {
   const { hasPermission } = useAuth();
@@ -43,10 +44,19 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [copiedText, setCopiedText] = useState('');
 
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = {
+        page,
+        limit
+      };
       if (searchQuery.trim()) params.search = searchQuery.trim();
       if (activeFilter === 'DEBTORS') params.status = 'DUES';
       if (activeFilter === 'SETTLED') params.status = 'SETTLED';
@@ -54,14 +64,19 @@ export default function Customers() {
       if (activeFilter === 'DEALERS') params.customerType = 'DEALER';
 
       const data = await api.getCustomers(params);
-      setCustomers(data.customers || []);
-      setSummary(data.summary || {
-        totalCustomers: 0,
-        totalRevenue: 0,
-        totalOutstanding: 0,
-        debtorsCount: 0,
-        dealerCount: 0
-      });
+      if (data?.pagination) {
+        setCustomers(data.customers || data.data || []);
+        setTotalPages(data.pagination.totalPages || 1);
+        setTotalCount(data.pagination.total || 0);
+      } else {
+        const list = data?.customers || (Array.isArray(data) ? data : []);
+        setCustomers(list);
+        setTotalPages(1);
+        setTotalCount(list.length);
+      }
+      if (data?.summary) {
+        setSummary(data.summary);
+      }
     } catch (err) {
       console.error('Failed to load customer records:', err);
     } finally {
@@ -70,8 +85,12 @@ export default function Customers() {
   };
 
   useEffect(() => {
-    fetchCustomers();
+    setPage(1);
   }, [searchQuery, activeFilter]);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [page, limit, searchQuery, activeFilter]);
 
   const copyToClipboard = (text) => {
     if (!text) return;
@@ -606,6 +625,19 @@ export default function Customers() {
           </table>
         </div>
       )}
+
+      {/* Server-Side Pagination */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalCount}
+        itemsPerPage={limit}
+        onPageChange={(p) => setPage(p)}
+        onLimitChange={(l) => {
+          setLimit(l);
+          setPage(1);
+        }}
+      />
     </div>
   );
 }
