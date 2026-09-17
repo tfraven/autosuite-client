@@ -18,21 +18,35 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import Pagination from './Pagination';
 
 export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   const { hasPermission } = useAuth();
+  const { t, isRomanUrdu } = useLanguage();
+  const toast = useToast();
+
   const [bikes, setBikes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
-  const [activeFilter, setActiveFilter] = useState('ALL'); // ALL, BRAND_NEW, USED
+  const [viewMode, setViewMode] = useState('grid');
+  const [activeFilter, setActiveFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('');
   const [marketFilter, setMarketFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedChassis, setCopiedChassis] = useState('');
 
-  // Modal State
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Modal & Form State
   const [subView, setSubView] = useState(null);
   const [editingBike, setEditingBike] = useState(null);
+  const [bikeToDelete, setBikeToDelete] = useState(null);
 
   const initialFormData = {
     type: 'BRAND_NEW',
@@ -63,16 +77,26 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   const fetchBikes = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = { page, limit };
       if (activeFilter !== 'ALL') params.type = activeFilter;
       if (statusFilter) params.status = statusFilter;
       if (marketFilter) params.marketTarget = marketFilter;
       if (searchQuery) params.search = searchQuery;
 
-      const data = await api.getBikes(params);
-      setBikes(data);
+      const res = await api.getBikes(params);
+      if (res.pagination) {
+        setBikes(res.data || res.bikes || []);
+        setTotalPages(res.pagination.totalPages || 1);
+        setTotalCount(res.pagination.total || 0);
+      } else {
+        const list = Array.isArray(res) ? res : [];
+        setBikes(list);
+        setTotalCount(list.length);
+        setTotalPages(1);
+      }
     } catch (err) {
       console.error('Error fetching bikes:', err);
+      toast.error('Failed to load inventory records');
     } finally {
       setLoading(false);
     }
@@ -80,7 +104,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
   useEffect(() => {
     fetchBikes();
-  }, [activeFilter, statusFilter, marketFilter, searchQuery]);
+  }, [activeFilter, statusFilter, marketFilter, searchQuery, page, limit]);
 
   useEffect(() => {
     if (isOpenAddModal) {
@@ -123,24 +147,16 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     setSubView('bike-form');
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to remove this motorcycle from inventory?')) return;
-    try {
-      await api.deleteBike(id);
-      fetchBikes();
-    } catch (err) {
-      alert(err.message || 'Failed to delete bike');
-    }
-  };
-
   const handleSaveBike = async (e) => {
     e.preventDefault();
     setFormError('');
     try {
       if (editingBike) {
         await api.updateBike(editingBike.id, formData);
+        toast.success(`Motorcycle ${formData.modelName} updated successfully.`);
       } else {
         await api.createBike(formData);
+        toast.success(`New motorcycle ${formData.modelName} added to stock!`);
       }
       setSubView(null);
       if (onCloseAddModal) onCloseAddModal();
@@ -156,13 +172,11 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
   const getColorSwatch = (colorName) => {
     const c = (colorName || '').toLowerCase();
-    if (c.includes('red')) return '#ef4444';
-    if (c.includes('black')) return '#1e293b';
-    if (c.includes('blue')) return '#3b82f6';
-    if (c.includes('silver') || c.includes('grey') || c.includes('gray')) return '#94a3b8';
-    if (c.includes('white')) return '#f8fafc';
-    if (c.includes('green')) return '#10b981';
-    return '#38bdf8';
+    if (c.includes('red')) return '#dc2626';
+    if (c.includes('black')) return '#18181b';
+    if (c.includes('silver') || c.includes('grey') || c.includes('gray')) return '#9ca3af';
+    if (c.includes('blue')) return '#2563eb';
+    return '#64748b';
   };
 
   if (subView === 'bike-form') {
@@ -170,11 +184,21 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
       <div className="inventory-view">
         <div className="page-form-view">
           <div className="page-form-header">
-            <button className="page-form-back-btn" onClick={() => { setSubView(null); setEditingBike(null); if (onCloseAddModal) onCloseAddModal(); }}>
+            <button
+              className="page-form-back-btn"
+              onClick={() => {
+                setSubView(null);
+                if (onCloseAddModal) onCloseAddModal();
+              }}
+            >
               <ArrowLeft size={16} /> Back to stock
             </button>
             <div className="page-form-title-group">
-              <h2 className="page-form-title">{editingBike ? 'Edit motorcycle' : 'Add motorcycle'}</h2>
+              <h2 className="page-form-title">
+                {editingBike
+                  ? (isRomanUrdu ? 'Motorcycle ki Maloomat Edit Karein' : 'Edit motorcycle')
+                  : (isRomanUrdu ? 'Nayi Motorcycle Stock Mein Shamil Karein' : 'Add motorcycle')}
+              </h2>
               <div className="page-form-subtitle">Specifications, chassis numbers, pricing and ownership history</div>
             </div>
           </div>
@@ -183,11 +207,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             {formError && <div className="page-form-error">{formError}</div>}
 
             <div className="page-form-grid-2">
-              {/* Card 1: Core Specifications */}
               <div className="page-form-card">
                 <div className="page-form-card-title">Category and identifiers</div>
 
-                <div className="form-group-row">
+                <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Category</label>
                     <select
@@ -202,7 +225,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="form-field">
-                    <label>Sold through</label>
+                    <label>Channel</label>
                     <select
                       value={formData.marketTarget}
                       onChange={(e) => setFormData({ ...formData, marketTarget: e.target.value })}
@@ -215,24 +238,23 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
                 </div>
 
-                <div className="form-group-row">
+                <div className="form-group-row mb-3">
                   <div className="form-field">
-                    <label>Model name</label>
+                    <label>Model Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Honda CG125 Special Edition"
+                      placeholder="e.g. Honda CD-70 Dream"
                       value={formData.modelName}
                       onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
                       required
                       className="form-input"
                     />
                   </div>
-
                   <div className="form-field">
                     <label>Color</label>
                     <input
                       type="text"
-                      placeholder="e.g. Gloss red, matte black"
+                      placeholder="e.g. Red, Black"
                       value={formData.color}
                       onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                       required
@@ -241,20 +263,20 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
                 </div>
 
-                <div className="form-group-row">
+                <div className="form-group-row mb-3">
                   <div className="form-field">
-                    <label>Model year</label>
+                    <label>Model Year</label>
                     <input
                       type="number"
                       value={formData.modelYear}
                       onChange={(e) => setFormData({ ...formData, modelYear: Number(e.target.value) })}
                       required
-                      className="form-input"
+                      className="form-input font-mono"
                     />
                   </div>
 
                   <div className="form-field">
-                    <label>Batch or container number</label>
+                    <label>Batch / Lot Number</label>
                     <input
                       type="text"
                       placeholder="e.g. BATCH-2026-Q1"
@@ -266,12 +288,11 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
               </div>
 
-              {/* Card 2: Technical Engine & Chassis Numbers */}
               <div className="page-form-card">
-                <div className="page-form-card-title">Chassis and engine numbers</div>
+                <div className="page-form-card-title">Chassis and Engine Numbers</div>
 
-                <div className="form-field">
-                  <label>Chassis number</label>
+                <div className="form-field mb-3">
+                  <label>Chassis / VIN Number</label>
                   <input
                     type="text"
                     placeholder="e.g. HND-CG125-982310"
@@ -283,8 +304,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   />
                 </div>
 
-                <div className="form-field">
-                  <label>Engine number</label>
+                <div className="form-field mb-3">
+                  <label>Engine Number</label>
                   <input
                     type="text"
                     placeholder="e.g. ENG-992384-A"
@@ -296,8 +317,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   />
                 </div>
 
-                <div className="form-field">
-                  <label>Starting status</label>
+                <div className="form-field mb-3">
+                  <label>Initial Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -312,141 +333,61 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
               </div>
             </div>
 
-            <div className="page-form-grid-2">
-              {/* Card 3: Pricing & Commercials */}
+            <div className="page-form-grid-2 mt-4">
               <div className="page-form-card">
-                <div className="page-form-card-title">Pricing</div>
+                <div className="page-form-card-title">Commercial Pricing</div>
 
-                <div className="form-group-row">
+                <div className="form-group-row mb-3">
                   <div className="form-field">
-                    <label>Dealer cost (PKR)</label>
+                    <label>Dealer Invoice Cost (PKR)</label>
                     <input
                       type="number"
-                      placeholder="Cost from factory or seller"
                       value={formData.dealerInvoicePrice}
                       onChange={(e) => setFormData({ ...formData, dealerInvoicePrice: e.target.value })}
-                      required
                       className="form-input font-mono"
                     />
                   </div>
 
                   <div className="form-field">
-                    <label>Retail price (PKR)</label>
+                    <label>Retail Selling Price (PKR)</label>
                     <input
                       type="number"
-                      placeholder="Showroom price"
                       value={formData.retailPrice}
                       onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
                       required
-                      className="form-input font-mono text-cyan"
+                      className="form-input font-mono text-lg font-bold"
                     />
                   </div>
                 </div>
+              </div>
 
+              <div className="page-form-card">
+                <div className="page-form-card-title">Internal Notes</div>
                 <div className="form-field">
-                  <label>Condition and inspection notes</label>
                   <textarea
                     rows="3"
-                    placeholder="Inspection remarks, accessories included…"
+                    className="form-input"
+                    placeholder="Additional notes, condition, showroom bay location..."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="form-textarea"
                   />
                 </div>
               </div>
-
-              {/* Card 4: Pre-Owned Specifics or Warranty */}
-              {formData.type === 'USED' ? (
-                <div className="page-form-card">
-                  <div className="page-form-card-title">Trade-in history</div>
-
-                  <div className="form-group-row">
-                    <div className="form-field">
-                      <label>Registration number</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. LHR-24-1234"
-                        value={formData.registrationNumber}
-                        onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                        className="form-input font-mono"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Condition grade</label>
-                      <select
-                        value={formData.conditionGrade}
-                        onChange={(e) => setFormData({ ...formData, conditionGrade: e.target.value })}
-                        className="form-input"
-                      >
-                        <option value="GRADE_A">Grade A — showroom condition, low mileage</option>
-                        <option value="GRADE_B">Grade B — good condition, normal wear</option>
-                        <option value="GRADE_C">Grade C — needs refurbishment</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="form-group-row">
-                    <div className="form-field">
-                      <label>Previous owner name</label>
-                      <input
-                        type="text"
-                        placeholder="Full name"
-                        value={formData.prevOwnerName}
-                        onChange={(e) => setFormData({ ...formData, prevOwnerName: e.target.value })}
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Previous owner phone</label>
-                      <input
-                        type="text"
-                        placeholder="0300-XXXXXXX"
-                        value={formData.prevOwnerPhone}
-                        onChange={(e) => setFormData({ ...formData, prevOwnerPhone: e.target.value })}
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group-row">
-                    <div className="form-field">
-                      <label>Trade-in cost (PKR)</label>
-                      <input
-                        type="number"
-                        value={formData.purchaseCost}
-                        onChange={(e) => setFormData({ ...formData, purchaseCost: e.target.value })}
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-field">
-                      <label>Refurbishment cost (PKR)</label>
-                      <input
-                        type="number"
-                        value={formData.refurbishmentCost}
-                        onChange={(e) => setFormData({ ...formData, refurbishmentCost: e.target.value })}
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="page-form-card">
-                  <div className="page-form-card-title">Warranty</div>
-                  <p className="text-muted text-sm">Brand new motorcycles are enrolled in factory warranty tracking once the sale is finalized.</p>
-                  <div className="read-only-field mt-3">
-                    <ShieldCheck size={16} className="text-emerald" />
-                    <span>Atlas Honda warranty active</span>
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div className="page-form-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => { setSubView(null); setEditingBike(null); if (onCloseAddModal) onCloseAddModal(); }}>
+            <div className="page-form-footer mt-4 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setSubView(null);
+                  if (onCloseAddModal) onCloseAddModal();
+                }}
+              >
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary">
-                <Plus size={16} /> {editingBike ? 'Save changes' : 'Add motorcycle'}
+                {editingBike ? 'Save Changes' : 'Add to Inventory'}
               </button>
             </div>
           </form>
@@ -458,24 +399,24 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   return (
     <div className="inventory-view">
       {/* Control Bar */}
-      <div className="control-bar glass-panel">
+      <div className="control-bar glass-panel no-print mb-4">
         <div className="filter-group">
           <div className="type-toggle">
             <button
               className={`toggle-btn ${activeFilter === 'ALL' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('ALL')}
+              onClick={() => { setActiveFilter('ALL'); setPage(1); }}
             >
-              All ({bikes.length})
+              All
             </button>
             <button
               className={`toggle-btn ${activeFilter === 'BRAND_NEW' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('BRAND_NEW')}
+              onClick={() => { setActiveFilter('BRAND_NEW'); setPage(1); }}
             >
               Brand new
             </button>
             <button
               className={`toggle-btn ${activeFilter === 'USED' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('USED')}
+              onClick={() => { setActiveFilter('USED'); setPage(1); }}
             >
               Used
             </button>
@@ -484,7 +425,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
           <select
             className="filter-select"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           >
             <option value="">Any status</option>
             <option value="IN_STOCK">In stock</option>
@@ -496,7 +437,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
           <select
             className="filter-select"
             value={marketFilter}
-            onChange={(e) => setMarketFilter(e.target.value)}
+            onChange={(e) => { setMarketFilter(e.target.value); setPage(1); }}
           >
             <option value="">Any channel</option>
             <option value="B2C">Retail</option>
@@ -506,7 +447,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
         </div>
 
         <div className="action-group">
-          {/* Grid vs Table View Switcher */}
           <div className="type-toggle">
             <button
               className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
@@ -528,9 +468,9 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search chassis, engine or model"
+              placeholder="Search chassis, engine or model…"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
               className="search-input"
             />
           </div>
@@ -553,111 +493,103 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 setSubView('bike-form');
               }}
             >
-              <Plus size={16} /> Add motorcycle
+              <Plus size={16} /> {isRomanUrdu ? 'Nayi Bike Shamil Karein' : 'Add motorcycle'}
             </button>
           )}
         </div>
       </div>
 
-      {/* View 1: Card Grid View */}
+      {/* Grid View */}
       {viewMode === 'grid' && (
         <div className="bike-cards-grid">
           {loading ? (
             <div className="col-span-full module-loading">
-              <div className="spinner"></div> Loading stock
+              <div className="spinner"></div> Loading inventory stock…
             </div>
           ) : bikes.length > 0 ? (
             bikes.map((bike) => {
               const isNew = bike.type === 'BRAND_NEW';
-              const isInStock = bike.status === 'IN_STOCK';
               const cost = bike.dealerInvoicePrice || bike.purchaseCost || 0;
               const margin = bike.retailPrice && cost ? bike.retailPrice - cost : 0;
 
               return (
                 <div key={bike.id} className="bike-card glass-panel">
-                  {/* Card Header & Badges */}
                   <div className="bike-card-header">
                     <span className={`glass-badge ${isNew ? 'badge-cyan' : 'badge-purple'}`}>
-                      {isNew ? 'Brand new' : 'Used'}
+                      {isNew ? 'Brand New' : 'Used Certified'}
                     </span>
-                    <span className={`glass-badge ${bike.status === 'IN_STOCK' ? 'badge-emerald' :
-                      bike.status === 'RESERVED' ? 'badge-amber' :
-                        bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
-                      }`}>
-                      <span className="status-dot" style={{ width: 6, height: 6, marginRight: 3 }} />
+                    <span
+                      className={`glass-badge ${
+                        bike.status === 'IN_STOCK'
+                          ? 'badge-emerald'
+                          : bike.status === 'RESERVED'
+                          ? 'badge-amber'
+                          : bike.status === 'SOLD'
+                          ? 'badge-rose'
+                          : 'badge-muted'
+                      }`}
+                    >
                       {bike.status.replace('_', ' ')}
                     </span>
                   </div>
 
-                  {/* Vehicle Graphic & Title */}
                   <div className="bike-card-body">
-                    <div className="bike-card-head">
-                      <h3 className="bike-card-title" title={bike.modelName}>{bike.modelName}</h3>
+                    <h3 className="bike-title">{bike.modelName}</h3>
+                    <div className="bike-meta">
+                      <span className="color-swatch flex items-center gap-1">
+                        <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
+                        {bike.color}
+                      </span>
+                      <span>·</span>
+                      <span>{bike.modelYear}</span>
+                    </div>
 
-                      <div className="bike-card-specs">
-                        <span className="spec-tag color-indicator-chip">
-                          <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
-                          {bike.color}
+                    <div className="bike-identifiers mt-3 p-2 bg-surface-2 rounded text-xs font-mono">
+                      <div className="id-row flex justify-between">
+                        <span className="text-muted">Chassis:</span>
+                        <span className="text-cyan font-bold flex items-center gap-1">
+                          {bike.chassisNumber}
+                          <button
+                            className="icon-btn"
+                            onClick={() => copyToClipboard(bike.chassisNumber)}
+                            title="Copy"
+                          >
+                            {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
+                          </button>
                         </span>
-                        <span className="spec-tag">{bike.modelYear}</span>
-                        <span className="spec-tag">{bike.marketTarget}</span>
-                        {bike.conditionGrade && (
-                          <span className="spec-tag spec-tag-grade">
-                            {bike.conditionGrade.replace('GRADE_', 'Grade ')}
-                          </span>
-                        )}
+                      </div>
+                      <div className="id-row flex justify-between mt-1">
+                        <span className="text-muted">Engine:</span>
+                        <span>{bike.engineNumber}</span>
                       </div>
                     </div>
 
-                    {/* Technical IDs Box */}
-                    <div className="bike-ids-box">
-                      <div className="id-row">
-                        <span className="id-title">Chassis</span>
-                        <span className="id-value id-value-key">{bike.chassisNumber}</span>
-                        <button
-                          className="copy-btn"
-                          onClick={() => copyToClipboard(bike.chassisNumber)}
-                          title="Copy chassis number"
-                          aria-label={`Copy chassis number ${bike.chassisNumber}`}
-                        >
-                          {copiedChassis === bike.chassisNumber ? (
-                            <Check size={12} className="text-emerald" />
-                          ) : (
-                            <Copy size={12} />
-                          )}
-                        </button>
-                      </div>
-                      <div className="id-row">
-                        <span className="id-title">Engine</span>
-                        <span className="id-value">{bike.engineNumber}</span>
-                      </div>
-                      {bike.registrationNumber && (
-                        <div className="id-row">
-                          <span className="id-title">Reg no</span>
-                          <span className="id-value id-value-reg">{bike.registrationNumber}</span>
+                    <div className="bike-price-footer mt-3 flex items-center justify-between">
+                      <div>
+                        <div className="price-val text-lg font-bold font-mono text-emerald">
+                          {formatPKR(bike.retailPrice)}
                         </div>
-                      )}
-                    </div>
-
-                    {/* Price & Margins */}
-                    <div className="bike-price-footer">
-                      <div className="price-val">{formatPKR(bike.retailPrice)}</div>
+                        <div className="cost-val text-xs text-muted">Cost {formatPKR(cost)}</div>
+                      </div>
                       {margin > 0 && (
-                        <div className="profit-margin-tag">+{formatPKR(margin)}</div>
+                        <span className="profit-margin-tag text-xs text-cyan font-mono font-semibold">
+                          +{formatPKR(margin)}
+                        </span>
                       )}
-                      <div className="cost-val">Cost {formatPKR(cost)}</div>
                     </div>
                   </div>
 
-                  {/* Card Actions */}
                   {hasPermission('MANAGE_BIKES') && (
-                    <div className="bike-card-actions">
-                      <button className="btn-card-action" onClick={() => handleEdit(bike)}>
-                        <Edit3 size={14} /> Edit
+                    <div className="bike-card-actions border-t border-line-soft pt-2 mt-3 flex items-center justify-end gap-2">
+                      <button className="btn btn-outline btn-xs" onClick={() => handleEdit(bike)}>
+                        <Edit3 size={13} /> Edit
                       </button>
                       {bike.status !== 'SOLD' && (
-                        <button className="btn-card-action danger" onClick={() => handleDelete(bike.id)}>
-                          <Trash2 size={14} /> Remove
+                        <button
+                          className="btn btn-outline btn-xs danger"
+                          onClick={() => setBikeToDelete(bike)}
+                        >
+                          <Trash2 size={13} /> Delete
                         </button>
                       )}
                     </div>
@@ -666,98 +598,147 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
               );
             })
           ) : (
-            <div className="col-span-full empty-placeholder">
+            <div className="col-span-full empty-placeholder p-8 text-center glass-panel">
               No motorcycles match the current filters.
             </div>
           )}
         </div>
       )}
 
-      {/* View 2: Detailed Table View */}
+      {/* Table View */}
       {viewMode === 'table' && (
-        <div className="card glass-panel">
+        <div className="card glass-panel no-print">
           <div className="table-responsive">
             <table className="custom-table">
               <thead>
                 <tr>
+                  <th>Category</th>
                   <th>Model</th>
-                  <th>Chassis and engine</th>
-                  <th>Color and year</th>
-                  <th>Price</th>
+                  <th>Chassis & Engine</th>
+                  <th>Color & Year</th>
+                  <th>Retail Price</th>
                   <th>Channel</th>
                   <th>Status</th>
                   {hasPermission('MANAGE_BIKES') && <th className="text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody>
-                {bikes.map((bike) => (
-                  <tr key={bike.id}>
-                    <td>
-                      <div className="font-bold text-main">{bike.modelName}</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className={`glass-badge text-xs ${bike.type === 'BRAND_NEW' ? 'badge-cyan' : 'badge-purple'}`}>
-                          {bike.type === 'BRAND_NEW' ? 'Brand new' : 'Used'}
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="loading-cell">
+                      <div className="spinner"></div> Loading inventory…
+                    </td>
+                  </tr>
+                ) : bikes.length > 0 ? (
+                  bikes.map((bike) => (
+                    <tr key={bike.id}>
+                      <td>
+                        <span className={`glass-badge ${bike.type === 'BRAND_NEW' ? 'badge-cyan' : 'badge-purple'}`}>
+                          {bike.type === 'BRAND_NEW' ? 'Brand New' : 'Used'}
                         </span>
-                        {bike.conditionGrade && (
-                          <span className="glass-badge badge-amber text-xs">
-                            {bike.conditionGrade.replace('GRADE_', 'Grade ')}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div>
-                        <span className="font-mono text-cyan font-bold mr-1">{bike.chassisNumber}</span>
-                        <button className="copy-btn inline-flex" onClick={() => copyToClipboard(bike.chassisNumber)}>
-                          {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
-                        </button>
-                      </div>
-                      <div className="font-mono text-muted text-xs mt-1">{bike.engineNumber}</div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
-                        <span>{bike.color}</span>
-                      </div>
-                      <div className="text-muted text-xs mt-1">{bike.modelYear}</div>
-                    </td>
-                    <td>
-                      <div className="font-bold text-main">{formatPKR(bike.retailPrice)}</div>
-                      <div className="text-muted text-xs font-mono">Cost {formatPKR(bike.dealerInvoicePrice || bike.purchaseCost)}</div>
-                    </td>
-                    <td>
-                      <span className="glass-badge badge-muted">{bike.marketTarget}</span>
-                    </td>
-                    <td>
-                      <span className={`glass-badge ${bike.status === 'IN_STOCK' ? 'badge-emerald' :
-                        bike.status === 'RESERVED' ? 'badge-amber' :
-                          bike.status === 'SOLD' ? 'badge-rose' : 'badge-muted'
-                        }`}>
-                        {bike.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    {hasPermission('MANAGE_BIKES') && (
-                      <td className="text-right">
-                        <div className="table-actions">
-                          <button className="action-icon-btn" onClick={() => handleEdit(bike)} title="Edit">
-                            <Edit3 size={15} />
+                      </td>
+                      <td>
+                        <div className="font-bold text-main">{bike.modelName}</div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1 font-mono text-cyan font-bold">
+                          <span>{bike.chassisNumber}</span>
+                          <button className="icon-btn" onClick={() => copyToClipboard(bike.chassisNumber)}>
+                            {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
                           </button>
-                          {bike.status !== 'SOLD' && (
-                            <button className="action-icon-btn text-rose" onClick={() => handleDelete(bike.id)} title="Delete">
-                              <Trash2 size={15} />
-                            </button>
-                          )}
+                        </div>
+                        <div className="font-mono text-muted text-xs mt-1">{bike.engineNumber}</div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
+                          <span>{bike.color}</span>
+                        </div>
+                        <div className="text-muted text-xs mt-1">{bike.modelYear}</div>
+                      </td>
+                      <td>
+                        <div className="font-bold font-mono">{formatPKR(bike.retailPrice)}</div>
+                        <div className="text-muted text-xs font-mono">
+                          Cost {formatPKR(bike.dealerInvoicePrice || bike.purchaseCost)}
                         </div>
                       </td>
-                    )}
+                      <td>
+                        <span className="glass-badge badge-muted">{bike.marketTarget}</span>
+                      </td>
+                      <td>
+                        <span
+                          className={`glass-badge ${
+                            bike.status === 'IN_STOCK'
+                              ? 'badge-emerald'
+                              : bike.status === 'RESERVED'
+                              ? 'badge-amber'
+                              : bike.status === 'SOLD'
+                              ? 'badge-rose'
+                              : 'badge-muted'
+                          }`}
+                        >
+                          {bike.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                      {hasPermission('MANAGE_BIKES') && (
+                        <td className="text-right">
+                          <div className="table-actions flex items-center justify-end gap-1">
+                            <button className="btn-action-icon" onClick={() => handleEdit(bike)} title="Edit">
+                              <Edit3 size={15} />
+                            </button>
+                            {bike.status !== 'SOLD' && (
+                              <button
+                                className="btn-action-icon text-rose"
+                                onClick={() => setBikeToDelete(bike)}
+                                title="Delete"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="empty-placeholder">No motorcycles match current filters.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
+      {/* Pagination */}
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalCount}
+        itemsPerPage={limit}
+        onPageChange={(p) => setPage(p)}
+        onLimitChange={(l) => {
+          setLimit(l);
+          setPage(1);
+        }}
+      />
+
+      {/* GitHub-Style Soft Delete Confirmation Modal (Task 13) */}
+      <ConfirmDeleteModal
+        isOpen={!!bikeToDelete}
+        onClose={() => setBikeToDelete(null)}
+        title="Soft Delete Motorcycle"
+        itemName="Motorcycle Stock Record"
+        targetValue={bikeToDelete?.chassisNumber || ''}
+        promptLabel="Type exact chassis number below to confirm soft deletion:"
+        onConfirm={async () => {
+          if (!bikeToDelete) return;
+          await api.deleteBike(bikeToDelete.id);
+          toast.success(`Motorcycle ${bikeToDelete.modelName} (${bikeToDelete.chassisNumber}) soft-deleted.`);
+          fetchBikes();
+        }}
+      />
     </div>
   );
 }

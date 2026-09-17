@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { ToastProvider } from './context/ToastContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -10,6 +13,11 @@ import Documents from './components/Documents';
 import Parts from './components/Parts';
 import Reports from './components/Reports';
 import UserManagement from './components/UserManagement';
+import Calendar from './components/Calendar';
+import Analytics from './components/Analytics';
+import Settings from './components/Settings';
+import LegalModal from './components/LegalModal';
+import CommandPalette from './components/CommandPalette';
 import { LogIn, Bike, ShieldAlert, Shield } from 'lucide-react';
 import './App.css';
 
@@ -18,9 +26,30 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Shortcuts
+  // Shortcuts & Modals
   const [openNewSale, setOpenNewSale] = useState(false);
   const [openNewBike, setOpenNewBike] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+
+  // Global Ctrl+K hotkey for Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Open Legal modal when clicking legal tab
+  useEffect(() => {
+    if (activeTab === 'legal') {
+      setIsLegalModalOpen(true);
+    }
+  }, [activeTab]);
 
   // Fallback to allowed tab if current tab becomes unauthorized on role switch
   useEffect(() => {
@@ -38,6 +67,9 @@ function MainApp() {
       setActiveTab('dashboard');
     }
     if (activeTab === 'reports' && !hasPermission('VIEW_REPORTS') && !hasPermission('EXPORT_EXCEL')) {
+      setActiveTab('dashboard');
+    }
+    if (activeTab === 'analytics' && !hasPermission('VIEW_REPORTS')) {
       setActiveTab('dashboard');
     }
   }, [user, activeTab]);
@@ -76,6 +108,7 @@ function MainApp() {
         <Header
           activeTab={activeTab}
           onOpenMobile={() => setIsMobileSidebarOpen(true)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
 
         <main className="module-container">
@@ -122,7 +155,13 @@ function MainApp() {
             )
           )}
 
+          {activeTab === 'calendar' && <Calendar />}
+
+          {activeTab === 'analytics' && <Analytics />}
+
           {activeTab === 'reports' && <Reports />}
+
+          {activeTab === 'settings' && <Settings />}
 
           {activeTab === 'users' && (
             isRole('Admin') ? (
@@ -136,6 +175,27 @@ function MainApp() {
           )}
         </main>
       </div>
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigate={(tab) => {
+          setActiveTab(tab);
+          setIsCommandPaletteOpen(false);
+        }}
+      />
+
+      {/* Global Legal Modal */}
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => {
+          setIsLegalModalOpen(false);
+          if (activeTab === 'legal') {
+            setActiveTab('dashboard');
+          }
+        }}
+      />
     </div>
   );
 }
@@ -254,8 +314,14 @@ function LoginPortal({ onLogin }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <MainApp />
+          </AuthProvider>
+        </ToastProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

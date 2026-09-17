@@ -7,62 +7,92 @@ import {
   Wrench,
   FileSpreadsheet,
   ShieldCheck,
-  Users,
+  Users as UsersIcon,
+  Calendar as CalendarIcon,
+  BarChart3,
+  Settings as SettingsIcon,
+  FileText,
   X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }) {
   const { user, hasPermission, isRole } = useAuth();
+  const { t } = useLanguage();
 
   const navItems = [
     {
       id: 'dashboard',
-      label: 'Dashboard',
+      label: t('nav_dashboard', 'Dashboard'),
       icon: LayoutDashboard,
       show: true
     },
     {
       id: 'inventory',
-      label: 'Motorcycle stock',
+      label: t('nav_inventory', 'Motorcycle stock'),
       icon: Bike,
       show: hasPermission('MANAGE_BIKES') || hasPermission('READ_SALES')
     },
     {
       id: 'sales',
-      label: 'Sales and billing',
+      label: t('nav_sales', 'Sales and billing'),
       icon: ReceiptText,
       show: hasPermission('CREATE_SALE') || hasPermission('READ_SALES')
     },
     {
       id: 'customers',
-      label: 'Customers',
-      icon: Users,
+      label: t('nav_customers', 'Customers'),
+      icon: UsersIcon,
       show: hasPermission('READ_SALES') || hasPermission('CREATE_SALE')
     },
     {
       id: 'documents',
-      label: 'Letters and documents',
+      label: t('nav_documents', 'Letters and documents'),
       icon: FileCheck2,
       show: hasPermission('MANAGE_DOCS')
     },
     {
       id: 'parts',
-      label: 'Spare parts',
+      label: t('nav_parts', 'Spare parts'),
       icon: Wrench,
       show: hasPermission('MANAGE_PARTS')
     },
     {
+      id: 'calendar',
+      label: t('nav_calendar', 'Calendar & Schedule'),
+      icon: CalendarIcon,
+      show: true
+    },
+    {
+      id: 'analytics',
+      label: t('nav_analytics', 'Business Analytics'),
+      icon: BarChart3,
+      show: hasPermission('VIEW_REPORTS')
+    },
+    {
       id: 'reports',
-      label: 'Reports and exports',
+      label: t('nav_reports', 'Reports and exports'),
       icon: FileSpreadsheet,
       show: hasPermission('VIEW_REPORTS') || hasPermission('EXPORT_EXCEL')
     },
     {
       id: 'users',
-      label: 'Staff and access',
+      label: t('nav_users', 'Staff and access'),
       icon: ShieldCheck,
       show: isRole('Admin')
+    },
+    {
+      id: 'settings',
+      label: t('nav_settings', 'Dealership Settings'),
+      icon: SettingsIcon,
+      show: true
+    },
+    {
+      id: 'legal',
+      label: t('nav_legal', 'Terms & Policies'),
+      icon: FileText,
+      show: true
     }
   ];
 
