@@ -127,101 +127,101 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
 
       <div className="header-right">
         <div className="header-tools">
-        {/* Command Palette Trigger (Task 8) */}
-        <button
-          className="header-icon-action-btn"
-          onClick={onOpenCommandPalette}
-          title="Search (Ctrl+K)"
-          aria-label="Open search"
-        >
-          <Search size={16} />
-          <span className="header-kbd-hint">Ctrl+K</span>
-        </button>
-
-        {/* Language Switcher (Task 15) */}
-        <button
-          className="header-icon-action-btn lang-toggle-btn"
-          onClick={toggleLanguage}
-          title="Toggle Roman Urdu / English"
-          aria-label="Toggle language"
-        >
-          <Globe size={16} />
-          <span className="header-lang-code">{lang}</span>
-        </button>
-
-        {/* Theme Switcher (Task 6) */}
-        <button
-          className="header-icon-action-btn theme-toggle-btn"
-          onClick={toggleTheme}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          aria-label="Toggle theme"
-        >
-          {isDark ? <Sun size={17} className="text-amber" /> : <Moon size={17} className="text-cyan" />}
-        </button>
-
-        {/* Notifications Center (Task 8) */}
-        <div className="notification-center-wrap relative" ref={notifRef}>
+          {/* Command Palette Trigger (Task 8) */}
           <button
-            className="header-icon-action-btn relative"
-            onClick={() => setShowNotifications(!showNotifications)}
-            title="Notifications"
-            aria-expanded={showNotifications}
-            aria-haspopup="true"
+            className="header-icon-action-btn"
+            onClick={onOpenCommandPalette}
+            title="Search (Ctrl+K)"
+            aria-label="Open search"
           >
-            <Bell size={17} />
-            {totalNotifCount > 0 && (
-              <span className="notification-dot-badge">{totalNotifCount}</span>
-            )}
+            <Search size={16} />
+            <span className="header-kbd-hint">Ctrl+K</span>
           </button>
 
-          {showNotifications && (
-            <div className="notification-dropdown-menu glass-panel slide-in">
-              <div className="dropdown-header flex items-center justify-between border-b border-line-soft pb-2 mb-2">
-                <span className="font-semibold text-xs">System Alerts</span>
-                <span className="glass-badge badge-cyan text-xs">{totalNotifCount} active</span>
-              </div>
+          {/* Language Switcher (Task 15) */}
+          <button
+            className="header-icon-action-btn lang-toggle-btn"
+            onClick={toggleLanguage}
+            title="Toggle Roman Urdu / English"
+            aria-label="Toggle language"
+          >
+            <Globe size={16} />
+            <span className="header-lang-code">{lang}</span>
+          </button>
 
-              <div className="notif-items-list">
-                {notifications.lowStock > 0 && (
-                  <div className="notif-item flex items-center gap-2 p-2 hover:bg-surface-2 rounded text-xs">
-                    <AlertTriangle size={15} className="text-rose shrink-0" />
-                    <div>
-                      <strong className="block text-main">{notifications.lowStock} spare parts low on stock</strong>
-                      <span className="text-muted">Reorder thresholds triggered</span>
+          {/* Theme Switcher (Task 6) */}
+          <button
+            className="header-icon-action-btn theme-toggle-btn"
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun size={17} className="text-amber" /> : <Moon size={17} className="text-cyan" />}
+          </button>
+
+          {/* Notifications Center (Task 8) */}
+          <div className="notification-center-wrap relative" ref={notifRef}>
+            <button
+              className="header-icon-action-btn relative"
+              onClick={() => setShowNotifications(!showNotifications)}
+              title="Notifications"
+              aria-expanded={showNotifications}
+              aria-haspopup="true"
+            >
+              <Bell size={17} />
+              {totalNotifCount > 0 && (
+                <span className="notification-dot-badge">{totalNotifCount}</span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="notification-dropdown-menu glass-panel slide-in">
+                <div className="dropdown-header flex items-center justify-between border-b border-line-soft pb-2 mb-2">
+                  <span className="font-semibold text-xs">System Alerts</span>
+                  <span className="glass-badge badge-cyan text-xs">{totalNotifCount} active</span>
+                </div>
+
+                <div className="notif-items-list">
+                  {notifications.lowStock > 0 && (
+                    <div className="notif-item flex items-center gap-2 p-2 hover:bg-surface-2 rounded text-xs">
+                      <AlertTriangle size={15} className="text-rose shrink-0" />
+                      <div>
+                        <strong className="block text-main">{notifications.lowStock} spare parts low on stock</strong>
+                        <span className="text-muted">Reorder thresholds triggered</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {notifications.docs > 0 && (
-                  <div className="notif-item flex items-center gap-2 p-2 hover:bg-surface-2 rounded text-xs mt-1">
-                    <FileCheck2 size={15} className="text-cyan shrink-0" />
-                    <div>
-                      <strong className="block text-main">{notifications.docs} vehicle registrations pending</strong>
-                      <span className="text-muted">Excise & allotment paperwork</span>
+                  {notifications.docs > 0 && (
+                    <div className="notif-item flex items-center gap-2 p-2 hover:bg-surface-2 rounded text-xs mt-1">
+                      <FileCheck2 size={15} className="text-cyan shrink-0" />
+                      <div>
+                        <strong className="block text-main">{notifications.docs} vehicle registrations pending</strong>
+                        <span className="text-muted">Excise & allotment paperwork</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {totalNotifCount === 0 && (
-                  <div className="p-4 text-center text-xs text-muted">
-                    No active alerts. All systems running normally.
-                  </div>
-                )}
+                  {totalNotifCount === 0 && (
+                    <div className="p-4 text-center text-xs text-muted">
+                      No active alerts. All systems running normally.
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
 
         <div className="header-account">
-        {/* Online Status */}
-        <div className="glass-badge badge-emerald system-status-badge" title="Connected to database">
-          <Activity size={12} className="live-activity-icon" />
-          <span className="status-text">{t('system_online')}</span>
-        </div>
+          {/* Online Status */}
+          <div className="glass-badge badge-emerald system-status-badge" title="Connected to database">
+            <Activity size={12} className="live-activity-icon" />
+            <span className="status-text">{t('system_online')}</span>
+          </div>
 
-        {/* Current User Role Badge (Static - Switcher Removed) */}
-        <div className="user-role-badge-container" title={`Signed in as ${user?.name || user?.username || 'User'}`}>
+          {/* Current User Role Badge (Static - Switcher Removed) */}
+          {/* <div className="user-role-badge-container" title={`Signed in as ${user?.name || user?.username || 'User'}`}>
           <span
             className={`glass-badge ${
               user?.role === 'Admin'
@@ -235,17 +235,17 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
           >
             {user?.role || 'Guest'}
           </span>
-        </div>
+        </div> */}
 
-        {/* Logout Button */}
-        <button
-          className="logout-btn"
-          onClick={logout}
-          title="Sign out"
-          aria-label="Sign out"
-        >
-          <LogOut size={17} />
-        </button>
+          {/* Logout Button */}
+          <button
+            className="logout-btn"
+            onClick={logout}
+            title="Sign out"
+            aria-label="Sign out"
+          >
+            <LogOut size={17} />
+          </button>
         </div>
       </div>
     </header>

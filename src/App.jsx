@@ -16,7 +16,7 @@ import UserManagement from './components/UserManagement';
 import Calendar from './components/Calendar';
 import Analytics from './components/Analytics';
 import Settings from './components/Settings';
-import LegalModal from './components/LegalModal';
+import LegalPage from './components/LegalPage';
 import CommandPalette from './components/CommandPalette';
 import { LogIn, Bike, ShieldAlert } from 'lucide-react';
 import './App.css';
@@ -30,7 +30,6 @@ function MainApp() {
   const [openNewSale, setOpenNewSale] = useState(false);
   const [openNewBike, setOpenNewBike] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
 
   // Global Ctrl+K hotkey for Command Palette
   useEffect(() => {
@@ -43,13 +42,6 @@ function MainApp() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  // Open Legal modal when clicking legal tab
-  useEffect(() => {
-    if (activeTab === 'legal') {
-      setIsLegalModalOpen(true);
-    }
-  }, [activeTab]);
 
   // Fallback to allowed tab if current tab becomes unauthorized on role switch
   useEffect(() => {
@@ -72,7 +64,7 @@ function MainApp() {
     if (activeTab === 'analytics' && !hasPermission('VIEW_REPORTS')) {
       setActiveTab('dashboard');
     }
-  }, [user, activeTab]);
+  }, [user, activeTab, hasPermission, isRole]);
 
   if (loading) {
     return (
@@ -162,6 +154,8 @@ function MainApp() {
 
           {activeTab === 'settings' && <Settings />}
 
+          {activeTab === 'legal' && <LegalPage />}
+
           {activeTab === 'users' && (
             isRole('Admin') ? (
               <UserManagement />
@@ -185,17 +179,6 @@ function MainApp() {
         onSelectTab={(tab) => {
           setActiveTab(tab);
           setIsCommandPaletteOpen(false);
-        }}
-      />
-
-      {/* Global Legal Modal */}
-      <LegalModal
-        isOpen={isLegalModalOpen}
-        onClose={() => {
-          setIsLegalModalOpen(false);
-          if (activeTab === 'legal') {
-            setActiveTab('dashboard');
-          }
         }}
       />
     </div>

@@ -5030,19 +5030,17 @@ td.empty-placeholder {
   overflow: hidden;
 }
 
-/* Legal Modal */
-.legal-modal {
-  max-width: 768px;
-  width: 100%;
+/* Legal Page */
+.legal-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
 }
 
 .legal-tabs-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-2);
 }
 
 .legal-tab-btn {
@@ -5069,34 +5067,195 @@ td.empty-placeholder {
 }
 
 .legal-content-body {
-  padding: 24px;
-  max-height: 60vh;
-  overflow-y: auto;
+  padding: 12px 0;
 }
 
-.legal-section h4 {
-  font-size: var(--fs-16);
-  color: var(--ink-1);
-  margin-bottom: 4px;
+/* --------------------------------------------------------------------------
+   Legal page — refinement & motion
+   -------------------------------------------------------------------------- */
+.legal-page {
+  animation: fadeIn 0.3s var(--ease);
 }
 
-.legal-text-block {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.legal-hero-card {
+  transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
 }
 
-.legal-text-block h5 {
-  font-size: var(--fs-14);
-  font-weight: 600;
-  color: var(--ink-2);
-  margin-bottom: 2px;
+.legal-hero-card:hover {
+  box-shadow: var(--shadow-2);
+  border-color: var(--line-strong);
 }
 
-.legal-text-block p {
-  font-size: var(--fs-13);
-  color: var(--ink-3);
-  line-height: 1.6;
+/* Pulsing ring behind the shield icon — a quiet "alive" signal */
+.legal-hero-icon {
+  position: relative;
+}
+
+.legal-hero-icon::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid var(--accent-line);
+  opacity: 0;
+  animation: legalRingPulse 2.8s var(--ease) infinite;
+  pointer-events: none;
+}
+
+@keyframes legalRingPulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+
+  70% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.legal-print-btn {
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.legal-print-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.legal-print-btn:active {
+  transform: translateY(0);
+}
+
+/* Segmented tab bar with a sliding highlight */
+.legal-tabs-bar {
+  position: relative;
+  background: var(--surface-2);
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-soft);
+}
+
+.legal-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-1);
+  transition: left 0.32s var(--ease-spring), width 0.32s var(--ease-spring), opacity 0.2s var(--ease);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.legal-tab-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.legal-tab-btn.active {
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.legal-tab-btn svg {
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.legal-tab-btn:hover svg {
+  transform: translateY(-1px) scale(1.08);
+}
+
+.legal-tab-btn.active svg {
+  transform: scale(1.05);
+}
+
+.legal-meta-row .glass-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  animation: riseIn 0.35s var(--ease) backwards;
+}
+
+.legal-meta-row .glass-badge:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+/* Content swap animation — replays whenever the tab (key) changes */
+.legal-content-anim {
+  animation: legalContentIn 0.32s var(--ease);
+}
+
+@keyframes legalContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Each clause becomes a hoverable, staggered-in mini card */
+.legal-text-block>div {
+  padding: 12px 14px;
+  margin: 0 -14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  opacity: 0;
+  animation: riseIn 0.4s var(--ease) forwards;
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease), transform 0.18s var(--ease);
+}
+
+.legal-text-block>div:hover {
+  background: var(--surface-2);
+  border-color: var(--line-soft);
+  transform: translateX(2px);
+}
+
+.legal-text-block>div:nth-child(1) {
+  animation-delay: 0.03s;
+}
+
+.legal-text-block>div:nth-child(2) {
+  animation-delay: 0.09s;
+}
+
+.legal-text-block>div:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.legal-text-block>div:nth-child(4) {
+  animation-delay: 0.21s;
+}
+
+.legal-verified-footer svg {
+  animation: legalCheckPop 0.4s var(--ease-spring) 0.15s backwards;
+}
+
+@keyframes legalCheckPop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media print {
+  .legal-hero-icon::after {
+    display: none;
+  }
 }
 
 /* Command Palette */
@@ -5818,7 +5977,7 @@ td.empty-placeholder {
   position: relative;
 }
 
-.input-icon-wrap > svg {
+.input-icon-wrap>svg {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -5887,8 +6046,12 @@ td.empty-placeholder {
   display: none;
 }
 
-.day-event-dots {
+.day-events-preview {
   display: none;
+}
+
+.day-event-dots {
+  display: flex;
   align-items: center;
   gap: 3px;
   margin-top: 2px;
@@ -5901,11 +6064,25 @@ td.empty-placeholder {
   background: var(--ink-4);
 }
 
-.day-event-dot.badge-rose { background: var(--bad); }
-.day-event-dot.badge-amber { background: var(--warn); }
-.day-event-dot.badge-emerald { background: var(--ok); }
-.day-event-dot.badge-cyan { background: var(--accent); }
-.day-event-dot.badge-purple { background: var(--info); }
+.day-event-dot.badge-rose {
+  background: var(--bad);
+}
+
+.day-event-dot.badge-amber {
+  background: var(--warn);
+}
+
+.day-event-dot.badge-emerald {
+  background: var(--ok);
+}
+
+.day-event-dot.badge-cyan {
+  background: var(--accent);
+}
+
+.day-event-dot.badge-purple {
+  background: var(--info);
+}
 
 @media (min-width: 1100px) {
   .header-kbd-hint {
@@ -5997,14 +6174,6 @@ td.empty-placeholder {
   .calendar-day-cell {
     min-height: 52px;
     padding: 6px 4px;
-  }
-
-  .day-events-preview {
-    display: none;
-  }
-
-  .day-event-dots {
-    display: flex;
   }
 
   .calendar-weekday-header .wd-full {
@@ -6236,7 +6405,7 @@ td.empty-placeholder {
   background: var(--surface-3);
 }
 
-.stacked-meter-bar > div {
+.stacked-meter-bar>div {
   min-width: 0;
   height: 100%;
 }
