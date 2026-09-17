@@ -176,6 +176,15 @@ export default function Calendar({ onNavigateToSale }) {
 
   const selectedDayEvents = getEventsForDay(selectedDay);
 
+  if (loading && events.length === 0) {
+    return (
+      <div className="module-loading">
+        <div className="spinner"></div>
+        <span>{isRomanUrdu ? 'Calendar load ho raha hai…' : 'Loading schedule…'}</span>
+      </div>
+    );
+  }
+
   const getBadgeClass = (type, status) => {
     if (type === 'INSTALLMENT') {
       return status === 'OVERDUE' ? 'badge-rose' : 'badge-amber';
@@ -191,7 +200,9 @@ export default function Calendar({ onNavigateToSale }) {
       <div className="calendar-header-bar glass-panel mb-4">
         <div className="calendar-nav-group">
           <div className="calendar-title-wrap">
-            <CalendarIcon size={20} className="text-cyan" />
+            <span className="calendar-icon-chip">
+              <CalendarIcon size={17} />
+            </span>
             <h2>
               {isRomanUrdu ? monthNamesRu[month] : monthNames[month]} {year}
             </h2>
@@ -279,9 +290,8 @@ export default function Calendar({ onNavigateToSale }) {
               return (
                 <div
                   key={`day-${dayNumber}`}
-                  className={`calendar-day-cell ${isToday ? 'is-today' : ''} ${
-                    isSelected ? 'is-selected' : ''
-                  } ${dayEvents.length > 0 ? 'has-events' : ''}`}
+                  className={`calendar-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''
+                    } ${dayEvents.length > 0 ? 'has-events' : ''}`}
                   onClick={() => setSelectedDay(dayNumber)}
                 >
                   <div className="day-cell-header">
@@ -343,7 +353,9 @@ export default function Calendar({ onNavigateToSale }) {
           <div className="day-events-list mt-3">
             {selectedDayEvents.length === 0 ? (
               <div className="empty-day-state">
-                <Clock size={32} className="text-muted mb-2" />
+                <div className="empty-day-icon">
+                  <Clock size={20} />
+                </div>
                 <p className="text-sm text-muted">
                   {isRomanUrdu
                     ? 'Is din koi baqaya qist ya delivery scheduled nahi hai.'
@@ -354,9 +366,9 @@ export default function Calendar({ onNavigateToSale }) {
               selectedDayEvents.map((ev) => (
                 <div
                   key={ev.id}
-                  className={`day-event-card glass-panel ${
-                    selectedEvent?.id === ev.id ? 'highlighted' : ''
-                  }`}
+                  data-type={ev.type}
+                  className={`day-event-card glass-panel ${selectedEvent?.id === ev.id ? 'highlighted' : ''
+                    }`}
                   onClick={() => setSelectedEvent(ev)}
                 >
                   <div className="flex items-center justify-between">
@@ -392,7 +404,7 @@ export default function Calendar({ onNavigateToSale }) {
 
                   {ev.saleId && onNavigateToSale && (
                     <button
-                      className="btn btn-outline btn-xs mt-2 w-full"
+                      className="btn btn-primary btn-xs mt-2 w-full"
                       onClick={(e) => {
                         e.stopPropagation();
                         onNavigateToSale(ev.saleId);

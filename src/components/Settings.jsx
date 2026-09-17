@@ -3,16 +3,15 @@ import {
   User,
   KeyRound,
   Sliders,
-  Shield,
   Save,
-  CheckCircle2,
-  AlertCircle,
   Building2,
   Lock,
   Phone,
-  Clock,
   ShieldCheck,
-  RefreshCw
+  Globe,
+  FileText,
+  AlertTriangle,
+  Clock
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -80,7 +79,6 @@ export default function Settings() {
         setLoadingSettings(false);
       }
     };
-
     fetchSettings();
   }, []);
 
@@ -94,9 +92,9 @@ export default function Settings() {
     if (/[0-9]/.test(pass)) score += 1;
     if (/[^A-Za-z0-9]/.test(pass)) score += 1;
 
-    if (score <= 2) return { score: 33, label: 'Weak', color: 'bg-rose' };
-    if (score <= 3) return { score: 66, label: 'Good', color: 'bg-amber' };
-    return { score: 100, label: 'Strong', color: 'bg-emerald' };
+    if (score <= 2) return { score: 33, label: isRomanUrdu ? 'Kamzor' : 'Weak', color: 'bg-rose' };
+    if (score <= 3) return { score: 66, label: isRomanUrdu ? 'Theek' : 'Good', color: 'bg-amber' };
+    return { score: 100, label: isRomanUrdu ? 'Mazboot' : 'Strong', color: 'bg-emerald' };
   };
 
   const strength = getPasswordStrength(passwordForm.newPassword);
@@ -124,7 +122,6 @@ export default function Settings() {
       toast.error(isRomanUrdu ? 'Password kam az kam 6 characters ka hona chahiye' : 'Password must be at least 6 characters');
       return;
     }
-
     setSavingPassword(true);
     try {
       await api.changePassword({
@@ -153,90 +150,90 @@ export default function Settings() {
     }
   };
 
+  const tabs = [
+    { id: 'profile', label: isRomanUrdu ? 'Account Profile' : 'Account Profile', icon: User },
+    { id: 'password', label: isRomanUrdu ? 'Security & Password' : 'Security & Password', icon: KeyRound },
+    ...(isRole('Admin') ? [{ id: 'platform', label: isRomanUrdu ? 'Platform Config' : 'Platform Config', icon: Sliders }] : [])
+  ];
+
   return (
     <div className="settings-view">
-      {/* Top Header */}
-      <div className="settings-header glass-panel mb-4">
-        <div>
-          <h2>{isRomanUrdu ? 'Settings aur Tarmeemat' : 'Platform & Account Settings'}</h2>
-          <span className="text-xs text-muted">
+      {/* Top Header & Tabs */}
+      <div className="settings-header glass-panel mb-5">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold text-main">
+            {isRomanUrdu ? 'Settings aur Tarmeemat' : 'Platform & Account Settings'}
+          </h2>
+          <span className="text-sm text-muted">
             {isRomanUrdu
               ? 'Account profile, password aur dealership ki markazi settings'
               : 'Manage credentials, security preferences, and dealership configuration'}
           </span>
         </div>
 
-        <div className="settings-tabs-bar">
-          <button
-            className={`btn ${activeTab === 'profile' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            <User size={15} />
-            {isRomanUrdu ? 'Account Profile' : 'Account Profile'}
-          </button>
-          <button
-            className={`btn ${activeTab === 'password' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setActiveTab('password')}
-          >
-            <KeyRound size={15} />
-            {isRomanUrdu ? 'Password Tabdeeli' : 'Security & Password'}
-          </button>
-          {isRole('Admin') && (
-            <button
-              className={`btn ${activeTab === 'platform' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setActiveTab('platform')}
-            >
-              <Sliders size={15} />
-              {isRomanUrdu ? 'Dealership Settings' : 'Platform Config'}
-            </button>
-          )}
+        <div className="settings-tabs-bar mt-3 sm:mt-0">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <Icon size={15} />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Tab 1: Profile Settings */}
       {activeTab === 'profile' && (
-        <div className="settings-card glass-panel max-w-2xl">
+        <div className="settings-card glass-panel max-w-2xl slide-in">
           <div className="card-header border-b border-line-soft pb-3 mb-4">
-            <h3>{isRomanUrdu ? 'Account Ki Maloomat' : 'User Account Profile'}</h3>
-            <span className="text-xs text-muted">View and modify your public contact details</span>
+            <div>
+              <h3>{isRomanUrdu ? 'Account Ki Maloomat' : 'User Account Profile'}</h3>
+              <span className="text-xs text-muted">View and modify your public contact details</span>
+            </div>
           </div>
-
-          <form onSubmit={handleUpdateProfile} className="settings-form">
-            <div className="user-profile-badge-row flex items-center gap-3 p-3 bg-surface-2 rounded-md mb-4 border border-line-soft">
+          <form onSubmit={handleUpdateProfile} className="settings-form p-5 pt-0">
+            <div className="user-profile-badge-row flex items-center gap-4 p-4 bg-surface-2 rounded-md mb-5 border border-line-soft">
               <div className="user-avatar avatar-lg">
                 {(user?.name || 'U').charAt(0).toUpperCase()}
               </div>
-              <div>
-                <h4 className="text-base font-semibold">{user?.name}</h4>
-                <div className="flex items-center gap-2 mt-1">
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base font-semibold text-main truncate">{user?.name}</h4>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className="glass-badge badge-cyan text-xs">@{user?.username}</span>
                   <span className="glass-badge badge-purple text-xs">{user?.role}</span>
                 </div>
               </div>
             </div>
 
-            <div className="form-field mb-3">
-              <label>{isRomanUrdu ? 'Username (Tabdeel nahi ho sakta)' : 'Username (System Identifier)'}</label>
-              <input
-                type="text"
-                className="form-input font-mono"
-                value={user?.username || ''}
-                disabled
-              />
+            <div className="form-group-row mb-4">
+              <div className="form-field">
+                <label>{isRomanUrdu ? 'Username (Tabdeel nahi ho sakta)' : 'Username (System Identifier)'}</label>
+                <input
+                  type="text"
+                  className="form-input font-mono bg-surface-3"
+                  value={user?.username || ''}
+                  disabled
+                />
+              </div>
+              <div className="form-field">
+                <label>{isRomanUrdu ? 'Mukammal Naam' : 'Full Name'}</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="form-field mb-3">
-              <label>{isRomanUrdu ? 'Mukammal Naam' : 'Full Name'}</label>
-              <input
-                type="text"
-                className="form-input"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="form-field mb-4">
+            <div className="form-field mb-5">
               <label>{isRomanUrdu ? 'Email Address' : 'Email Address'}</label>
               <input
                 type="email"
@@ -247,24 +244,27 @@ export default function Settings() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={savingProfile}>
-              <Save size={16} />
-              {savingProfile ? 'Saving…' : (isRomanUrdu ? 'Profile Mehfooz Karein' : 'Save Profile Changes')}
-            </button>
+            <div className="page-form-footer border-t border-line-soft pt-4">
+              <button type="submit" className="btn btn-primary" disabled={savingProfile}>
+                <Save size={16} />
+                {savingProfile ? (isRomanUrdu ? 'Mehfooz ho raha hai…' : 'Saving…') : (isRomanUrdu ? 'Profile Mehfooz Karein' : 'Save Profile Changes')}
+              </button>
+            </div>
           </form>
         </div>
       )}
 
       {/* Tab 2: Password Change */}
       {activeTab === 'password' && (
-        <div className="settings-card glass-panel max-w-2xl">
+        <div className="settings-card glass-panel max-w-2xl slide-in">
           <div className="card-header border-b border-line-soft pb-3 mb-4">
-            <h3>{isRomanUrdu ? 'Password Tabdeel Karein' : 'Change Password'}</h3>
-            <span className="text-xs text-muted">Ensure your account uses a strong, complex password</span>
+            <div>
+              <h3>{isRomanUrdu ? 'Password Tabdeel Karein' : 'Change Password'}</h3>
+              <span className="text-xs text-muted">Ensure your account uses a strong, complex password</span>
+            </div>
           </div>
-
-          <form onSubmit={handleUpdatePassword} className="settings-form">
-            <div className="form-field mb-3">
+          <form onSubmit={handleUpdatePassword} className="settings-form p-5 pt-0">
+            <div className="form-field mb-4">
               <label>{isRomanUrdu ? 'Mojooda Password' : 'Current Password'}</label>
               <input
                 type="password"
@@ -276,7 +276,7 @@ export default function Settings() {
               />
             </div>
 
-            <div className="form-field mb-3">
+            <div className="form-field mb-4">
               <label>{isRomanUrdu ? 'Naya Password' : 'New Password (min 6 characters)'}</label>
               <input
                 type="password"
@@ -287,158 +287,236 @@ export default function Settings() {
                 required
               />
               {passwordForm.newPassword && (
-                <div className="password-strength-indicator mt-2">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted">Strength: {strength.label}</span>
-                    <span className="font-mono text-xs">{strength.score}%</span>
+                <div className="password-strength-indicator mt-3">
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="text-muted font-medium">
+                      Strength: <span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span>
+                    </span>
+                    <span className="font-mono text-muted">{strength.score}%</span>
                   </div>
                   <div className="bar-track">
-                    <div className={`bar-fill ${strength.color}`} style={{ width: `${strength.score}%` }}></div>
+                    <div
+                      className={`bar-fill ${strength.color} transition-all duration-300`}
+                      style={{ width: `${strength.score}%` }}
+                    ></div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="form-field mb-4">
+            <div className="form-field mb-5">
               <label>{isRomanUrdu ? 'Naye Password Ki Tasdeeq' : 'Confirm New Password'}</label>
               <input
                 type="password"
-                className="form-input"
+                className={`form-input ${passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword ? 'border-bad-line bg-bad-soft/20' : ''}`}
                 placeholder="••••••••"
                 value={passwordForm.confirmPassword}
                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                 required
               />
+              {passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+                <span className="error-text flex items-center gap-1 mt-1">
+                  <AlertTriangle size={12} /> Passwords do not match
+                </span>
+              )}
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={savingPassword}>
-              <Lock size={16} />
-              {savingPassword ? 'Updating…' : (isRomanUrdu ? 'Naya Password Mehfooz Karein' : 'Update Password')}
-            </button>
+            <div className="page-form-footer border-t border-line-soft pt-4">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={savingPassword || (passwordForm.newPassword !== passwordForm.confirmPassword)}
+              >
+                <Lock size={16} />
+                {savingPassword ? (isRomanUrdu ? 'Update ho raha hai…' : 'Updating…') : (isRomanUrdu ? 'Naya Password Mehfooz Karein' : 'Update Password')}
+              </button>
+            </div>
           </form>
         </div>
       )}
 
       {/* Tab 3: Platform Settings (Admin Only) */}
       {activeTab === 'platform' && isRole('Admin') && (
-        <div className="settings-card glass-panel max-w-3xl">
+        <div className="settings-card glass-panel max-w-3xl slide-in">
           <div className="card-header border-b border-line-soft pb-3 mb-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between w-full">
               <div>
                 <h3>{isRomanUrdu ? 'Dealership Platform Configuration' : 'Dealership Platform Configuration'}</h3>
                 <span className="text-xs text-muted">System-wide parameters for invoicing, branches, taxes and alerts</span>
               </div>
-              <span className="glass-badge badge-purple text-xs">Admin Privilege</span>
+              {loadingSettings ? (
+                <span className="glass-badge badge-cyan text-xs flex items-center gap-1">
+                  <span className="spinner spinner-xs" /> {isRomanUrdu ? 'Load ho raha hai…' : 'Loading…'}
+                </span>
+              ) : (
+                <span className="glass-badge badge-purple text-xs flex items-center gap-1">
+                  <ShieldCheck size={12} /> Admin Privilege
+                </span>
+              )}
             </div>
           </div>
 
-          <form onSubmit={handleUpdatePlatformSettings} className="settings-form">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Dealership Ka Naam' : 'Dealership Entity Name'}</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={platformSettings.dealershipName}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, dealershipName: e.target.value })}
-                  required
-                />
+          <form onSubmit={handleUpdatePlatformSettings} className={`settings-form p-5 pt-0 ${loadingSettings ? 'is-loading' : ''}`}>
+            {/* Business Identity */}
+            <div className="mb-6">
+              <div className="section-title mb-3">
+                <Building2 size={14} className="text-cyan" />
+                {isRomanUrdu ? 'Business Identity' : 'Business Identity'}
               </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Branch Ka Pata' : 'Branch / Campus Location'}</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={platformSettings.dealershipBranch}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, dealershipBranch: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Currency Symbol' : 'Currency Symbol'}</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={platformSettings.currency}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, currency: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Invoice Prefix' : 'Invoice Number Prefix'}</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={platformSettings.invoicePrefix}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, invoicePrefix: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Tax Rate (%)' : 'Default Sales Tax / GST (%)'}</label>
-                <input
-                  type="number"
-                  className="form-input font-mono"
-                  value={platformSettings.defaultTaxRate}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, defaultTaxRate: e.target.value })}
-                  min="0"
-                  max="100"
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Parts Low Stock Alert Level' : 'Low Stock Warning Threshold'}</label>
-                <input
-                  type="number"
-                  className="form-input font-mono"
-                  value={platformSettings.lowStockThreshold}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, lowStockThreshold: e.target.value })}
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Timezone' : 'System Timezone'}</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={platformSettings.timezone}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, timezone: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-field">
-                <label>{isRomanUrdu ? 'Rabta Phone' : 'Official Telephone'}</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={platformSettings.contactPhone}
-                  onChange={(e) => setPlatformSettings({ ...platformSettings, contactPhone: e.target.value })}
-                />
+              <div className="page-form-grid-2">
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Dealership Ka Naam' : 'Dealership Entity Name'}</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={platformSettings.dealershipName}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, dealershipName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Branch Ka Pata' : 'Branch / Campus Location'}</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={platformSettings.dealershipBranch}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, dealershipBranch: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Rabta Phone' : 'Official Telephone'}</label>
+                  <div style={{ position: 'relative' }}>
+                    <Phone size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                    <input
+                      type="text"
+                      className="form-input font-mono"
+                      style={{ paddingLeft: '32px' }}
+                      value={platformSettings.contactPhone}
+                      onChange={(e) => setPlatformSettings({ ...platformSettings, contactPhone: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'NTN / Tax ID' : 'NTN / Tax ID Number'}</label>
+                  <input
+                    type="text"
+                    className="form-input font-mono"
+                    value={platformSettings.ntnNumber}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, ntnNumber: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="p-3 bg-surface-2 rounded-md border border-line-soft mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs">
-                <ShieldCheck size={16} className="text-emerald" />
-                <span>
-                  Audit Log Retention Standard: <strong>90 Days Guaranteed</strong>
-                </span>
+            {/* Financials */}
+            <div className="mb-6">
+              <div className="section-title mb-3">
+                <FileText size={14} className="text-emerald" />
+                {isRomanUrdu ? 'Financials & Invoicing' : 'Financials & Invoicing'}
               </div>
-              <span className="glass-badge badge-emerald text-xs">ISO Dealership Compliant</span>
+              <div className="page-form-grid-2">
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Currency Symbol' : 'Currency Symbol'}</label>
+                  <input
+                    type="text"
+                    className="form-input font-mono"
+                    value={platformSettings.currency}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, currency: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Invoice Prefix' : 'Invoice Number Prefix'}</label>
+                  <input
+                    type="text"
+                    className="form-input font-mono"
+                    value={platformSettings.invoicePrefix}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, invoicePrefix: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Tax Rate (%)' : 'Default Sales Tax / GST (%)'}</label>
+                  <input
+                    type="number"
+                    className="form-input font-mono"
+                    value={platformSettings.defaultTaxRate}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, defaultTaxRate: e.target.value })}
+                    min="0"
+                    max="100"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary mt-4" disabled={savingSettings}>
-              <Save size={16} />
-              {savingSettings ? 'Saving Configuration…' : (isRomanUrdu ? 'Settings Mehfooz Karein' : 'Save Platform Settings')}
-            </button>
+            {/* System & Operations */}
+            <div className="mb-6">
+              <div className="section-title mb-3">
+                <Sliders size={14} className="text-purple" />
+                {isRomanUrdu ? 'System & Operations' : 'System & Operations'}
+              </div>
+              <div className="page-form-grid-2">
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Timezone' : 'System Timezone'}</label>
+                  <div style={{ position: 'relative' }}>
+                    <Globe size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                    <input
+                      type="text"
+                      className="form-input font-mono"
+                      style={{ paddingLeft: '32px' }}
+                      value={platformSettings.timezone}
+                      onChange={(e) => setPlatformSettings({ ...platformSettings, timezone: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Parts Low Stock Alert Level' : 'Low Stock Warning Threshold'}</label>
+                  <input
+                    type="number"
+                    className="form-input font-mono"
+                    value={platformSettings.lowStockThreshold}
+                    onChange={(e) => setPlatformSettings({ ...platformSettings, lowStockThreshold: e.target.value })}
+                    min="1"
+                    required
+                  />
+                </div>
+                <div className="form-field">
+                  <label>{isRomanUrdu ? 'Audit Log Retention (Days)' : 'Audit Log Retention (Days)'}</label>
+                  <div style={{ position: 'relative' }}>
+                    <Clock size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-4)', pointerEvents: 'none' }} />
+                    <input
+                      type="number"
+                      className="form-input font-mono"
+                      style={{ paddingLeft: '32px' }}
+                      value={platformSettings.logRetentionDays}
+                      onChange={(e) => setPlatformSettings({ ...platformSettings, logRetentionDays: e.target.value })}
+                      min="30"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-emerald-glow rounded-md border border-ok-line mt-4 flex items-center justify-between gap-3">
+              <div className="flex items-start gap-3 text-xs text-emerald">
+                <ShieldCheck size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-semibold mb-0.5">ISO Dealership Compliant</div>
+                  <div className="opacity-90">Audit logs are cryptographically sealed and retained for a guaranteed minimum of {platformSettings.logRetentionDays} days.</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="page-form-footer border-t border-line-soft pt-4 mt-5">
+              <button type="submit" className="btn btn-primary" disabled={savingSettings || loadingSettings}>
+                <Save size={16} />
+                {savingSettings ? (isRomanUrdu ? 'Settings mehfooz ho rahi hain…' : 'Saving Configuration…') : (isRomanUrdu ? 'Settings Mehfooz Karein' : 'Save Platform Settings')}
+              </button>
+            </div>
           </form>
         </div>
       )}

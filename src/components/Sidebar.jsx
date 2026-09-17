@@ -21,78 +21,99 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
   const { user, hasPermission, isRole } = useAuth();
   const { t } = useLanguage();
 
-  const navItems = [
+  // Grouped navigation sections for better visual hierarchy
+  const navSections = [
     {
-      id: 'dashboard',
-      label: t('nav_dashboard', 'Dashboard'),
-      icon: LayoutDashboard,
-      show: true
+      title: 'Core',
+      items: [
+        {
+          id: 'dashboard',
+          label: t('nav_dashboard', 'Dashboard'),
+          icon: LayoutDashboard,
+          show: true
+        }
+      ]
     },
     {
-      id: 'inventory',
-      label: t('nav_inventory', 'Motorcycle stock'),
-      icon: Bike,
-      show: hasPermission('MANAGE_BIKES') || hasPermission('READ_SALES')
+      title: 'Operations',
+      items: [
+        {
+          id: 'inventory',
+          label: t('nav_inventory', 'Motorcycle stock'),
+          icon: Bike,
+          show: hasPermission('MANAGE_BIKES') || hasPermission('READ_SALES')
+        },
+        {
+          id: 'sales',
+          label: t('nav_sales', 'Sales and billing'),
+          icon: ReceiptText,
+          show: hasPermission('CREATE_SALE') || hasPermission('READ_SALES')
+        },
+        {
+          id: 'customers',
+          label: t('nav_customers', 'Customers'),
+          icon: UsersIcon,
+          show: hasPermission('READ_SALES') || hasPermission('CREATE_SALE')
+        },
+        {
+          id: 'documents',
+          label: t('nav_documents', 'Letters and documents'),
+          icon: FileCheck2,
+          show: hasPermission('MANAGE_DOCS')
+        },
+        {
+          id: 'parts',
+          label: t('nav_parts', 'Spare parts'),
+          icon: Wrench,
+          show: hasPermission('MANAGE_PARTS')
+        },
+        {
+          id: 'calendar',
+          label: t('nav_calendar', 'Calendar & Schedule'),
+          icon: CalendarIcon,
+          show: true
+        }
+      ]
     },
     {
-      id: 'sales',
-      label: t('nav_sales', 'Sales and billing'),
-      icon: ReceiptText,
-      show: hasPermission('CREATE_SALE') || hasPermission('READ_SALES')
+      title: 'Business Intelligence',
+      items: [
+        {
+          id: 'analytics',
+          label: t('nav_analytics', 'Business Analytics'),
+          icon: BarChart3,
+          show: hasPermission('VIEW_REPORTS')
+        },
+        {
+          id: 'reports',
+          label: t('nav_reports', 'Reports and exports'),
+          icon: FileSpreadsheet,
+          show: hasPermission('VIEW_REPORTS') || hasPermission('EXPORT_EXCEL')
+        }
+      ]
     },
     {
-      id: 'customers',
-      label: t('nav_customers', 'Customers'),
-      icon: UsersIcon,
-      show: hasPermission('READ_SALES') || hasPermission('CREATE_SALE')
-    },
-    {
-      id: 'documents',
-      label: t('nav_documents', 'Letters and documents'),
-      icon: FileCheck2,
-      show: hasPermission('MANAGE_DOCS')
-    },
-    {
-      id: 'parts',
-      label: t('nav_parts', 'Spare parts'),
-      icon: Wrench,
-      show: hasPermission('MANAGE_PARTS')
-    },
-    {
-      id: 'calendar',
-      label: t('nav_calendar', 'Calendar & Schedule'),
-      icon: CalendarIcon,
-      show: true
-    },
-    {
-      id: 'analytics',
-      label: t('nav_analytics', 'Business Analytics'),
-      icon: BarChart3,
-      show: hasPermission('VIEW_REPORTS')
-    },
-    {
-      id: 'reports',
-      label: t('nav_reports', 'Reports and exports'),
-      icon: FileSpreadsheet,
-      show: hasPermission('VIEW_REPORTS') || hasPermission('EXPORT_EXCEL')
-    },
-    {
-      id: 'users',
-      label: t('nav_users', 'Staff and access'),
-      icon: ShieldCheck,
-      show: isRole('Admin')
-    },
-    {
-      id: 'settings',
-      label: t('nav_settings', 'Dealership Settings'),
-      icon: SettingsIcon,
-      show: true
-    },
-    {
-      id: 'legal',
-      label: t('nav_legal', 'Terms & Policies'),
-      icon: FileText,
-      show: true
+      title: 'Administration',
+      items: [
+        {
+          id: 'users',
+          label: t('nav_users', 'Staff and access'),
+          icon: ShieldCheck,
+          show: isRole('Admin')
+        },
+        {
+          id: 'settings',
+          label: t('nav_settings', 'Dealership Settings'),
+          icon: SettingsIcon,
+          show: true
+        },
+        {
+          id: 'legal',
+          label: t('nav_legal', 'Terms & Policies'),
+          icon: FileText,
+          show: true
+        }
+      ]
     }
   ];
 
@@ -142,20 +163,31 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.filter(item => item.show).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
+        {navSections.map((section) => {
+          // Only render the section if the user has permission to see at least one item in it
+          const visibleItems = section.items.filter(item => item.show);
+          if (visibleItems.length === 0) return null;
+
           return (
-            <button
-              key={item.id}
-              onClick={() => handleSelectTab(item.id)}
-              className={`nav-link ${isActive ? 'active' : ''}`}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <Icon size={17} className="nav-icon" />
-              <span>{item.label}</span>
-              {isActive && <div className="active-indicator" />}
-            </button>
+            <React.Fragment key={section.title}>
+              <div className="nav-section-title">{section.title}</div>
+              {visibleItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelectTab(item.id)}
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon size={17} className="nav-icon" />
+                    <span>{item.label}</span>
+                    {isActive && <div className="active-indicator" />}
+                  </button>
+                );
+              })}
+            </React.Fragment>
           );
         })}
       </nav>

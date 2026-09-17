@@ -4,15 +4,12 @@ import {
   Activity,
   Server,
   Database,
-  ShieldCheck,
   Download,
   Layers,
   Bike,
   CreditCard,
   CheckCircle2,
-  AlertTriangle,
   Cpu,
-  Clock,
   BarChart3
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -76,7 +73,7 @@ export default function Analytics() {
     const x =
       padding.left +
       (index / (monthlyTrends.length - 1 || 1)) *
-        (chartWidth - padding.left - padding.right);
+      (chartWidth - padding.left - padding.right);
     const y =
       chartHeight -
       padding.bottom -
@@ -88,9 +85,8 @@ export default function Analytics() {
     return idx === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`;
   }, '');
 
-  const areaD = `${pathD} L ${points[points.length - 1]?.x || 0} ${
-    chartHeight - padding.bottom
-  } L ${points[0]?.x || 0} ${chartHeight - padding.bottom} Z`;
+  const areaD = `${pathD} L ${points[points.length - 1]?.x || 0} ${chartHeight - padding.bottom
+    } L ${points[0]?.x || 0} ${chartHeight - padding.bottom} Z`;
 
   // Top Selling Models
   const topModels = stats?.topModels || [];
@@ -191,7 +187,7 @@ export default function Analytics() {
               </div>
               <div className="revenue-legend flex items-center gap-3">
                 <span className="flex items-center gap-1 text-xs">
-                  <span className="legend-dot bg-cyan"></span> Revenue (PKR)
+                  <span className="legend-dot bg-accent"></span> Revenue (PKR)
                 </span>
               </div>
             </div>
@@ -204,8 +200,8 @@ export default function Analytics() {
               >
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                    <stop offset="0%" style={{ stopColor: 'var(--accent)' }} stopOpacity="0.35" />
+                    <stop offset="100%" style={{ stopColor: 'var(--accent)' }} stopOpacity="0" />
                   </linearGradient>
                 </defs>
 
@@ -222,13 +218,13 @@ export default function Analytics() {
                         y1={yVal}
                         x2={chartWidth - padding.right}
                         y2={yVal}
-                        stroke="rgba(255, 255, 255, 0.08)"
+                        style={{ stroke: 'var(--line)' }}
                         strokeDasharray="4 4"
                       />
                       <text
                         x={padding.left - 8}
                         y={yVal + 3}
-                        fill="rgba(255, 255, 255, 0.4)"
+                        style={{ fill: 'var(--ink-4)' }}
                         fontSize="10"
                         textAnchor="end"
                         className="font-mono"
@@ -246,7 +242,7 @@ export default function Analytics() {
                 <path
                   d={pathD}
                   fill="none"
-                  stroke="#06b6d4"
+                  style={{ stroke: 'var(--accent)' }}
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
@@ -258,8 +254,7 @@ export default function Analytics() {
                       cx={p.x}
                       cy={p.y}
                       r={activeHoverPoint?.month === p.month ? 6 : 4}
-                      fill="#06b6d4"
-                      stroke="#ffffff"
+                      style={{ fill: 'var(--accent)', stroke: 'var(--surface)' }}
                       strokeWidth="2"
                       className="cursor-pointer transition-all"
                       onMouseEnter={() => setActiveHoverPoint(p)}
@@ -268,7 +263,7 @@ export default function Analytics() {
                     <text
                       x={p.x}
                       y={chartHeight - 15}
-                      fill="rgba(255, 255, 255, 0.5)"
+                      style={{ fill: 'var(--ink-4)' }}
                       fontSize="11"
                       textAnchor="middle"
                     >
@@ -304,7 +299,12 @@ export default function Analytics() {
               </div>
               <div className="top-models-bars mt-3">
                 {topModels.length === 0 ? (
-                  <p className="text-xs text-muted py-4">No completed sales recorded yet.</p>
+                  <div className="analytics-empty-state">
+                    <div className="analytics-empty-icon">
+                      <Bike size={18} />
+                    </div>
+                    <p className="text-xs text-muted">No completed sales recorded yet.</p>
+                  </div>
                 ) : (
                   topModels.map((m, idx) => {
                     const widthPct = Math.round((m.count / maxModelUnits) * 100);
@@ -320,7 +320,7 @@ export default function Analytics() {
                         </div>
                         <div className="bar-track">
                           <div
-                            className="bar-fill bg-cyan"
+                            className="bar-fill"
                             style={{ width: `${widthPct}%` }}
                           ></div>
                         </div>
@@ -337,17 +337,26 @@ export default function Analytics() {
                 <span className="header-tag">Settled Volume</span>
               </div>
               <div className="payment-distribution-list mt-3">
-                {(stats?.paymentBreakdown || []).map((pb, idx) => (
-                  <div key={idx} className="payment-mode-item flex items-center justify-between py-2 border-b border-line-soft">
-                    <span className="text-xs flex items-center gap-2">
-                      <CreditCard size={14} className="text-amber" />
-                      {pb.method.replace('_', ' ')}
-                    </span>
-                    <span className="font-mono text-xs font-semibold">
-                      {formatPKR(pb.amount)}
-                    </span>
+                {(stats?.paymentBreakdown || []).length === 0 ? (
+                  <div className="analytics-empty-state">
+                    <div className="analytics-empty-icon">
+                      <CreditCard size={18} />
+                    </div>
+                    <p className="text-xs text-muted">No settled payments recorded yet.</p>
                   </div>
-                ))}
+                ) : (
+                  (stats?.paymentBreakdown || []).map((pb, idx) => (
+                    <div key={idx} className="payment-mode-item flex items-center justify-between py-2 border-b border-line-soft">
+                      <span className="text-xs flex items-center gap-2">
+                        <CreditCard size={14} className="text-amber" />
+                        {pb.method.replace('_', ' ')}
+                      </span>
+                      <span className="font-mono text-xs font-semibold">
+                        {formatPKR(pb.amount)}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -378,7 +387,7 @@ export default function Analytics() {
             <div className="kpi-card glass-panel">
               <div className="kpi-header">
                 <span className="kpi-title">{isRomanUrdu ? 'Server Uptime' : 'Server Uptime'}</span>
-                <div className="kpi-icon icon-cyan"><Clock size={18} /></div>
+                <div className="kpi-icon icon-cyan"><Server size={18} /></div>
               </div>
               <div className="kpi-value font-mono">
                 {Math.floor((health?.uptimeSeconds || 120) / 3600)}h {Math.floor(((health?.uptimeSeconds || 120) % 3600) / 60)}m

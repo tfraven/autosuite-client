@@ -400,102 +400,108 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     <div className="inventory-view">
       {/* Control Bar */}
       <div className="control-bar glass-panel no-print mb-4">
-        <div className="filter-group">
-          <div className="type-toggle">
-            <button
-              className={`toggle-btn ${activeFilter === 'ALL' ? 'active' : ''}`}
-              onClick={() => { setActiveFilter('ALL'); setPage(1); }}
+        {/* <div className="inventory-toolbar-context">
+          <div className="inventory-toolbar-title">Stock inventory</div>
+          <div className="inventory-toolbar-count">{totalCount.toLocaleString('en-PK')} records</div>
+        </div> */}
+        <div className="inventory-toolbar-controls">
+          <div className="filter-group">
+            <div className="type-toggle">
+              <button
+                className={`toggle-btn ${activeFilter === 'ALL' ? 'active' : ''}`}
+                onClick={() => { setActiveFilter('ALL'); setPage(1); }}
+              >
+                All
+              </button>
+              <button
+                className={`toggle-btn ${activeFilter === 'BRAND_NEW' ? 'active' : ''}`}
+                onClick={() => { setActiveFilter('BRAND_NEW'); setPage(1); }}
+              >
+                Brand new
+              </button>
+              <button
+                className={`toggle-btn ${activeFilter === 'USED' ? 'active' : ''}`}
+                onClick={() => { setActiveFilter('USED'); setPage(1); }}
+              >
+                Used
+              </button>
+            </div>
+
+            <select
+              className="filter-select"
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             >
-              All
-            </button>
-            <button
-              className={`toggle-btn ${activeFilter === 'BRAND_NEW' ? 'active' : ''}`}
-              onClick={() => { setActiveFilter('BRAND_NEW'); setPage(1); }}
+              <option value="">Any status</option>
+              <option value="IN_STOCK">In stock</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="SOLD">Sold</option>
+              <option value="PENDING_DELIVERY">Pending delivery</option>
+            </select>
+
+            <select
+              className="filter-select"
+              value={marketFilter}
+              onChange={(e) => { setMarketFilter(e.target.value); setPage(1); }}
             >
-              Brand new
-            </button>
-            <button
-              className={`toggle-btn ${activeFilter === 'USED' ? 'active' : ''}`}
-              onClick={() => { setActiveFilter('USED'); setPage(1); }}
-            >
-              Used
-            </button>
+              <option value="">Any channel</option>
+              <option value="B2C">Retail</option>
+              <option value="B2B">Wholesale</option>
+              <option value="BOTH">Retail and wholesale</option>
+            </select>
           </div>
 
-          <select
-            className="filter-select"
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          >
-            <option value="">Any status</option>
-            <option value="IN_STOCK">In stock</option>
-            <option value="RESERVED">Reserved</option>
-            <option value="SOLD">Sold</option>
-            <option value="PENDING_DELIVERY">Pending delivery</option>
-          </select>
+          <div className="action-group">
+            <div className="type-toggle">
+              <button
+                className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Card Grid View"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                title="Table View"
+              >
+                <List size={15} />
+              </button>
+            </div>
 
-          <select
-            className="filter-select"
-            value={marketFilter}
-            onChange={(e) => { setMarketFilter(e.target.value); setPage(1); }}
-          >
-            <option value="">Any channel</option>
-            <option value="B2C">Retail</option>
-            <option value="B2B">Wholesale</option>
-            <option value="BOTH">Retail and wholesale</option>
-          </select>
-        </div>
+            <div className="search-input-wrap">
+              <Search size={16} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search chassis, engine or model…"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                className="search-input"
+              />
+            </div>
 
-        <div className="action-group">
-          <div className="type-toggle">
-            <button
-              className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              title="Card Grid View"
-            >
-              <LayoutGrid size={15} />
-            </button>
-            <button
-              className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => setViewMode('table')}
-              title="Table View"
-            >
-              <List size={15} />
-            </button>
+            {hasPermission('EXPORT_EXCEL') && (
+              <button
+                className="btn btn-outline"
+                onClick={() => api.downloadExcel('bikes')}
+              >
+                <FileSpreadsheet size={16} /> Export
+              </button>
+            )}
+
+            {hasPermission('MANAGE_BIKES') && (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setEditingBike(null);
+                  setFormData(initialFormData);
+                  setSubView('bike-form');
+                }}
+              >
+                <Plus size={16} /> {isRomanUrdu ? 'Nayi Bike Shamil Karein' : 'Add motorcycle'}
+              </button>
+            )}
           </div>
-
-          <div className="search-input-wrap">
-            <Search size={16} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search chassis, engine or model…"
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-              className="search-input"
-            />
-          </div>
-
-          {hasPermission('EXPORT_EXCEL') && (
-            <button
-              className="btn btn-outline"
-              onClick={() => api.downloadExcel('bikes')}
-            >
-              <FileSpreadsheet size={16} /> Export
-            </button>
-          )}
-
-          {hasPermission('MANAGE_BIKES') && (
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setEditingBike(null);
-                setFormData(initialFormData);
-                setSubView('bike-form');
-              }}
-            >
-              <Plus size={16} /> {isRomanUrdu ? 'Nayi Bike Shamil Karein' : 'Add motorcycle'}
-            </button>
-          )}
         </div>
       </div>
 
@@ -509,84 +515,95 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
           ) : bikes.length > 0 ? (
             bikes.map((bike) => {
               const isNew = bike.type === 'BRAND_NEW';
+              const isSold = bike.status === 'SOLD';
               const cost = bike.dealerInvoicePrice || bike.purchaseCost || 0;
               const margin = bike.retailPrice && cost ? bike.retailPrice - cost : 0;
+              const statusLabel = (bike.status || '').replace(/_/g, ' ');
 
               return (
-                <div key={bike.id} className="bike-card glass-panel">
+                <div
+                  key={bike.id}
+                  className={`bike-card glass-panel${isSold ? ' is-sold' : ''}`}
+                >
                   <div className="bike-card-header">
                     <span className={`glass-badge ${isNew ? 'badge-cyan' : 'badge-purple'}`}>
-                      {isNew ? 'Brand New' : 'Used Certified'}
+                      {isNew ? 'Brand new' : 'Used certified'}
                     </span>
                     <span
-                      className={`glass-badge ${
-                        bike.status === 'IN_STOCK'
-                          ? 'badge-emerald'
-                          : bike.status === 'RESERVED'
+                      className={`glass-badge ${bike.status === 'IN_STOCK'
+                        ? 'badge-emerald'
+                        : bike.status === 'RESERVED'
                           ? 'badge-amber'
-                          : bike.status === 'SOLD'
-                          ? 'badge-rose'
-                          : 'badge-muted'
-                      }`}
+                          : isSold
+                            ? 'badge-rose'
+                            : 'badge-muted'
+                        }`}
                     >
-                      {bike.status.replace('_', ' ')}
+                      {statusLabel}
                     </span>
                   </div>
 
                   <div className="bike-card-body">
-                    <h3 className="bike-title">{bike.modelName}</h3>
-                    <div className="bike-meta">
-                      <span className="color-swatch flex items-center gap-1">
-                        <span className="color-dot" style={{ backgroundColor: getColorSwatch(bike.color) }} />
+                    <h3 className="bike-card-title">{bike.modelName}</h3>
+                    <div className="bike-card-specs">
+                      <span className="color-indicator-chip">
+                        <span
+                          className="color-dot"
+                          style={{ backgroundColor: getColorSwatch(bike.color) }}
+                        />
                         {bike.color}
                       </span>
-                      <span>·</span>
-                      <span>{bike.modelYear}</span>
+                      <span className="spec-tag">{bike.modelYear}</span>
                     </div>
 
-                    <div className="bike-identifiers mt-3 p-2 bg-surface-2 rounded text-xs font-mono">
-                      <div className="id-row flex justify-between">
-                        <span className="text-muted">Chassis:</span>
-                        <span className="text-cyan font-bold flex items-center gap-1">
-                          {bike.chassisNumber}
-                          <button
-                            className="icon-btn"
-                            onClick={() => copyToClipboard(bike.chassisNumber)}
-                            title="Copy"
-                          >
-                            {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
-                          </button>
-                        </span>
+                    <div className="bike-ids-box">
+                      <div className="id-row">
+                        <span className="id-title">Chassis</span>
+                        <span className="id-value id-value-key">{bike.chassisNumber}</span>
+                        <button
+                          type="button"
+                          className="copy-btn"
+                          onClick={() => copyToClipboard(bike.chassisNumber)}
+                          title="Copy chassis"
+                          aria-label="Copy chassis number"
+                        >
+                          {copiedChassis === bike.chassisNumber ? (
+                            <Check size={12} />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </button>
                       </div>
-                      <div className="id-row flex justify-between mt-1">
-                        <span className="text-muted">Engine:</span>
-                        <span>{bike.engineNumber}</span>
+                      <div className="id-row">
+                        <span className="id-title">Engine</span>
+                        <span className="id-value">{bike.engineNumber}</span>
                       </div>
                     </div>
 
-                    <div className="bike-price-footer mt-3 flex items-center justify-between">
-                      <div>
-                        <div className="price-val text-lg font-bold font-mono text-emerald">
-                          {formatPKR(bike.retailPrice)}
-                        </div>
-                        <div className="cost-val text-xs text-muted">Cost {formatPKR(cost)}</div>
+                    <div className="bike-price-footer">
+                      <div className="bike-price-main">
+                        <div className="price-val font-mono">{formatPKR(bike.retailPrice)}</div>
+                        <div className="cost-val">Cost {formatPKR(cost)}</div>
                       </div>
-                      {margin > 0 && (
-                        <span className="profit-margin-tag text-xs text-cyan font-mono font-semibold">
-                          +{formatPKR(margin)}
-                        </span>
+                      {margin > 0 && !isSold && (
+                        <span className="profit-margin-tag">+{formatPKR(margin)}</span>
                       )}
                     </div>
                   </div>
 
                   {hasPermission('MANAGE_BIKES') && (
-                    <div className="bike-card-actions border-t border-line-soft pt-2 mt-3 flex items-center justify-end gap-2">
-                      <button className="btn btn-outline btn-xs" onClick={() => handleEdit(bike)}>
+                    <div className="bike-card-actions">
+                      <button
+                        type="button"
+                        className="btn-card-action"
+                        onClick={() => handleEdit(bike)}
+                      >
                         <Edit3 size={13} /> Edit
                       </button>
-                      {bike.status !== 'SOLD' && (
+                      {!isSold && (
                         <button
-                          className="btn btn-outline btn-xs danger"
+                          type="button"
+                          className="btn-card-action danger"
                           onClick={() => setBikeToDelete(bike)}
                         >
                           <Trash2 size={13} /> Delete
@@ -598,7 +615,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
               );
             })
           ) : (
-            <div className="col-span-full empty-placeholder p-8 text-center glass-panel">
+            <div className="col-span-full empty-placeholder glass-panel">
               No motorcycles match the current filters.
             </div>
           )}
@@ -641,10 +658,16 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                         <div className="font-bold text-main">{bike.modelName}</div>
                       </td>
                       <td>
-                        <div className="flex items-center gap-1 font-mono text-cyan font-bold">
-                          <span>{bike.chassisNumber}</span>
-                          <button className="icon-btn" onClick={() => copyToClipboard(bike.chassisNumber)}>
-                            {copiedChassis === bike.chassisNumber ? <Check size={12} className="text-emerald" /> : <Copy size={12} />}
+                        <div className="table-chassis-cell">
+                          <span className="font-mono font-medium text-main">{bike.chassisNumber}</span>
+                          <button
+                            type="button"
+                            className="copy-btn"
+                            onClick={() => copyToClipboard(bike.chassisNumber)}
+                            title="Copy chassis"
+                            aria-label="Copy chassis number"
+                          >
+                            {copiedChassis === bike.chassisNumber ? <Check size={12} /> : <Copy size={12} />}
                           </button>
                         </div>
                         <div className="font-mono text-muted text-xs mt-1">{bike.engineNumber}</div>
@@ -657,7 +680,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                         <div className="text-muted text-xs mt-1">{bike.modelYear}</div>
                       </td>
                       <td>
-                        <div className="font-bold font-mono">{formatPKR(bike.retailPrice)}</div>
+                        <div className="font-semibold font-mono text-main">{formatPKR(bike.retailPrice)}</div>
                         <div className="text-muted text-xs font-mono">
                           Cost {formatPKR(bike.dealerInvoicePrice || bike.purchaseCost)}
                         </div>
@@ -667,17 +690,16 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       </td>
                       <td>
                         <span
-                          className={`glass-badge ${
-                            bike.status === 'IN_STOCK'
-                              ? 'badge-emerald'
-                              : bike.status === 'RESERVED'
+                          className={`glass-badge ${bike.status === 'IN_STOCK'
+                            ? 'badge-emerald'
+                            : bike.status === 'RESERVED'
                               ? 'badge-amber'
                               : bike.status === 'SOLD'
-                              ? 'badge-rose'
-                              : 'badge-muted'
-                          }`}
+                                ? 'badge-rose'
+                                : 'badge-muted'
+                            }`}
                         >
-                          {bike.status.replace('_', ' ')}
+                          {(bike.status || '').replace(/_/g, ' ')}
                         </span>
                       </td>
                       {hasPermission('MANAGE_BIKES') && (
