@@ -80,8 +80,8 @@ export default function Dashboard({ setActiveTab, onOpenNewSale, onOpenNewBike }
         </div>
       </div>
 
-      <div className="kpi-grid">
-        <div className="kpi-card glass-panel">
+      <div className="kpi-grid stagger">
+        <div className="kpi-card glass-panel anim-fade-up">
           <div className="kpi-header">
             <span className="kpi-title">Revenue</span>
             <div className="kpi-icon icon-emerald">
@@ -160,7 +160,10 @@ export default function Dashboard({ setActiveTab, onOpenNewSale, onOpenNewBike }
                     <div className="model-bar-wrap">
                       <div
                         className="model-bar"
-                        style={{ width: `${percentage}%` }}
+                        style={{
+                          width: `${percentage}%`,
+                          animationDelay: `${0.1 + idx * 0.08}s`
+                        }}
                       />
                     </div>
                     <div className="model-stats">

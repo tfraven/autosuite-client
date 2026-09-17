@@ -167,6 +167,7 @@ export default function Header({ activeTab, onOpenMobile, onOpenCommandPalette }
               title="Notifications"
               aria-expanded={showNotifications}
               aria-haspopup="true"
+              key={totalNotifCount}
             >
               <Bell size={17} />
               {totalNotifCount > 0 && (

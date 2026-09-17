@@ -162,7 +162,7 @@ export default function Sidebar({ activeTab, setActiveTab, isMobileOpen, onClose
         </div>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav stagger">
         {navSections.map((section) => {
           // Only render the section if the user has permission to see at least one item in it
           const visibleItems = section.items.filter(item => item.show);
