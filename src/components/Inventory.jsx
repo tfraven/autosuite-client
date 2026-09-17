@@ -199,7 +199,9 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   ? (isRomanUrdu ? 'Motorcycle ki Maloomat Edit Karein' : 'Edit motorcycle')
                   : (isRomanUrdu ? 'Nayi Motorcycle Stock Mein Shamil Karein' : 'Add motorcycle')}
               </h2>
-              <div className="page-form-subtitle">Specifications, chassis numbers, pricing and ownership history</div>
+              <div className="page-form-subtitle">
+                Specifications, chassis numbers, pricing and ownership history
+              </div>
             </div>
           </div>
 
@@ -209,7 +211,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2">
               <div className="page-form-card">
                 <div className="page-form-card-title">Category and identifiers</div>
-
                 <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Category</label>
@@ -223,7 +224,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       <option value="USED">Used, certified</option>
                     </select>
                   </div>
-
                   <div className="form-field">
                     <label>Channel</label>
                     <select
@@ -237,7 +237,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     </select>
                   </div>
                 </div>
-
                 <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Model Name</label>
@@ -262,7 +261,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     />
                   </div>
                 </div>
-
                 <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Model Year</label>
@@ -274,7 +272,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       className="form-input font-mono"
                     />
                   </div>
-
                   <div className="form-field">
                     <label>Batch / Lot Number</label>
                     <input
@@ -290,7 +287,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
               <div className="page-form-card">
                 <div className="page-form-card-title">Chassis and Engine Numbers</div>
-
                 <div className="form-field mb-3">
                   <label>Chassis / VIN Number</label>
                   <input
@@ -303,7 +299,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     className="form-input font-mono"
                   />
                 </div>
-
                 <div className="form-field mb-3">
                   <label>Engine Number</label>
                   <input
@@ -316,7 +311,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     className="form-input font-mono"
                   />
                 </div>
-
                 <div className="form-field mb-3">
                   <label>Initial Status</label>
                   <select
@@ -336,7 +330,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2 mt-4">
               <div className="page-form-card">
                 <div className="page-form-card-title">Commercial Pricing</div>
-
                 <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Dealer Invoice Cost (PKR)</label>
@@ -347,7 +340,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       className="form-input font-mono"
                     />
                   </div>
-
                   <div className="form-field">
                     <label>Retail Selling Price (PKR)</label>
                     <input
@@ -360,7 +352,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
                 </div>
               </div>
-
               <div className="page-form-card">
                 <div className="page-form-card-title">Internal Notes</div>
                 <div className="form-field">
@@ -505,7 +496,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
       {/* Grid View */}
       {viewMode === 'grid' && (
-        <div className="bike-cards-grid">
+        <div className="bike-cards-grid" key={`grid-${page}-${activeFilter}-${statusFilter}-${marketFilter}-${searchQuery}`}>
           {loading ? (
             <div className="col-span-full module-loading">
               <div className="spinner"></div> Loading inventory stock…
@@ -517,11 +508,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
               const cost = bike.dealerInvoicePrice || bike.purchaseCost || 0;
               const margin = bike.retailPrice && cost ? bike.retailPrice - cost : 0;
               const statusLabel = (bike.status || '').replace(/_/g, ' ');
-
               return (
                 <div
                   key={bike.id}
-                  className={`bike-card glass-panel${isSold ? ' is-sold' : ''}`}
+                  className={`bike-card glass-panel anim-fade-up${isSold ? ' is-sold' : ''}`}
                 >
                   <div className="bike-card-header">
                     <span className={`glass-badge ${isNew ? 'badge-cyan' : 'badge-purple'}`}>
@@ -622,7 +612,10 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="card glass-panel no-print inventory-table-card">
+        <div
+          className="card glass-panel no-print inventory-table-card"
+          key={`table-${page}-${activeFilter}-${statusFilter}-${marketFilter}-${searchQuery}`}
+        >
           <div className="table-responsive">
             <table className="custom-table">
               <thead>
@@ -744,7 +737,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
         }}
       />
 
-      {/* GitHub-Style Soft Delete Confirmation Modal (Task 13) */}
+      {/* GitHub-Style Soft Delete Confirmation Modal */}
       <ConfirmDeleteModal
         isOpen={!!bikeToDelete}
         onClose={() => setBikeToDelete(null)}

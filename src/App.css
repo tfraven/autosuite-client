@@ -6941,3 +6941,334 @@ Respects prefers-reduced-motion for accessibility.
 .sidebar-overlay.active {
   animation: fadeIn 0.22s ease-out both;
 }
+
+/* ==========================================================================
+Inventory motion — professional, alive, data-dense friendly
+========================================================================== */
+
+/* View container entrance */
+.inventory-view {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+/* Toolbar slides down into place */
+.inventory-toolbar {
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Filter toggles — subtle scale on active change */
+.type-toggle .toggle-btn {
+  transition: background 0.18s var(--ease), color 0.18s var(--ease),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s var(--ease);
+}
+
+.type-toggle .toggle-btn:active {
+  transform: scale(0.96);
+}
+
+.type-toggle .toggle-btn.active {
+  animation: scaleIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Search input — subtle focus lift */
+.search-input-wrap {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.search-input-wrap:focus-within {
+  transform: translateY(-1px);
+}
+
+/* Filter selects — gentle entrance */
+.filter-select {
+  animation: floatIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.filter-select:nth-of-type(1) {
+  animation-delay: 0.06s;
+}
+
+.filter-select:nth-of-type(2) {
+  animation-delay: 0.12s;
+}
+
+/* Action buttons stagger in */
+.action-group .btn {
+  animation: floatIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.action-group .btn:nth-child(1) {
+  animation-delay: 0.14s;
+}
+
+.action-group .btn:nth-child(2) {
+  animation-delay: 0.20s;
+}
+
+.action-group .btn:nth-child(3) {
+  animation-delay: 0.26s;
+}
+
+/* Primary CTA gets a subtle initial pulse to draw the eye */
+.inventory-toolbar .btn-primary {
+  animation: floatIn 0.4s 0.26s cubic-bezier(0.22, 1, 0.36, 1) both,
+    softPulse 3s ease-in-out 1.2s 1;
+}
+
+/* Grid view — cards stagger in */
+.bike-cards-grid {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+.bike-cards-grid .bike-card {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger delays for up to 12 cards per page (matches default limit) */
+.bike-cards-grid .bike-card:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
+.bike-cards-grid .bike-card:nth-child(2) {
+  animation-delay: 0.09s;
+}
+
+.bike-cards-grid .bike-card:nth-child(3) {
+  animation-delay: 0.14s;
+}
+
+.bike-cards-grid .bike-card:nth-child(4) {
+  animation-delay: 0.19s;
+}
+
+.bike-cards-grid .bike-card:nth-child(5) {
+  animation-delay: 0.24s;
+}
+
+.bike-cards-grid .bike-card:nth-child(6) {
+  animation-delay: 0.29s;
+}
+
+.bike-cards-grid .bike-card:nth-child(7) {
+  animation-delay: 0.34s;
+}
+
+.bike-cards-grid .bike-card:nth-child(8) {
+  animation-delay: 0.39s;
+}
+
+.bike-cards-grid .bike-card:nth-child(9) {
+  animation-delay: 0.44s;
+}
+
+.bike-cards-grid .bike-card:nth-child(10) {
+  animation-delay: 0.49s;
+}
+
+.bike-cards-grid .bike-card:nth-child(11) {
+  animation-delay: 0.54s;
+}
+
+.bike-cards-grid .bike-card:nth-child(12) {
+  animation-delay: 0.59s;
+}
+
+/* Card icon micro-interaction on hover */
+.bike-card .glass-badge {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bike-card:hover .glass-badge {
+  transform: translateY(-1px);
+}
+
+/* Copy button — subtle scale on hover */
+.bike-card .copy-btn {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.15s var(--ease), color 0.15s var(--ease),
+    opacity 0.15s var(--ease);
+}
+
+.bike-card .copy-btn:hover {
+  transform: scale(1.12);
+}
+
+.bike-card .copy-btn:active {
+  transform: scale(0.92);
+}
+
+/* Table view — card container entrance */
+.inventory-table-card {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Table rows stagger (extends existing rule) */
+.inventory-table-card .custom-table tbody tr {
+  animation: floatIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(4) {
+  animation-delay: 0.16s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(5) {
+  animation-delay: 0.20s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(6) {
+  animation-delay: 0.24s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(7) {
+  animation-delay: 0.28s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(8) {
+  animation-delay: 0.32s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(9) {
+  animation-delay: 0.36s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(10) {
+  animation-delay: 0.40s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(11) {
+  animation-delay: 0.44s;
+}
+
+.inventory-table-card .custom-table tbody tr:nth-child(12) {
+  animation-delay: 0.48s;
+}
+
+/* Row action icons — subtle hover lift */
+.inventory-table-card .btn-action-icon {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.15s var(--ease), color 0.15s var(--ease),
+    border-color 0.15s var(--ease);
+}
+
+.inventory-table-card .btn-action-icon:hover {
+  transform: translateY(-1px);
+}
+
+.inventory-table-card .btn-action-icon:active {
+  transform: translateY(0) scale(0.92);
+}
+
+/* Pagination — slides up quietly */
+.pagination-bar {
+  animation: fadeUp 0.4s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pagination-btn {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.15s var(--ease), border-color 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.pagination-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.94);
+}
+
+.pagination-btn.active {
+  animation: scaleIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Empty state — gentle fade with icon bob */
+.empty-placeholder,
+.empty-state {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.empty-state svg,
+.empty-placeholder svg {
+  animation: softPulse 2.6s ease-in-out infinite;
+}
+
+/* Loading state — spinner with subtle text fade */
+.module-loading {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+/* Form view — enhanced entrance (slides up slightly more) */
+.inventory-view .page-form-view {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inventory-view .page-form-card {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inventory-view .page-form-card:nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.inventory-view .page-form-card:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.inventory-view .page-form-card:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.inventory-view .page-form-card:nth-child(4) {
+  animation-delay: 0.32s;
+}
+
+/* Form footer buttons */
+.inventory-view .page-form-footer .btn {
+  animation: floatIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inventory-view .page-form-footer .btn:nth-child(1) {
+  animation-delay: 0.30s;
+}
+
+.inventory-view .page-form-footer .btn:nth-child(2) {
+  animation-delay: 0.36s;
+}
+
+/* Back button — subtle arrow wiggle on hover */
+.inventory-view .page-form-back-btn svg {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.inventory-view .page-form-back-btn:hover svg {
+  transform: translateX(-2px);
+}
+
+/* View mode switch — content crossfade */
+.inventory-view .bike-cards-grid,
+.inventory-view .inventory-table-card {
+  animation: scaleIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Color dot — subtle pulse on card hover */
+.bike-card:hover .color-dot {
+  animation: softPulse 1.4s ease-in-out;
+}
+
+/* Sold card — muted entrance */
+.bike-card.is-sold {
+  animation: fadeIn 0.5s ease-out both;
+}
