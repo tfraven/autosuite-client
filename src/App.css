@@ -5031,55 +5031,16 @@ shown at and above it. Pair with .hidden on the same element. */
   overflow: hidden;
 }
 
-/* Legal Page */
-.legal-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-5);
-}
-
-.legal-tabs-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.legal-tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-md);
-  font-size: var(--fs-13);
-  font-weight: 500;
-  color: var(--ink-3);
-  transition: all 0.15s ease;
-}
-
-.legal-tab-btn:hover {
-  background: var(--surface-3);
-  color: var(--ink-1);
-}
-
-.legal-tab-btn.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px solid var(--accent-line);
-}
-
-.legal-content-body {
-  padding: 12px 0;
-}
-
-/* --------------------------------------------------------------------------
-Legal page — refinement & motion
--------------------------------------------------------------------------- */
+/* ==========================================================================
+Legal Page — refinement & motion
+========================================================================== */
 .legal-page {
   animation: fadeIn 0.3s var(--ease);
 }
 
 .legal-hero-card {
   transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+  background: linear-gradient(to right, var(--surface), var(--surface-2));
 }
 
 .legal-hero-card:hover {
@@ -5139,6 +5100,16 @@ Legal page — refinement & motion
   padding: 4px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--line-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.legal-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .legal-tab-indicator {
@@ -5157,11 +5128,27 @@ Legal page — refinement & motion
 .legal-tab-btn {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-13);
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: color 0.15s var(--ease), transform 0.2s var(--ease-spring);
+}
+
+.legal-tab-btn:hover {
+  color: var(--ink-1);
 }
 
 .legal-tab-btn.active {
-  background: transparent;
-  border: 1px solid transparent;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .legal-tab-btn svg {
@@ -5206,8 +5193,8 @@ Legal page — refinement & motion
 
 /* Each clause becomes a hoverable, staggered-in mini card */
 .legal-text-block>div {
-  padding: 12px 14px;
-  margin: 0 -14px;
+  padding: 16px 18px;
+  margin: 0 -18px;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   opacity: 0;
@@ -5218,7 +5205,7 @@ Legal page — refinement & motion
 .legal-text-block>div:hover {
   background: var(--surface-2);
   border-color: var(--line-soft);
-  transform: translateX(2px);
+  transform: translateX(4px);
 }
 
 .legal-text-block>div:nth-child(1) {
@@ -5256,6 +5243,33 @@ Legal page — refinement & motion
 @media print {
   .legal-hero-icon::after {
     display: none;
+  }
+
+  .legal-tabs-bar,
+  .legal-print-btn {
+    display: none !important;
+  }
+
+  .legal-page {
+    gap: var(--sp-4);
+  }
+
+  .card.glass-panel {
+    border: 1px solid #d3d8dd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .legal-text-block>div {
+    break-inside: avoid;
+    padding: 12px 0;
+    margin: 0;
+    border: none;
+    background: transparent !important;
+  }
+
+  .legal-text-block>div:hover {
+    transform: none;
   }
 }
 
