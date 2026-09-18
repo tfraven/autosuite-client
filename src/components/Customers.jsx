@@ -470,7 +470,7 @@ export default function Customers() {
                       </div>
                       <div className="flex gap-2">
                         <span className={`glass-badge ${sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-emerald'}`}>
-                          {sale.paymentType.replace('_', ' ')}
+                          {(sale.paymentType || 'CASH').replace(/_/g, ' ')}
                         </span>
                         <span className={`glass-badge ${sale.status === 'COMPLETED' ? 'badge-emerald' : 'badge-amber'}`}>
                           {sale.status}

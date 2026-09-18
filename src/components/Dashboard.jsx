@@ -219,7 +219,7 @@ export default function Dashboard({ setActiveTab, onOpenNewSale, onOpenNewBike }
                         <span className={`glass-badge ${sale.paymentType === 'CASH' ? 'badge-emerald' :
                           sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-cyan'
                           }`}>
-                          {sale.paymentType.replace('_', ' ').toLowerCase()}
+                          {(sale.paymentType || 'CASH').replace(/_/g, ' ').toLowerCase()}
                         </span>
                       </td>
                     </tr>

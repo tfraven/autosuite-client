@@ -1066,7 +1066,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     <td className="text-right font-bold text-cyan">{formatPKR(selectedInvoice.finalAmount)}</td>
                   </tr>
                   <tr>
-                    <td colSpan="3" className="text-right">Deposit Received ({selectedInvoice.paymentType}):</td>
+                    <td colSpan="3" className="text-right">Deposit Received ({(selectedInvoice.paymentType || 'CASH').replace(/_/g, ' ')}):</td>
                     <td className="text-right text-emerald font-bold">{formatPKR(selectedInvoice.initialDeposit)}</td>
                   </tr>
                   <tr className="balance-row">
@@ -1148,7 +1148,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                 <div className="strip-item">
                   <span className="strip-label">Payment Method</span>
                   <strong className="strip-val text-purple">
-                    {isCredit ? `${totalInst} Months Plan` : selectedInvoice.paymentType.replace('_', ' ')}
+                    {isCredit ? `${totalInst} Months Plan` : (selectedInvoice.paymentType || 'CASH').replace(/_/g, ' ')}
                   </strong>
                 </div>
               </div>
@@ -1496,11 +1496,11 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                   {selectedInvoice.documents.map((doc) => (
                     <div key={doc.id} className="authority-doc-card">
                       <div>
-                        <div className="font-bold text-xs text-main">{doc.documentType.replace(/_/g, ' ')}</div>
-                        <div className="text-xs text-muted font-mono">{doc.documentNumber || 'Issued & Stamped'}</div>
+                        <div className="font-bold text-xs text-main">{(doc.docType || doc.documentType || 'DOCUMENT').replace(/_/g, ' ')}</div>
+                        <div className="text-xs text-muted font-mono">{doc.documentNumber || doc.statusNotes || 'Issued & Stamped'}</div>
                       </div>
                       <span className="glass-badge badge-emerald text-xs flex items-center gap-1">
-                        <Check size={11} /> {doc.status || 'ISSUED'}
+                        <Check size={11} /> {(doc.paperworkStatus || doc.status || 'READY').replace(/_/g, ' ')}
                       </span>
                     </div>
                   ))}
@@ -1655,7 +1655,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     </td>
                     <td>
                       <div className="font-bold font-mono">{formatPKR(sale.finalAmount)}</div>
-                      <span className="text-xs text-muted">{sale.paymentType.replace('_', ' ')}</span>
+                      <span className="text-xs text-muted">{(sale.paymentType || 'CASH').replace(/_/g, ' ')}</span>
                     </td>
                     <td>
                       {sale.remainingBalance > 0 ? (

@@ -264,13 +264,91 @@ function LoginPortal({ onLogin }) {
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('AutoSuite uncaught rendering error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--surface-1, #0b0f19)',
+          color: 'var(--ink-1, #f1f5f9)',
+          padding: '24px',
+          fontFamily: 'Inter, system-ui, sans-serif'
+        }}>
+          <div style={{
+            maxWidth: '520px',
+            width: '100%',
+            background: 'var(--surface-2, #141b2d)',
+            border: '1px solid var(--line, rgba(255,255,255,0.1))',
+            borderRadius: '12px',
+            padding: '28px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: 'rgba(239, 68, 68, 0.15)',
+              color: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px'
+            }}>
+              <ShieldAlert size={26} />
+            </div>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Something went wrong loading this view
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--ink-3, #94a3b8)', marginBottom: '16px' }}>
+              {this.state.error?.message || 'An unexpected error occurred while rendering the page.'}
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+              >
+                Reload Application
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
         <ToastProvider>
           <AuthProvider>
-            <MainApp />
+            <ErrorBoundary>
+              <MainApp />
+            </ErrorBoundary>
           </AuthProvider>
         </ToastProvider>
       </LanguageProvider>
