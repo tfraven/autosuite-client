@@ -9387,6 +9387,7 @@ Calendar motion — professional, alive, schedule-focused
   .sales-list-view .action-group .btn {
     width: 100%;
     max-width: none;
+    flex: none;
     min-width: 0;
   }
 
