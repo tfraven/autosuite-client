@@ -742,7 +742,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   // Full-Page Collect Payment Form (standardized normal form like "Add motorcycle")
   if (subView === 'record-payment' && activeSaleForPayment) {
     return (
-      <div className="sales-view">
+      <div className="sales-view payment-collection-view">
         <div className="page-form-view">
           <div className="page-form-header">
             <button className="page-form-back-btn" onClick={closePaymentModal}>
@@ -933,8 +933,8 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                   {isSubmittingPayment
                     ? 'Saving...'
                     : isRomanUrdu
-                    ? 'Wasooli Darj Karein'
-                    : 'Confirm Payment Receipt'}
+                      ? 'Wasooli Darj Karein'
+                      : 'Confirm Payment Receipt'}
                 </span>
               </button>
             </div>
@@ -1122,272 +1122,203 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
             </div>
           </div>
 
-          {/* Interactive Screen Dashboard Body (Screen Only) */}
-          <div className="page-form-container no-print">
-            {/* 1. Hero Financial Summary Bar */}
-            <div className="page-form-card">
-              <div className="stats-strip">
-                <div className="strip-item">
-                  <span className="strip-label">Invoice Total</span>
-                  <strong className="strip-val text-cyan font-mono">{formatPKR(selectedInvoice.finalAmount)}</strong>
+          {/* Interactive Invoice Detail Workspace (Screen Only) */}
+          <div className="invoice-detail-page no-print">
+            {/* Financial overview */}
+            <section className="invoice-overview-card">
+              <div className="invoice-overview-main">
+                <div className="invoice-overview-eyebrow">
+                  <Receipt size={14} /> SALES INVOICE
                 </div>
-                <div className="strip-item">
-                  <span className="strip-label">Down Payment / Deposit</span>
-                  <strong className="strip-val text-emerald font-mono">{formatPKR(selectedInvoice.initialDeposit)}</strong>
-                </div>
-                <div className="strip-item">
-                  <span className="strip-label">Total Paid So Far</span>
-                  <strong className="strip-val text-emerald font-mono">{formatPKR(totalCollected)}</strong>
-                </div>
-                <div className="strip-item">
-                  <span className="strip-label">Remaining Balance Due</span>
-                  <strong className={`strip-val font-mono ${selectedInvoice.remainingBalance > 0 ? 'text-rose' : 'text-emerald'}`}>
-                    {formatPKR(selectedInvoice.remainingBalance)}
-                  </strong>
-                </div>
-                <div className="strip-item">
-                  <span className="strip-label">Payment Method</span>
-                  <strong className="strip-val text-purple">
-                    {isCredit ? `${totalInst} Months Plan` : (selectedInvoice.paymentType || 'CASH').replace(/_/g, ' ')}
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Customer Profile & Motorcycle Specifications Grid */}
-            <div className="page-form-grid-2">
-              {/* Customer Details Card */}
-              <div className="page-form-card">
-                <div className="page-form-card-title flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User size={18} className="text-cyan" />
-                    <span>Customer Details</span>
-                  </div>
-                  <span className={`glass-badge ${selectedInvoice.customerType === 'DEALER' ? 'badge-purple' : 'badge-cyan'}`}>
-                    {selectedInvoice.customerType || 'RETAIL'}
+                <div className="invoice-overview-title-row">
+                  <h1>{selectedInvoice.invoiceNumber}</h1>
+                  <span className={`invoice-status-pill ${selectedInvoice.status === 'COMPLETED' ? 'is-paid' : 'is-pending'}`}>
+                    <span className="status-dot" /> {selectedInvoice.status}
                   </span>
                 </div>
+                <div className="invoice-overview-meta">
+                  <span><Calendar size={13} /> {new Date(selectedInvoice.saleDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  <span className="meta-separator" />
+                  <span>{selectedInvoice.saleType === 'B2B' ? 'Wholesale / B2B' : 'Retail / B2C'}</span>
+                  <span className="meta-separator" />
+                  <span>{isCredit ? `${totalInst}-month financing` : 'Full payment'}</span>
+                  {selectedInvoice.createdBy?.name && <><span className="meta-separator" /><span>Processed by {selectedInvoice.createdBy.name}</span></>}
+                </div>
+              </div>
 
-                <div className="customer-profile-hero" style={{ borderBottom: 'none', paddingBottom: 0 }}>
-                  <div className="customer-avatar-large">
+              <div className="invoice-overview-amount">
+                <span className="invoice-overview-label">Outstanding balance</span>
+                <strong className={selectedInvoice.remainingBalance > 0 ? 'is-outstanding' : 'is-settled'}>
+                  {formatPKR(selectedInvoice.remainingBalance)}
+                </strong>
+                <span className="invoice-overview-caption">
+                  {selectedInvoice.remainingBalance > 0 ? `${completionPercent}% of scheduled payments cleared` : 'Account settled in full'}
+                </span>
+              </div>
+            </section>
+
+            {/* Key financial metrics */}
+            <section className="invoice-metrics-grid">
+              <div className="invoice-metric-card">
+                <div className="invoice-metric-icon is-blue"><Receipt size={17} /></div>
+                <div><span>Total invoice</span><strong>{formatPKR(selectedInvoice.finalAmount)}</strong></div>
+              </div>
+              <div className="invoice-metric-card">
+                <div className="invoice-metric-icon is-green"><CheckCircle2 size={17} /></div>
+                <div><span>Total collected</span><strong>{formatPKR(totalCollected)}</strong></div>
+              </div>
+              <div className="invoice-metric-card">
+                <div className="invoice-metric-icon is-amber"><CreditCard size={17} /></div>
+                <div><span>Initial deposit</span><strong>{formatPKR(selectedInvoice.initialDeposit)}</strong></div>
+              </div>
+              <div className="invoice-metric-card">
+                <div className="invoice-metric-icon is-purple"><Calendar size={17} /></div>
+                <div><span>Payment terms</span><strong>{isCredit ? `${totalInst} months` : 'Paid in full'}</strong></div>
+              </div>
+            </section>
+
+            {/* Customer + vehicle */}
+            <section className="invoice-detail-grid">
+              <article className="invoice-panel">
+                <div className="invoice-panel-header">
+                  <div className="invoice-panel-heading">
+                    <div className="invoice-panel-icon is-blue"><User size={16} /></div>
+                    <div><h3>Customer</h3><p>Buyer profile and contact details</p></div>
+                  </div>
+                  <span className="invoice-type-tag">{selectedInvoice.customerType || 'RETAIL'}</span>
+                </div>
+
+                <div className="invoice-customer-summary">
+                  <div className="invoice-avatar">
                     {(selectedInvoice.customerName || selectedInvoice.customer?.name || 'C').charAt(0).toUpperCase()}
                   </div>
-                  <div className="customer-hero-info">
-                    <div className="hero-name-row">
-                      <h3>{selectedInvoice.customerName || selectedInvoice.customer?.name}</h3>
-                      <span className="glass-badge badge-outline text-xs">
-                        {selectedInvoice.saleType || 'B2C'}
-                      </span>
-                    </div>
-
-                    <div className="customer-contacts-grid">
-                      <div
-                        className="contact-item"
-                        onClick={() => copyToClipboard(selectedInvoice.customerPhone || selectedInvoice.customer?.phone)}
-                        title="Click to copy phone number"
-                      >
-                        <Phone size={14} className="text-cyan" />
-                        <span>{selectedInvoice.customerPhone || selectedInvoice.customer?.phone || 'N/A'}</span>
-                        {copiedText === (selectedInvoice.customerPhone || selectedInvoice.customer?.phone) ? (
-                          <Check size={12} className="text-emerald" />
-                        ) : (
-                          <Copy size={12} className="text-muted" />
-                        )}
-                      </div>
-
-                      {(selectedInvoice.customerCnic || selectedInvoice.customer?.cnic) && (
-                        <div
-                          className="contact-item"
-                          onClick={() => copyToClipboard(selectedInvoice.customerCnic || selectedInvoice.customer?.cnic)}
-                          title="Click to copy CNIC"
-                        >
-                          <ShieldCheck size={14} className="text-purple" />
-                          <span className="font-mono">{selectedInvoice.customerCnic || selectedInvoice.customer?.cnic}</span>
-                          {copiedText === (selectedInvoice.customerCnic || selectedInvoice.customer?.cnic) ? (
-                            <Check size={12} className="text-emerald" />
-                          ) : (
-                            <Copy size={12} className="text-muted" />
-                          )}
-                        </div>
-                      )}
-
-                      {(selectedInvoice.customerAddress || selectedInvoice.customer?.address) && (
-                        <div className="contact-item">
-                          <MapPin size={14} className="text-amber" />
-                          <span>{selectedInvoice.customerAddress || selectedInvoice.customer?.address}</span>
-                        </div>
-                      )}
-
-                      <div className="contact-item text-muted">
-                        <Calendar size={14} />
-                        <span>Purchase Date: {new Date(selectedInvoice.saleDate).toLocaleDateString('en-GB')}</span>
-                      </div>
-                    </div>
+                  <div className="invoice-customer-name">
+                    <strong>{selectedInvoice.customerName || selectedInvoice.customer?.name || 'Customer'}</strong>
+                    <span>{selectedInvoice.saleType === 'B2B' ? 'Business customer' : 'Retail customer'}</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Motorcycle Details Card */}
-              <div className="page-form-card">
-                <div className="page-form-card-title flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Bike size={18} className="text-amber" />
-                    <span>Motorcycle Vehicle Specification</span>
+                <div className="invoice-info-list">
+                  <button
+                    type="button"
+                    className="invoice-info-row invoice-copy-row"
+                    onClick={() => copyToClipboard(selectedInvoice.customerPhone || selectedInvoice.customer?.phone)}
+                  >
+                    <span className="invoice-info-label"><Phone size={14} /> Phone</span>
+                    <span className="invoice-info-value">{selectedInvoice.customerPhone || selectedInvoice.customer?.phone || 'Not provided'} <Copy size={12} /></span>
+                  </button>
+                  {(selectedInvoice.customerCnic || selectedInvoice.customer?.cnic) && (
+                    <button
+                      type="button"
+                      className="invoice-info-row invoice-copy-row"
+                      onClick={() => copyToClipboard(selectedInvoice.customerCnic || selectedInvoice.customer?.cnic)}
+                    >
+                      <span className="invoice-info-label"><ShieldCheck size={14} /> CNIC</span>
+                      <span className="invoice-info-value font-mono">{selectedInvoice.customerCnic || selectedInvoice.customer?.cnic} <Copy size={12} /></span>
+                    </button>
+                  )}
+                  <div className="invoice-info-row">
+                    <span className="invoice-info-label"><MapPin size={14} /> Address</span>
+                    <span className="invoice-info-value">{selectedInvoice.customerAddress || selectedInvoice.customer?.address || 'Not provided'}</span>
                   </div>
-                  <span className="glass-badge badge-cyan">
-                    {selectedInvoice.bike?.modelYear} Model
-                  </span>
+                </div>
+              </article>
+
+              <article className="invoice-panel">
+                <div className="invoice-panel-header">
+                  <div className="invoice-panel-heading">
+                    <div className="invoice-panel-icon is-amber"><Bike size={16} /></div>
+                    <div><h3>Vehicle</h3><p>Motorcycle identification details</p></div>
+                  </div>
+                  <span className="invoice-type-tag">{selectedInvoice.bike?.modelYear || '—'} MODEL</span>
                 </div>
 
-                <div className="customer-bike-tile" style={{ marginTop: '0.25rem', background: 'var(--bg-glass-elevated)' }}>
-                  <div className="tile-icon-box">
-                    <Bike size={20} />
-                  </div>
-                  <div className="tile-identity">
-                    <h4 className="tile-title text-base">{selectedInvoice.bike?.modelName}</h4>
-                    <div className="tile-meta">
-                      <span className="spec-tag">{selectedInvoice.bike?.brand || selectedInvoice.bike?.model?.brand || 'Atlas Honda'}</span>
-                      <span className="spec-tag">{selectedInvoice.bike?.color}</span>
-                      <span className="spec-tag">{selectedInvoice.bike?.type || 'NEW'}</span>
-                    </div>
-                  </div>
-                  <div className="tile-ids">
-                    <div className="tile-id-row">
-                      <span className="id-title">Chassis</span>
-                      <button
-                        type="button"
-                        className="id-value id-value-key id-value-copy font-mono"
-                        onClick={() => copyToClipboard(selectedInvoice.bike?.chassisNumber)}
-                        title="Copy chassis number"
-                      >
-                        {selectedInvoice.bike?.chassisNumber}
-                        {copiedText === selectedInvoice.bike?.chassisNumber ? (
-                          <Check size={11} className="text-emerald" />
-                        ) : (
-                          <Copy size={11} />
-                        )}
-                      </button>
-                    </div>
-                    <div className="tile-id-row">
-                      <span className="id-title">Engine</span>
-                      <span className="id-value font-mono">{selectedInvoice.bike?.engineNumber}</span>
+                <div className="invoice-vehicle-main">
+                  <div className="invoice-vehicle-icon"><Bike size={22} /></div>
+                  <div>
+                    <strong>{selectedInvoice.bike?.modelName || 'Motorcycle'}</strong>
+                    <div className="invoice-vehicle-tags">
+                      <span>{selectedInvoice.bike?.brand || selectedInvoice.bike?.model?.brand || 'Atlas Honda'}</span>
+                      <span>{selectedInvoice.bike?.color || '—'}</span>
+                      <span>{selectedInvoice.bike?.type || 'NEW'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
-                  <div className="p-2 rounded bg-surface-subtle border border-line-soft">
-                    <span className="text-muted block">Base Retail Price:</span>
-                    <span className="font-mono font-bold text-main">{formatPKR(selectedInvoice.salePrice)}</span>
+                <div className="invoice-vehicle-identifiers">
+                  <div className="invoice-identifier">
+                    <span>CHASSIS NUMBER</span>
+                    <button type="button" onClick={() => copyToClipboard(selectedInvoice.bike?.chassisNumber)} title="Copy chassis number">
+                      <span>{selectedInvoice.bike?.chassisNumber || '—'}</span><Copy size={12} />
+                    </button>
                   </div>
-                  <div className="p-2 rounded bg-surface-subtle border border-line-soft">
-                    <span className="text-muted block">Discount:</span>
-                    <span className="font-mono font-bold text-rose">-{formatPKR(selectedInvoice.discount || 0)}</span>
+                  <div className="invoice-identifier">
+                    <span>ENGINE NUMBER</span>
+                    <strong>{selectedInvoice.bike?.engineNumber || '—'}</strong>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* 3. Detailed Installments Schedule */}
+                <div className="invoice-price-row">
+                  <span>Vehicle price</span><strong>{formatPKR(selectedInvoice.salePrice)}</strong>
+                  <span>Discount</span><strong className="is-discount">−{formatPKR(selectedInvoice.discount || 0)}</strong>
+                </div>
+              </article>
+            </section>
+
+            {/* Installment schedule */}
             {selectedInvoice.installments && selectedInvoice.installments.length > 0 ? (
-              <div className="page-form-card">
-                <div className="page-form-card-title flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-purple" />
-                    <span>Detailed Installment Schedule ({selectedInvoice.installments.length} Months)</span>
+              <section className="invoice-panel invoice-schedule-panel">
+                <div className="invoice-panel-header invoice-schedule-header">
+                  <div className="invoice-panel-heading">
+                    <div className="invoice-panel-icon is-purple"><Calendar size={16} /></div>
+                    <div><h3>Installment schedule</h3><p>Payment timeline and outstanding amounts</p></div>
                   </div>
-                  <span className="glass-badge badge-purple text-xs">
-                    {paidInst} of {totalInst} Cleared ({completionPercent}%)
-                  </span>
+                  <div className="invoice-schedule-progress-label">
+                    <strong>{paidInst} / {totalInst}</strong><span>installments cleared</span>
+                  </div>
                 </div>
 
-                {/* Progress bar */}
-                <div className="installment-progress-bar-wrap">
-                  <div
-                    className="installment-progress-fill"
-                    style={{ width: `${completionPercent}%` }}
-                  />
+                <div className="invoice-progress-track">
+                  <div className="invoice-progress-value" style={{ width: `${completionPercent}%` }} />
                 </div>
 
-                <div className="table-wrapper">
-                  <table className="data-table">
+                <div className="invoice-table-wrap">
+                  <table className="invoice-detail-table">
                     <thead>
-                      <tr>
-                        <th>Installment #</th>
-                        <th>Due Date</th>
-                        <th>Scheduled (PKR)</th>
-                        <th>Paid (PKR)</th>
-                        <th>Remaining (PKR)</th>
-                        <th>Status</th>
-                        <th className="text-right">Action</th>
-                      </tr>
+                      <tr><th>Installment</th><th>Due date</th><th>Scheduled</th><th>Paid</th><th>Outstanding</th><th>Status</th><th /></tr>
                     </thead>
                     <tbody>
                       {selectedInvoice.installments.map((inst) => {
                         const isOverdue = inst.status !== 'PAID' && new Date(inst.dueDate) < new Date();
-                        const balance = Math.max(0, inst.amount - (inst.paidAmount || 0));
+                        const balance = Math.max(0, Number(inst.amount || 0) - Number(inst.paidAmount || 0));
                         return (
-                          <tr key={inst.id} className={isOverdue ? 'row-overdue' : ''}>
+                          <tr key={inst.id} className={isOverdue ? 'is-overdue' : ''}>
+                            <td><span className="installment-number">#{inst.installmentNumber}</span></td>
                             <td>
-                              <div className="font-mono font-bold flex items-center gap-2">
-                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface-subtle text-xs font-semibold">
-                                  {inst.installmentNumber}
-                                </span>
-                                <span>Installment #{inst.installmentNumber}</span>
-                              </div>
+                              <div className="invoice-date-cell">{new Date(inst.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                              {isOverdue && <span className="invoice-overdue-label"><AlertCircle size={11} /> Overdue</span>}
                             </td>
+                            <td className="money-cell">{formatPKR(inst.amount)}</td>
+                            <td className="money-cell is-paid">{formatPKR(inst.paidAmount || 0)}</td>
+                            <td className="money-cell">{balance > 0 ? <span className="is-due">{formatPKR(balance)}</span> : <span className="is-paid">PKR 0</span>}</td>
                             <td>
-                              <div className={`font-mono text-sm ${isOverdue ? 'text-rose font-bold' : ''}`}>
-                                {new Date(inst.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                              </div>
-                              {isOverdue && (
-                                <span className="text-xs text-rose flex items-center gap-1 mt-0.5 font-medium">
-                                  <AlertCircle size={11} /> Overdue
-                                </span>
-                              )}
-                            </td>
-                            <td className="font-mono font-bold text-main">
-                              {formatPKR(inst.amount)}
-                            </td>
-                            <td className="font-mono text-emerald font-bold">
-                              {formatPKR(inst.paidAmount || 0)}
-                            </td>
-                            <td className="font-mono">
-                              {balance > 0 ? (
-                                <span className="text-rose font-bold">{formatPKR(balance)}</span>
-                              ) : (
-                                <span className="text-emerald font-semibold">PKR 0</span>
-                              )}
-                            </td>
-                            <td>
-                              <span className={`glass-badge ${inst.status === 'PAID' ? 'badge-emerald' : isOverdue ? 'badge-rose' : 'badge-amber'}`}>
-                                {inst.status === 'PAID' ? (
-                                  <><CheckCircle2 size={12} /> Paid</>
-                                ) : isOverdue ? (
-                                  <><AlertCircle size={12} /> Overdue</>
-                                ) : (
-                                  <><Clock size={12} /> Pending</>
-                                )}
+                              <span className={`invoice-status-chip ${inst.status === 'PAID' ? 'is-paid' : isOverdue ? 'is-overdue' : 'is-pending'}`}>
+                                {inst.status === 'PAID' ? <CheckCircle2 size={12} /> : isOverdue ? <AlertCircle size={12} /> : <Clock size={12} />}
+                                {inst.status === 'PAID' ? 'Paid' : isOverdue ? 'Overdue' : 'Pending'}
                               </span>
                             </td>
-                            <td className="text-right">
+                            <td className="invoice-action-cell">
                               {inst.status !== 'PAID' && hasPermission('CREATE_SALE') && (
                                 <button
-                                  className="btn btn-xs btn-outline"
+                                  type="button"
+                                  className="invoice-table-action"
                                   onClick={() => {
                                     setActiveSaleForPayment(selectedInvoice);
-                                    setPaymentFormData({
-                                      amount: balance,
-                                      paymentMethod: 'CASH',
-                                      referenceNumber: '',
-                                      installmentId: inst.id,
-                                      notes: `Payment for Installment #${inst.installmentNumber}`
-                                    });
+                                    setPaymentFormData({ amount: balance, paymentMethod: 'CASH', referenceNumber: '', installmentId: inst.id, notes: `Payment for Installment #${inst.installmentNumber}` });
                                     setSubView('record-payment');
                                   }}
-                                  title={`Collect Payment for Installment #${inst.installmentNumber}`}
                                 >
-                                  <DollarSign size={13} /> Pay Inst #{inst.installmentNumber}
+                                  Pay <span>#{inst.installmentNumber}</span>
                                 </button>
                               )}
                             </td>
@@ -1397,115 +1328,72 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </section>
             ) : selectedInvoice.paymentType === 'CASH' ? (
-              <div className="page-form-card">
-                <div className="flex items-center gap-3 p-3">
-                  <div className="tile-icon-box text-emerald" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-main text-base">Cash Purchase — Settled in Full</h4>
-                    <p className="text-xs text-muted mt-0.5">
-                      This vehicle was purchased in full cash payment. No credit financing or monthly installments required.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <section className="invoice-settled-banner">
+                <div className="invoice-settled-icon"><CheckCircle2 size={20} /></div>
+                <div><strong>Paid in full</strong><span>This cash purchase has no outstanding installments or financing schedule.</span></div>
+              </section>
             ) : null}
 
-            {/* 4. Payment Receipts History */}
-            <div className="page-form-card">
-              <div className="page-form-card-title flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CreditCard size={18} className="text-emerald" />
-                  <span>Payment Receipts History ({selectedInvoice.payments?.length || 0})</span>
+            {/* Payment receipts */}
+            <section className="invoice-panel">
+              <div className="invoice-panel-header">
+                <div className="invoice-panel-heading">
+                  <div className="invoice-panel-icon is-green"><CreditCard size={16} /></div>
+                  <div><h3>Payment receipts</h3><p>{selectedInvoice.payments?.length || 0} recorded transaction{(selectedInvoice.payments?.length || 0) === 1 ? '' : 's'}</p></div>
                 </div>
                 {selectedInvoice.remainingBalance > 0 && hasPermission('CREATE_SALE') && (
-                  <button
-                    className="btn btn-xs btn-primary flex items-center gap-1"
-                    onClick={() => openPaymentModal(selectedInvoice)}
-                  >
-                    <Plus size={13} /> Record Payment
-                  </button>
+                  <button className="btn btn-primary btn-sm" onClick={() => openPaymentModal(selectedInvoice)}><Plus size={14} /> Record payment</button>
                 )}
               </div>
 
               {selectedInvoice.payments && selectedInvoice.payments.length > 0 ? (
-                <div className="table-wrapper">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Receipt / Ref #</th>
-                        <th>Payment Date</th>
-                        <th>Payment Method</th>
-                        <th>Allocation</th>
-                        <th>Amount Received</th>
-                        <th>Notes / Memo</th>
-                      </tr>
-                    </thead>
+                <div className="invoice-table-wrap">
+                  <table className="invoice-detail-table payment-table">
+                    <thead><tr><th>Receipt / reference</th><th>Date</th><th>Method</th><th>Allocation</th><th className="text-right">Amount</th><th>Notes</th></tr></thead>
                     <tbody>
                       {selectedInvoice.payments.map((pmt) => (
                         <tr key={pmt.id}>
-                          <td>
-                            <span className="font-mono font-bold text-cyan">
-                              {pmt.referenceNumber || `RCP-${pmt.id.slice(0, 8).toUpperCase()}`}
-                            </span>
-                          </td>
-                          <td>
-                            {new Date(pmt.paymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </td>
-                          <td>
-                            <span className="glass-badge badge-outline text-xs">
-                              {pmt.paymentMethod}
-                            </span>
-                          </td>
-                          <td>
-                            {pmt.installmentId ? (
-                              <span className="font-mono text-xs text-purple font-medium">Installment Payment</span>
-                            ) : (
-                              <span className="text-xs text-muted">Deposit / General Ledger</span>
-                            )}
-                          </td>
-                          <td className="font-mono font-bold text-emerald">
-                            {formatPKR(pmt.amount)}
-                          </td>
-                          <td className="text-xs text-muted">
-                            {pmt.notes || '—'}
-                          </td>
+                          <td><span className="receipt-reference">{pmt.referenceNumber || `RCP-${pmt.id.slice(0, 8).toUpperCase()}`}</span></td>
+                          <td>{new Date(pmt.paymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                          <td><span className="invoice-method-chip">{(pmt.paymentMethod || 'CASH').replace(/_/g, ' ')}</span></td>
+                          <td><span className="invoice-allocation">{pmt.installmentId ? 'Installment payment' : 'Deposit / general ledger'}</span></td>
+                          <td className="money-cell is-paid text-right">{formatPKR(pmt.amount)}</td>
+                          <td className="invoice-note-cell">{pmt.notes || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <div className="p-4 text-center text-muted text-sm">
-                  Initial deposit was recorded upon sale creation. No subsequent payment receipts logged yet.
-                </div>
+                <div className="invoice-empty-state"><CreditCard size={20} /><div><strong>No subsequent receipts</strong><span>The initial deposit was recorded with the sale. Additional collections will appear here.</span></div></div>
               )}
-            </div>
+            </section>
 
-            {/* 5. Dealership Authority Documents Checklist */}
+            {/* Authority documents */}
             {selectedInvoice.documents && selectedInvoice.documents.length > 0 && (
-              <div className="page-form-card">
-                <div className="page-form-card-title flex items-center gap-2">
-                  <FileSpreadsheet size={18} className="text-cyan" />
-                  <span>Dealership Authority Documents Verification</span>
+              <section className="invoice-panel">
+                <div className="invoice-panel-header">
+                  <div className="invoice-panel-heading">
+                    <div className="invoice-panel-icon is-cyan"><FileSpreadsheet size={16} /></div>
+                    <div><h3>Dealership documentation</h3><p>Registration and authority document status</p></div>
+                  </div>
+                  <span className="invoice-document-count">{selectedInvoice.documents.length} documents</span>
                 </div>
-                <div className="authority-docs-grid mt-2">
+                <div className="invoice-doc-grid">
                   {selectedInvoice.documents.map((doc) => (
-                    <div key={doc.id} className="authority-doc-card">
-                      <div>
-                        <div className="font-bold text-xs text-main">{(doc.docType || doc.documentType || 'DOCUMENT').replace(/_/g, ' ')}</div>
-                        <div className="text-xs text-muted font-mono">{doc.documentNumber || doc.statusNotes || 'Issued & Stamped'}</div>
+                    <div key={doc.id} className="invoice-doc-card">
+                      <div className="invoice-doc-icon"><FileText size={16} /></div>
+                      <div className="invoice-doc-content">
+                        <strong>{(doc.docType || doc.documentType || 'DOCUMENT').replace(/_/g, ' ')}</strong>
+                        <span>{doc.documentNumber || doc.statusNotes || 'Issued & stamped'}</span>
                       </div>
-                      <span className="glass-badge badge-emerald text-xs flex items-center gap-1">
-                        <Check size={11} /> {(doc.paperworkStatus || doc.status || 'READY').replace(/_/g, ' ')}
-                      </span>
+                      <span className="invoice-status-chip is-paid"><Check size={12} /> {(doc.paperworkStatus || doc.status || 'READY').replace(/_/g, ' ')}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
           </div>
 
@@ -1532,7 +1420,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   }
 
   return (
-    <div className="sales-view">
+    <div className="sales-view sales-list-view">
       {/* Control Bar */}
       <div className="control-bar glass-panel no-print mb-4">
         <div className="filter-group">
@@ -1681,13 +1569,13 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                         >
                           <FileText size={13} /> View
                         </button>
-                        <button
+                        {/* <button
                           className="btn-action-icon"
                           onClick={() => handleOpenInvoice(sale)}
                           title="View & Print Invoice / Gate Pass"
                         >
                           <Printer size={15} />
-                        </button>
+                        </button> */}
                         {sale.remainingBalance > 0 && hasPermission('CREATE_SALE') && (
                           <button
                             className="btn btn-xs btn-outline"
