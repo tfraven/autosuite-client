@@ -32,8 +32,15 @@ import ConfirmDeleteModal from './ConfirmDeleteModal';
 import Pagination from './Pagination';
 import FinancingCalculatorModal from './FinancingCalculatorModal';
 
+const getLocalDateTimeString = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+};
+
 const getDefaultSaleForm = () => ({
   customerId: null,
+  saleDate: getLocalDateTimeString(),
   saleType: 'B2C',
   customerName: '',
   customerPhone: '',
@@ -51,7 +58,7 @@ const getDefaultSaleForm = () => ({
   firstInstallmentDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 });
 
-export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
+export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal, viewInvoiceId, onClearViewInvoiceId }) {
   const { hasPermission } = useAuth();
   const { isRomanUrdu } = useLanguage();
   const toast = useToast();
@@ -95,6 +102,12 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     }
   };
 
+  useEffect(() => {
+    if (viewInvoiceId) {
+      handleOpenInvoice({ id: viewInvoiceId });
+    }
+  }, [viewInvoiceId]);
+
   // Available in-stock bikes for Chassis selection
   const [availableBikes, setAvailableBikes] = useState([]);
   const [selectedBike, setSelectedBike] = useState(null);
@@ -114,6 +127,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const [paymentFormData, setPaymentFormData] = useState({
     amount: '',
     paymentMethod: 'CASH',
+    paymentDate: getLocalDateTimeString(),
     referenceNumber: '',
     installmentId: '',
     notes: ''
@@ -305,6 +319,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     setPaymentFormData({
       amount: sale.remainingBalance,
       paymentMethod: 'CASH',
+      paymentDate: getLocalDateTimeString(),
       referenceNumber: '',
       installmentId: '',
       notes: ''
@@ -337,6 +352,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
       const payload = {
         amount: numAmount,
         paymentMethod: paymentFormData.paymentMethod || 'CASH',
+        paymentDate: paymentFormData.paymentDate ? new Date(paymentFormData.paymentDate).toISOString() : undefined,
         referenceNumber: paymentFormData.referenceNumber?.trim() || null,
         installmentId: paymentFormData.installmentId || null,
         notes: paymentFormData.notes?.trim() || null
@@ -579,6 +595,23 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
               <div className="page-form-card">
                 <div className="page-form-card-title">Commercial Terms</div>
                 <div className="pricing-box glass-panel p-3 rounded-md">
+                  <div className="form-field mb-3">
+                    <label className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Calendar size={13} className="text-cyan" />
+                        {isRomanUrdu ? 'Sale / Invoice Ki Tareekh *' : 'Sale & Invoice Date (Paper Record Date) *'}
+                      </span>
+                      <span className="text-xs text-muted">Defaults to now</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={saleForm.saleDate}
+                      onChange={(e) => setSaleForm({ ...saleForm, saleDate: e.target.value })}
+                      required
+                      className="form-input font-mono"
+                    />
+                  </div>
+
                   <div className="form-field mb-3">
                     <label>Selling Price (PKR)</label>
                     <input
@@ -905,6 +938,24 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                   </div>
                 </div>
 
+                {/* Payment Date */}
+                <div className="form-field mb-3">
+                  <label className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Calendar size={13} className="text-cyan" />
+                      {isRomanUrdu ? 'Adaigi / Wasooli Ki Tareekh *' : 'Payment Received Date (Paper Slip Date) *'}
+                    </span>
+                    <span className="text-xs text-muted">Defaults to now</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="form-input font-mono"
+                    value={paymentFormData.paymentDate}
+                    onChange={(e) => setPaymentFormData((prev) => ({ ...prev, paymentDate: e.target.value }))}
+                    required
+                  />
+                </div>
+
                 {/* Notes */}
                 <div className="form-field">
                   <label>{isRomanUrdu ? 'Tafseelat / Notes (Ikhtiari)' : 'Notes / Remarks (Optional)'}</label>
@@ -957,7 +1008,13 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
         <div className="page-form-view">
           {/* Top Header & Navigation (Screen Only) */}
           <div className="page-form-header no-print">
-            <button className="page-form-back-btn" onClick={() => setSelectedInvoice(null)}>
+            <button
+              className="page-form-back-btn"
+              onClick={() => {
+                setSelectedInvoice(null);
+                if (onClearViewInvoiceId) onClearViewInvoiceId();
+              }}
+            >
               <ArrowLeft size={16} /> Back to sales
             </button>
             <div className="page-form-title-group">

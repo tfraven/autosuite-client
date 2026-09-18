@@ -30,6 +30,18 @@ function MainApp() {
   const [openNewSale, setOpenNewSale] = useState(false);
   const [openNewBike, setOpenNewBike] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+
+  const handleViewInvoice = (invoice) => {
+    setSelectedInvoiceId(invoice.id);
+    setActiveTab('sales');
+  };
+
+  const handleSelectCustomer = (customer) => {
+    setSelectedCustomerId(customer.id);
+    setActiveTab('customers');
+  };
 
   // Global Ctrl+K hotkey for Command Palette
   useEffect(() => {
@@ -129,10 +141,17 @@ function MainApp() {
             <Sales
               isOpenNewSaleModal={openNewSale}
               onCloseNewSaleModal={() => setOpenNewSale(false)}
+              viewInvoiceId={selectedInvoiceId}
+              onClearViewInvoiceId={() => setSelectedInvoiceId(null)}
             />
           )}
 
-          {activeTab === 'customers' && <Customers />}
+          {activeTab === 'customers' && (
+            <Customers
+              onViewInvoice={handleViewInvoice}
+              initialCustomerId={selectedCustomerId}
+            />
+          )}
 
           {activeTab === 'documents' && <Documents />}
 
@@ -179,6 +198,16 @@ function MainApp() {
         onSelectTab={(tab) => {
           setActiveTab(tab);
           setIsCommandPaletteOpen(false);
+        }}
+        onViewInvoice={handleViewInvoice}
+        onSelectCustomer={handleSelectCustomer}
+        onOpenNewSale={() => {
+          setActiveTab('sales');
+          setOpenNewSale(true);
+        }}
+        onOpenNewBike={() => {
+          setActiveTab('inventory');
+          setOpenNewBike(true);
         }}
       />
     </div>

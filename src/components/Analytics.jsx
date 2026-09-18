@@ -15,7 +15,12 @@ import {
   Package,
   FileCheck2,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Flame,
+  Clock,
+  Calendar,
+  Zap,
+  Users
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
@@ -306,6 +311,348 @@ function StackedMeter({ segments, totalLabel }) {
   );
 }
 
+function ShowroomHeatmap({ heatmaps, isRomanUrdu }) {
+  const [mode, setMode] = useState('SALES_HOURLY'); // 'SALES_HOURLY' | 'SALES_CALENDAR' | 'USER_HOURLY' | 'USER_CALENDAR'
+  const [metric, setMetric] = useState('COUNT'); // 'COUNT' | 'REVENUE'
+  const [hovered, setHovered] = useState(null);
+
+  if (!heatmaps) return null;
+
+  const sales = heatmaps.sales || {};
+  const userAct = heatmaps.userActivity || {};
+
+  const daysOfWeek = [
+    { idx: 1, label: 'Mon', full: 'Monday' },
+    { idx: 2, label: 'Tue', full: 'Tuesday' },
+    { idx: 3, label: 'Wed', full: 'Wednesday' },
+    { idx: 4, label: 'Thu', full: 'Thursday' },
+    { idx: 5, label: 'Fri', full: 'Friday' },
+    { idx: 6, label: 'Sat', full: 'Saturday' },
+    { idx: 0, label: 'Sun', full: 'Sunday' }
+  ];
+
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  const getIntensity = (val, max) => {
+    if (!val || val <= 0 || !max || max <= 0) return 0;
+    const ratio = val / max;
+    if (ratio <= 0.25) return 1;
+    if (ratio <= 0.5) return 2;
+    if (ratio <= 0.75) return 3;
+    return 4;
+  };
+
+  const isSalesMode = mode === 'SALES_HOURLY' || mode === 'SALES_CALENDAR';
+  const isHourlyMode = mode === 'SALES_HOURLY' || mode === 'USER_HOURLY';
+
+  const calendarData = isSalesMode ? sales.dailyCalendar || [] : userAct.dailyCalendar || [];
+
+  const weeks = [];
+  let currentWeek = [];
+  calendarData.forEach((day, i) => {
+    currentWeek.push(day);
+    if (currentWeek.length === 7 || i === calendarData.length - 1) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  });
+
+  const maxHourlyVal = isSalesMode
+    ? (metric === 'COUNT' ? sales.maxHourlyCount || 1 : sales.maxHourlyRevenue || 1)
+    : (userAct.maxHourlyCount || 1);
+
+  const maxDailyVal = Math.max(
+    ...calendarData.map((d) => (isSalesMode ? (metric === 'COUNT' ? d.salesCount : d.salesRevenue) : d.auditCount)),
+    1
+  );
+
+  return (
+    <div className="heatmap-card glass-panel chart-panel">
+      {/* Header with Title & Mode Switcher */}
+      <div className="heatmap-header-row">
+        <div className="heatmap-title-group">
+          <h3>
+            <Flame size={18} className="text-cyan" />
+            <span>{isRomanUrdu ? 'Showroom Rush aur Activity Heatmaps' : 'Showroom Rush & Activity Heatmaps'}</span>
+          </h3>
+          <span className="heatmap-subtitle">
+            {isRomanUrdu
+              ? 'Farokht ke rush hours aur dealership staff ki sar-garmi ka ba-basarat jaiza'
+              : 'Visual density of showroom footfall windows, sales rush hours, and team operations'}
+          </span>
+        </div>
+
+        <div className="heatmap-controls-row">
+          {/* Main Mode Toggle */}
+          <div className="heatmap-toggle-group">
+            <button
+              type="button"
+              className={`heatmap-toggle-btn ${mode === 'SALES_HOURLY' ? 'active' : ''}`}
+              onClick={() => setMode('SALES_HOURLY')}
+            >
+              <Clock size={12} /> {isRomanUrdu ? 'Sales Rush (24h)' : 'Sales Rush (24h)'}
+            </button>
+            <button
+              type="button"
+              className={`heatmap-toggle-btn ${mode === 'SALES_CALENDAR' ? 'active' : ''}`}
+              onClick={() => setMode('SALES_CALENDAR')}
+            >
+              <Calendar size={12} /> {isRomanUrdu ? 'Daily Sales (90 Din)' : 'Daily Sales (90 Days)'}
+            </button>
+            <button
+              type="button"
+              className={`heatmap-toggle-btn ${mode === 'USER_HOURLY' ? 'active' : ''}`}
+              onClick={() => setMode('USER_HOURLY')}
+            >
+              <Users size={12} /> {isRomanUrdu ? 'Staff Matrix' : 'Staff Matrix'}
+            </button>
+            <button
+              type="button"
+              className={`heatmap-toggle-btn ${mode === 'USER_CALENDAR' ? 'active' : ''}`}
+              onClick={() => setMode('USER_CALENDAR')}
+            >
+              <Activity size={12} /> {isRomanUrdu ? 'Daily Actions' : 'Daily Actions'}
+            </button>
+          </div>
+
+          {/* Metric toggle if sales */}
+          {isSalesMode && (
+            <div className="heatmap-toggle-group">
+              <button
+                type="button"
+                className={`heatmap-toggle-btn ${metric === 'COUNT' ? 'active' : ''}`}
+                onClick={() => setMetric('COUNT')}
+              >
+                Invoices
+              </button>
+              <button
+                type="button"
+                className={`heatmap-toggle-btn ${metric === 'REVENUE' ? 'active' : ''}`}
+                onClick={() => setMetric('REVENUE')}
+              >
+                Volume (PKR)
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Insights KPI Banner */}
+      <div className="heatmap-insights-banner">
+        <div className="insight-metric-box">
+          <span className="insight-metric-label">
+            <Clock size={12} className="text-cyan" /> Peak Rush Hour
+          </span>
+          <strong className="insight-metric-val font-mono text-cyan">
+            {sales.peakHour?.label || '12:00 PM'}
+          </strong>
+          <span className="insight-metric-sub">
+            {sales.peakHour?.count || 0} sales ({compactPKR(sales.peakHour?.revenue)})
+          </span>
+        </div>
+
+        <div className="insight-metric-box">
+          <span className="insight-metric-label">
+            <Flame size={12} className="text-amber" /> Busiest Sales Day
+          </span>
+          <strong className="insight-metric-val text-amber">
+            {sales.peakDay?.dayName || 'Friday'}
+          </strong>
+          <span className="insight-metric-sub">
+            {sales.peakDay?.count || 0} bikes · {compactPKR(sales.peakDay?.revenue)}
+          </span>
+        </div>
+
+        <div className="insight-metric-box">
+          <span className="insight-metric-label">
+            <Users size={12} className="text-emerald" /> Top Active Staff
+          </span>
+          <strong className="insight-metric-val text-emerald">
+            {userAct.topUsers?.[0]?.name || 'Admin Team'}
+          </strong>
+          <span className="insight-metric-sub font-mono">
+            {userAct.topUsers?.[0]?.count || 0} audit operations logged
+          </span>
+        </div>
+
+        <div className="insight-metric-box">
+          <span className="insight-metric-label">
+            <Zap size={12} className="text-purple" /> Top Operation Type
+          </span>
+          <strong className="insight-metric-val font-mono text-purple">
+            {(userAct.topActions?.[0]?.action || 'CREATE_SALE').replace(/_/g, ' ')}
+          </strong>
+          <span className="insight-metric-sub font-mono">
+            {userAct.topActions?.[0]?.count || 0} total events
+          </span>
+        </div>
+      </div>
+
+      {/* Mode 1 & 3: 7-Day x 24-Hour Matrix */}
+      {isHourlyMode && (
+        <div className="heatmap-matrix-container relative">
+          <table className="heatmap-matrix-table">
+            <thead>
+              <tr>
+                <th className="heatmap-day-label">Day / Time</th>
+                {hours.map((h) => {
+                  const ampm = h >= 12 ? 'p' : 'a';
+                  const disp = h % 12 === 0 ? 12 : h % 12;
+                  return (
+                    <th key={h} title={`${disp}:00 ${ampm.toUpperCase()}M`}>
+                      {disp}{ampm}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {daysOfWeek.map(({ idx, label, full }) => (
+                <tr key={idx}>
+                  <td className="heatmap-day-label">{label}</td>
+                  {hours.map((h) => {
+                    let cellVal = 0;
+                    let displayVal = '';
+                    let subText = '';
+
+                    if (isSalesMode) {
+                      const found = (sales.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
+                      cellVal = metric === 'COUNT' ? (found?.count || 0) : (found?.revenue || 0);
+                      displayVal = `${found?.count || 0} invoices`;
+                      subText = formatPKR(found?.revenue || 0);
+                    } else {
+                      const found = (userAct.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
+                      cellVal = found?.count || 0;
+                      displayVal = `${cellVal} staff operations`;
+                      subText = `${found?.dayName} at ${h}:00`;
+                    }
+
+                    const level = getIntensity(cellVal, maxHourlyVal);
+                    const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
+
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const dispH = h % 12 === 0 ? 12 : h % 12;
+                    const timeLabel = `${dispH}:00 - ${dispH}:59 ${ampm}`;
+
+                    return (
+                      <td
+                        key={h}
+                        className={`heatmap-cell ${colorClass}`}
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setHovered({
+                            title: `${full} · ${timeLabel}`,
+                            primary: displayVal,
+                            secondary: subText,
+                            level,
+                            x: rect.left + rect.width / 2,
+                            y: rect.top
+                          });
+                        }}
+                        onMouseLeave={() => setHovered(null)}
+                      />
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Mode 2 & 4: 90-Day Calendar Grid */}
+      {!isHourlyMode && (
+        <div className="calendar-heatmap-wrap relative">
+          <div className="cal-day-labels">
+            <span className="cal-day-label">Mon</span>
+            <span className="cal-day-label">Wed</span>
+            <span className="cal-day-label">Fri</span>
+            <span className="cal-day-label">Sun</span>
+          </div>
+
+          <div className="cal-weeks-grid">
+            {weeks.map((wk, wIdx) => {
+              const monthLabel = wIdx % 4 === 0 && wk[0] ? new Date(wk[0].date).toLocaleDateString('en-US', { month: 'short' }) : '';
+              return (
+                <div key={wIdx} className="cal-week-col">
+                  <span className="cal-week-month-tag">{monthLabel}</span>
+                  {wk.map((day) => {
+                    const cellVal = isSalesMode
+                      ? (metric === 'COUNT' ? day.salesCount : day.salesRevenue)
+                      : day.auditCount;
+
+                    const level = getIntensity(cellVal, maxDailyVal);
+                    const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
+                    const formattedDate = new Date(day.date).toLocaleDateString('en-GB', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+
+                    return (
+                      <div
+                        key={day.date}
+                        className={`cal-day-cell ${colorClass}`}
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setHovered({
+                            title: formattedDate,
+                            primary: isSalesMode
+                              ? `${day.salesCount} invoices (${formatPKR(day.salesRevenue)})`
+                              : `${day.auditCount} system operations`,
+                            secondary: isSalesMode
+                              ? (day.salesCount > 0 ? 'Sales recorded' : 'No sales activity')
+                              : 'Audit trail events',
+                            level,
+                            x: rect.left + rect.width / 2,
+                            y: rect.top
+                          });
+                        }}
+                        onMouseLeave={() => setHovered(null)}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Legend */}
+      <div className="heatmap-legend-row">
+        <span>Less</span>
+        {[0, 1, 2, 3, 4].map((lvl) => (
+          <span
+            key={lvl}
+            className={`legend-swatch-box ${isSalesMode ? `heat-cyan-${lvl}` : `heat-emerald-${lvl}`}`}
+          />
+        ))}
+        <span>More</span>
+      </div>
+
+      {/* Floating Tooltip */}
+      {hovered && (
+        <div
+          className="heatmap-floating-tooltip glass-panel"
+          style={{
+            position: 'fixed',
+            left: `${hovered.x}px`,
+            top: `${hovered.y - 12}px`,
+            transform: 'translate(-50%, -100%)',
+            pointerEvents: 'none'
+          }}
+        >
+          <div className="text-xs font-semibold text-ink-1">{hovered.title}</div>
+          <div className="font-mono text-cyan text-sm font-bold mt-0.5">{hovered.primary}</div>
+          {hovered.secondary && <div className="text-xs text-muted mt-0.5">{hovered.secondary}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Analytics() {
   const { isRomanUrdu } = useLanguage();
   const toast = useToast();
@@ -313,19 +660,22 @@ export default function Analytics() {
   const [stats, setStats] = useState(null);
   const [health, setHealth] = useState(null);
   const [retention, setRetention] = useState(null);
+  const [heatmaps, setHeatmaps] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
-      const [statsData, healthData, retentionData] = await Promise.all([
+      const [statsData, healthData, retentionData, heatmapsData] = await Promise.all([
         api.getDashboardStats().catch(() => null),
         api.getHealth().catch(() => null),
-        api.getAuditRetention().catch(() => null)
+        api.getAuditRetention().catch(() => null),
+        api.getHeatmaps().catch(() => null)
       ]);
       setStats(statsData);
       setHealth(healthData);
       setRetention(retentionData);
+      setHeatmaps(heatmapsData);
     } catch (err) {
       console.error('Error loading analytics:', err);
       toast.error('Failed to load telemetry data');
@@ -545,6 +895,9 @@ export default function Analytics() {
               <ComboTrendChart series={derived.monthlyTrends} />
             )}
           </div>
+
+          {/* Interactive Showroom Rush & User Activity Heatmaps */}
+          <ShowroomHeatmap heatmaps={heatmaps} isRomanUrdu={isRomanUrdu} />
 
           <div className="analytics-details-grid">
             <div className="card glass-panel chart-panel">

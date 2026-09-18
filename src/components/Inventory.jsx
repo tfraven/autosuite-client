@@ -9,7 +9,8 @@ import {
   Edit3,
   Trash2,
   FileSpreadsheet,
-  ArrowLeft
+  ArrowLeft,
+  Calendar
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -43,6 +44,12 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   const [editingBike, setEditingBike] = useState(null);
   const [bikeToDelete, setBikeToDelete] = useState(null);
 
+  const getLocalDateTimeString = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+  };
+
   const initialFormData = {
     type: 'BRAND_NEW',
     modelName: '',
@@ -56,6 +63,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     retailPrice: '',
     status: 'IN_STOCK',
     marketTarget: 'BOTH',
+    receivedDate: getLocalDateTimeString(),
     registrationNumber: '',
     prevOwnerName: '',
     prevOwnerPhone: '',
@@ -236,6 +244,23 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     </select>
                   </div>
                 </div>
+
+                <div className="form-field mb-3">
+                  <label className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Calendar size={13} className="text-cyan" />
+                      {isRomanUrdu ? 'Stock Mein Shamil Karne Ki Tareekh' : 'Stock Arrival Date (Paper Record Date)'}
+                    </span>
+                    <span className="text-xs text-muted">Defaults to now</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={formData.receivedDate || ''}
+                    onChange={(e) => setFormData({ ...formData, receivedDate: e.target.value })}
+                    className="form-input font-mono"
+                  />
+                </div>
+
                 <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Brand / Make</label>

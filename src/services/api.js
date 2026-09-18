@@ -355,6 +355,11 @@ export const api = {
       headers: getAuthHeaders()
     }).then(handleResponse),
 
+  getHeatmaps: () =>
+    fetch(`${API_BASE}/reports/heatmaps`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
   downloadExcel: async (type, params = {}) => {
     const query = new URLSearchParams(params).toString();
     const token = localStorage.getItem('autosuite_token');

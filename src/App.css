@@ -9414,3 +9414,382 @@ Calendar motion — professional, alive, schedule-focused
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   ANALYTICS HEATMAPS & VISUALIZATION ENHANCEMENTS
+   ========================================================================== */
+
+.heatmap-card {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg, 12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.heatmap-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.heatmap-title-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink-1);
+  margin: 0 0 0.25rem 0;
+}
+
+.heatmap-subtitle {
+  font-size: 0.8rem;
+  color: var(--ink-4);
+}
+
+.heatmap-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.heatmap-toggle-group {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.heatmap-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.heatmap-toggle-btn:hover {
+  color: var(--ink-1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.heatmap-toggle-btn.active {
+  background: var(--accent, #06b6d4);
+  color: #050b14;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.35);
+}
+
+.heatmap-insights-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.insight-metric-box {
+  padding: 0.85rem 1rem;
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.07));
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.insight-metric-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-4);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.insight-metric-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.insight-metric-sub {
+  font-size: 0.75rem;
+  color: var(--ink-4);
+}
+
+/* Hourly Matrix Grid */
+.heatmap-matrix-container {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.heatmap-matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  min-width: 720px;
+}
+
+.heatmap-matrix-table th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-4);
+  text-align: center;
+  padding: 4px 2px;
+  font-family: var(--font-mono, monospace);
+}
+
+.heatmap-day-label {
+  width: 90px;
+  text-align: right !important;
+  padding-right: 8px !important;
+  font-weight: 600;
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.heatmap-cell {
+  width: 32px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.18);
+  z-index: 10;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Heatmap Levels - Sales (Cyan Glow) */
+.heat-cyan-0 { background: rgba(255, 255, 255, 0.025); }
+.heat-cyan-1 { background: rgba(6, 182, 212, 0.20); }
+.heat-cyan-2 { background: rgba(6, 182, 212, 0.45); }
+.heat-cyan-3 { background: rgba(6, 182, 212, 0.75); }
+.heat-cyan-4 {
+  background: #06b6d4;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+}
+
+/* Heatmap Levels - Audits / Activity (Emerald Glow) */
+.heat-emerald-0 { background: rgba(255, 255, 255, 0.025); }
+.heat-emerald-1 { background: rgba(16, 185, 129, 0.22); }
+.heat-emerald-2 { background: rgba(16, 185, 129, 0.48); }
+.heat-emerald-3 { background: rgba(16, 185, 129, 0.75); }
+.heat-emerald-4 {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+/* Calendar Heatmap (GitHub-style 12 weeks) */
+.calendar-heatmap-wrap {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.cal-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 18px;
+}
+
+.cal-day-label {
+  font-size: 0.68rem;
+  color: var(--ink-4);
+  height: 14px;
+  line-height: 14px;
+  width: 30px;
+  text-align: right;
+  padding-right: 4px;
+}
+
+.cal-weeks-grid {
+  display: flex;
+  gap: 4px;
+}
+
+.cal-week-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-week-month-tag {
+  font-size: 0.68rem;
+  color: var(--ink-4);
+  height: 14px;
+  line-height: 14px;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cal-day-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.cal-day-cell:hover {
+  transform: scale(1.35);
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+}
+
+.heatmap-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: var(--ink-4);
+}
+
+.legend-swatch-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Tooltip */
+.heatmap-floating-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  background: rgba(10, 15, 26, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent, #06b6d4);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  min-width: 150px;
+  animation: fadeIn 0.1s ease-out;
+}
+
+/* ==========================================================================
+   CUSTOMER DETAILED LEDGER INVOICE REDIRECTION
+   ========================================================================== */
+
+.invoice-redirect-link {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--accent, #06b6d4);
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.invoice-redirect-link:hover {
+  color: #38bdf8;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+
+.invoice-redirect-link .link-arrow-icon {
+  transition: transform 0.18s ease;
+}
+
+.invoice-redirect-link:hover .link-arrow-icon {
+  transform: translateX(2px) translateY(-1px);
+}
+
+.tile-invoice-btn {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--ink-2);
+  transition: all 0.18s ease;
+}
+
+.tile-invoice-btn:hover {
+  background: var(--accent, #06b6d4);
+  color: #050b14;
+  font-weight: 600;
+  border-color: var(--accent, #06b6d4);
+}
+
+/* ==========================================================================
+   COMMAND PALETTE ROBUST STYLES
+   ========================================================================== */
+
+.palette-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.06));
+  overflow-x: auto;
+}
+
+.palette-filter-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.palette-filter-btn:hover {
+  color: var(--ink-1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.palette-filter-btn.active {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: var(--accent, #06b6d4);
+  font-weight: 600;
+}
+
+.palette-item-selected {
+  background: rgba(6, 182, 212, 0.12) !important;
+  border-left: 3px solid var(--accent, #06b6d4);
+  box-shadow: inset 0 0 16px rgba(6, 182, 212, 0.08);
+}
+
+.palette-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

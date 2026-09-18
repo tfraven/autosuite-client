@@ -18,14 +18,16 @@ import {
   ShieldCheck,
   Building2,
   Plus,
-  Edit3
+  Edit3,
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Pagination from './Pagination';
 
-export default function Customers() {
+export default function Customers({ onViewInvoice, initialCustomerId }) {
   const { hasPermission } = useAuth();
   const toast = useToast();
   const [customers, setCustomers] = useState([]);
@@ -42,6 +44,26 @@ export default function Customers() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [copiedText, setCopiedText] = useState('');
+
+  useEffect(() => {
+    if (initialCustomerId) {
+      api.getCustomer(initialCustomerId).then((cust) => {
+        if (cust) setSelectedCustomer(cust);
+      }).catch(console.error);
+    }
+  }, [initialCustomerId]);
+
+  const handleSelectCustomer = async (c) => {
+    setSelectedCustomer(c);
+    try {
+      const full = await api.getCustomer(c.id);
+      if (full) {
+        setSelectedCustomer(full);
+      }
+    } catch (err) {
+      console.warn('Could not fetch full customer:', err);
+    }
+  };
 
   // SubView & Customer Form state
   const [subView, setSubView] = useState(null); // 'customer-form'
@@ -446,7 +468,18 @@ export default function Customers() {
                       </div>
                     </div>
 
-                    <span className="tile-invoice">{bike.invoiceNumber}</span>
+                    {onViewInvoice ? (
+                      <button
+                        type="button"
+                        className="tile-invoice tile-invoice-btn"
+                        onClick={() => onViewInvoice({ id: bike.id, invoiceNumber: bike.invoiceNumber })}
+                        title="Click to view invoice details"
+                      >
+                        {bike.invoiceNumber} <ExternalLink size={10} className="inline ml-1 opacity-70" />
+                      </button>
+                    ) : (
+                      <span className="tile-invoice">{bike.invoiceNumber}</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -462,26 +495,57 @@ export default function Customers() {
                 {selectedCustomer.sales.map((sale) => (
                   <div key={sale.id} className="customer-sale-card glass-panel mb-3">
                     <div className="sale-card-summary-row">
-                      <div>
-                        <span className="font-mono font-bold text-cyan text-base">{sale.invoiceNumber}</span>
-                        <span className="text-xs text-muted ml-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {onViewInvoice ? (
+                          <button
+                            type="button"
+                            className="invoice-redirect-link font-mono font-bold text-cyan text-base flex items-center gap-1.5"
+                            onClick={() => onViewInvoice(sale)}
+                            title="Click to open full invoice details"
+                          >
+                            <span>{sale.invoiceNumber}</span>
+                            <ExternalLink size={14} className="link-arrow-icon text-cyan" />
+                          </button>
+                        ) : (
+                          <span className="font-mono font-bold text-cyan text-base">{sale.invoiceNumber}</span>
+                        )}
+                        <span className="text-xs text-muted ml-2">
                           {new Date(sale.saleDate).toLocaleDateString('en-GB')}
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className={`glass-badge ${sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-emerald'}`}>
                           {(sale.paymentType || 'CASH').replace(/_/g, ' ')}
                         </span>
                         <span className={`glass-badge ${sale.status === 'COMPLETED' ? 'badge-emerald' : 'badge-amber'}`}>
                           {sale.status}
                         </span>
+                        {onViewInvoice && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-xs flex items-center gap-1.5 py-1 px-2.5"
+                            onClick={() => onViewInvoice(sale)}
+                            title="Open detailed invoice"
+                          >
+                            <span>View Invoice</span>
+                            <ArrowRight size={12} />
+                          </button>
+                        )}
                       </div>
                     </div>
 
                     <div className="sale-financial-breakdown">
                       <div><span>Total:</span> <strong>{formatPKR(sale.finalAmount)}</strong></div>
                       <div><span>Balance:</span> <strong className={sale.remainingBalance > 0 ? 'text-rose' : 'text-emerald'}>{formatPKR(sale.remainingBalance)}</strong></div>
-                      <div><span>Motorcycle:</span> <strong>{sale.bike?.modelName}</strong></div>
+                      <div>
+                        <span>Motorcycle:</span>{' '}
+                        <strong className="text-amber">
+                          {sale.bike?.modelName ||
+                            sale.bikeModel ||
+                            selectedCustomer.purchasedBikes?.find((b) => b.invoiceNumber === sale.invoiceNumber)?.modelName ||
+                            'Motorcycle'}
+                        </strong>
+                      </div>
                     </div>
 
                     {/* If credit installment, show schedule */}
@@ -708,7 +772,7 @@ export default function Customers() {
             <div
               key={c.id}
               className="customer-card glass-panel"
-              onClick={() => setSelectedCustomer(c)}
+              onClick={() => handleSelectCustomer(c)}
             >
               <div className="customer-card-header">
                 <div className="customer-avatar">
@@ -795,7 +859,7 @@ export default function Customers() {
             </thead>
             <tbody>
               {customers.map((c) => (
-                <tr key={c.id} onClick={() => setSelectedCustomer(c)} className="clickable-row">
+                <tr key={c.id} onClick={() => handleSelectCustomer(c)} className="clickable-row">
                   <td>
                     <div className="customer-cell-flex">
                       <div className="customer-avatar-sm">
