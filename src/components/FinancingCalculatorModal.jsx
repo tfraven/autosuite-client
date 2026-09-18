@@ -98,7 +98,7 @@ export default function FinancingCalculatorModal({
             <div className="form-field">
               <label>{isRomanUrdu ? 'Muddad (Tenure Months)' : 'Installment Tenure'}</label>
               <select
-                className="form-select font-mono"
+                className="form-input font-mono"
                 value={tenureMonths}
                 onChange={(e) => setTenureMonths(Number(e.target.value))}
               >

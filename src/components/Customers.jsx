@@ -48,8 +48,8 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [copiedText, setCopiedText] = useState('');
 
-  // Customer Add / Edit Modal state
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  // SubView & Customer Form state
+  const [subView, setSubView] = useState(null); // 'customer-form'
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [submittingCustomer, setSubmittingCustomer] = useState(false);
   const [customerFormData, setCustomerFormData] = useState({
@@ -71,7 +71,7 @@ export default function Customers() {
       customerType: 'RETAIL',
       notes: ''
     });
-    setIsCustomerModalOpen(true);
+    setSubView('customer-form');
   };
 
   const handleOpenEditCustomer = (cust) => {
@@ -84,7 +84,7 @@ export default function Customers() {
       customerType: cust.customerType || 'RETAIL',
       notes: cust.notes || ''
     });
-    setIsCustomerModalOpen(true);
+    setSubView('customer-form');
   };
 
   const handleSaveCustomer = async (e) => {
@@ -101,7 +101,7 @@ export default function Customers() {
         const created = await api.createCustomer(customerFormData);
         toast.success(`Customer ${created.name} registered.`);
       }
-      setIsCustomerModalOpen(false);
+      setSubView(null);
       fetchCustomers();
     } catch (err) {
       toast.error(err.message || 'Failed to save customer');
@@ -169,90 +169,111 @@ export default function Customers() {
     return 'PKR ' + Number(val || 0).toLocaleString('en-PK');
   };
 
-  const renderCustomerModal = () => {
-    if (!isCustomerModalOpen) return null;
+  // Full-Page Customer Form (normal form like "Add motorcycle")
+  if (subView === 'customer-form') {
     return (
-      <div className="modal-overlay" onClick={() => setIsCustomerModalOpen(false)}>
-        <div className="modal-container glass-panel slide-in max-w-lg" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h3>{editingCustomer ? 'Edit Customer Details' : 'Register New Customer'}</h3>
-            <button className="modal-close-btn" onClick={() => setIsCustomerModalOpen(false)}>
-              <X size={18} />
+      <div className="customers-view">
+        <div className="page-form-view">
+          <div className="page-form-header">
+            <button className="page-form-back-btn" onClick={() => setSubView(null)}>
+              <ArrowLeft size={16} /> Back to customers
             </button>
+            <div className="page-form-title-group">
+              <h2 className="page-form-title">
+                {editingCustomer ? 'Edit customer details' : 'Register new customer'}
+              </h2>
+              <div className="page-form-subtitle">
+                Master customer record, National ID (CNIC), contact phone and credit terms
+              </div>
+            </div>
           </div>
-          <form onSubmit={handleSaveCustomer} className="p-4">
-            <div className="form-field mb-3">
-              <label>Full Name *</label>
-              <input
-                type="text"
-                className="form-input"
-                required
-                placeholder="e.g. Muhammad Aslam"
-                value={customerFormData.name}
-                onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="form-field">
-                <label>Phone Number *</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  required
-                  placeholder="03001234567"
-                  value={customerFormData.phone}
-                  onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
-                />
+
+          <form onSubmit={handleSaveCustomer} className="page-form-container">
+            <div className="page-form-grid-2">
+              {/* Card 1: Account Identity */}
+              <div className="page-form-card">
+                <div className="page-form-card-title">Customer Identification</div>
+                <div className="form-field mb-3">
+                  <label>Full Legal Name *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    required
+                    placeholder="e.g. Muhammad Aslam"
+                    value={customerFormData.name}
+                    onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group-row mb-3">
+                  <div className="form-field">
+                    <label>Account Category</label>
+                    <select
+                      className="form-input"
+                      value={customerFormData.customerType}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, customerType: e.target.value })}
+                    >
+                      <option value="RETAIL">Retail B2C</option>
+                      <option value="DEALER">Dealer B2B</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label>National ID (CNIC)</label>
+                    <input
+                      type="text"
+                      className="form-input font-mono"
+                      placeholder="35201-1234567-1"
+                      value={customerFormData.cnic}
+                      onChange={(e) => setCustomerFormData({ ...customerFormData, cnic: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="form-field">
-                <label>CNIC (National ID)</label>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  placeholder="35201-1234567-1"
-                  value={customerFormData.cnic}
-                  onChange={(e) => setCustomerFormData({ ...customerFormData, cnic: e.target.value })}
-                />
+
+              {/* Card 2: Contact & Location */}
+              <div className="page-form-card">
+                <div className="page-form-card-title">Contact & Location</div>
+                <div className="form-field mb-3">
+                  <label>Primary Phone Number *</label>
+                  <input
+                    type="text"
+                    className="form-input font-mono"
+                    required
+                    placeholder="03001234567"
+                    value={customerFormData.phone}
+                    onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
+                  />
+                </div>
+                <div className="form-field mb-3">
+                  <label>Residential / Business Address</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="House / Street, Area, City"
+                    value={customerFormData.address}
+                    onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+
+            <div className="page-form-card">
+              <div className="page-form-card-title">Commercial & Reference Notes</div>
               <div className="form-field">
-                <label>Account Type</label>
-                <select
+                <textarea
+                  rows="3"
                   className="form-input"
-                  value={customerFormData.customerType}
-                  onChange={(e) => setCustomerFormData({ ...customerFormData, customerType: e.target.value })}
-                >
-                  <option value="RETAIL">Retail B2C</option>
-                  <option value="DEALER">Dealer B2B</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label>Address</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="City, Area or Street"
-                  value={customerFormData.address}
-                  onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
+                  placeholder="Guarantor references, payment terms, showroom bay or delivery notes..."
+                  value={customerFormData.notes}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
                 />
               </div>
             </div>
-            <div className="form-field mb-4">
-              <label>Internal Notes</label>
-              <textarea
-                rows="2"
-                className="form-input"
-                placeholder="Credit terms, reference notes..."
-                value={customerFormData.notes}
-                onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
-              />
-            </div>
-            <div className="modal-footer pt-3 border-t border-line-soft flex justify-end gap-2">
+
+            <div className="page-form-footer mt-4 flex items-center justify-end gap-3">
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => setIsCustomerModalOpen(false)}
+                onClick={() => setSubView(null)}
               >
                 Cancel
               </button>
@@ -261,14 +282,14 @@ export default function Customers() {
                 className="btn btn-primary"
                 disabled={submittingCustomer}
               >
-                {submittingCustomer ? 'Saving…' : (editingCustomer ? 'Save Changes' : 'Register Customer')}
+                {submittingCustomer ? 'Saving…' : (editingCustomer ? 'Save Customer Changes' : 'Register Customer')}
               </button>
             </div>
           </form>
         </div>
       </div>
     );
-  };
+  }
 
   // If a customer is selected for deep profile view
   if (selectedCustomer) {
@@ -511,7 +532,6 @@ export default function Customers() {
             </div>
           </div>
         </div>
-        {renderCustomerModal()}
       </div>
     );
   }
@@ -855,7 +875,6 @@ export default function Customers() {
           setPage(1);
         }}
       />
-      {renderCustomerModal()}
     </div>
   );
 }
