@@ -4904,7 +4904,7 @@ shown at and above it. Pair with .hidden on the same element. */
 
 .svg-chart-container {
   width: 100%;
-  aspect-ratio: 700 / 260;
+  height: 300px;
   overflow: visible;
   position: relative;
 }
@@ -5621,11 +5621,6 @@ Legal Page — refinement & motion
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: var(--sp-5);
-}
-
-.analytics-svg-chart {
-  width: 100%;
-  height: 240px;
 }
 
 .active-log-files {
@@ -6391,6 +6386,14 @@ Analytics charts
 ========================================================================== */
 .chart-panel {
   min-width: 0;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-panel .analytics-empty-state {
+  flex: 1;
+  justify-content: center;
 }
 
 .chart-panel .card-header,
@@ -6403,14 +6406,13 @@ Analytics charts
 }
 
 .combo-chart {
-  aspect-ratio: 760 / 280;
-  min-height: 220px;
+  height: 300px;
 }
 
 .analytics-svg-chart {
   width: 100%;
-  height: auto;
-  min-height: 220px;
+  height: 100%;
+  display: block;
 }
 
 .chart-axis-label {
@@ -6568,9 +6570,6 @@ Analytics charts
     width: 100%;
   }
 
-  .combo-chart {
-    min-height: 200px;
-  }
 }
 
 /* ==========================================================================
@@ -9532,6 +9531,15 @@ Calendar motion — professional, alive, schedule-focused
   color: var(--ink-4);
 }
 
+/* Fixed-height wrapper: keeps the card the same size across all four modes
+   (hourly matrix and 90-day calendar have very different natural heights) */
+.heatmap-viz-area {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* Hourly Matrix Grid */
 .heatmap-matrix-container {
   overflow-x: auto;
@@ -9582,20 +9590,44 @@ Calendar motion — professional, alive, schedule-focused
 }
 
 /* Heatmap Levels - Sales (Cyan Glow) */
-.heat-cyan-0 { background: rgba(255, 255, 255, 0.025); }
-.heat-cyan-1 { background: rgba(6, 182, 212, 0.20); }
-.heat-cyan-2 { background: rgba(6, 182, 212, 0.45); }
-.heat-cyan-3 { background: rgba(6, 182, 212, 0.75); }
+.heat-cyan-0 {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.heat-cyan-1 {
+  background: rgba(6, 182, 212, 0.20);
+}
+
+.heat-cyan-2 {
+  background: rgba(6, 182, 212, 0.45);
+}
+
+.heat-cyan-3 {
+  background: rgba(6, 182, 212, 0.75);
+}
+
 .heat-cyan-4 {
   background: #06b6d4;
   box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
 }
 
 /* Heatmap Levels - Audits / Activity (Emerald Glow) */
-.heat-emerald-0 { background: rgba(255, 255, 255, 0.025); }
-.heat-emerald-1 { background: rgba(16, 185, 129, 0.22); }
-.heat-emerald-2 { background: rgba(16, 185, 129, 0.48); }
-.heat-emerald-3 { background: rgba(16, 185, 129, 0.75); }
+.heat-emerald-0 {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.heat-emerald-1 {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.heat-emerald-2 {
+  background: rgba(16, 185, 129, 0.48);
+}
+
+.heat-emerald-3 {
+  background: rgba(16, 185, 129, 0.75);
+}
+
 .heat-emerald-4 {
   background: #10b981;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
@@ -9607,20 +9639,22 @@ Calendar motion — professional, alive, schedule-focused
   gap: 8px;
   overflow-x: auto;
   padding: 0.5rem 0;
+  justify-content: center;
 }
 
 .cal-day-labels {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-top: 18px;
+  gap: 5px;
+  padding-top: 20px;
+  flex-shrink: 0;
 }
 
 .cal-day-label {
   font-size: 0.68rem;
   color: var(--ink-4);
-  height: 14px;
-  line-height: 14px;
+  height: 17px;
+  line-height: 17px;
   width: 30px;
   text-align: right;
   padding-right: 4px;
@@ -9628,20 +9662,20 @@ Calendar motion — professional, alive, schedule-focused
 
 .cal-weeks-grid {
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
 .cal-week-col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .cal-week-month-tag {
   font-size: 0.68rem;
   color: var(--ink-4);
-  height: 14px;
-  line-height: 14px;
+  height: 16px;
+  line-height: 16px;
   font-weight: 600;
   text-align: center;
   overflow: hidden;
@@ -9649,12 +9683,13 @@ Calendar motion — professional, alive, schedule-focused
 }
 
 .cal-day-cell {
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid rgba(255, 255, 255, 0.03);
+  flex-shrink: 0;
 }
 
 .cal-day-cell:hover {
@@ -9792,4 +9827,234 @@ Calendar motion — professional, alive, schedule-focused
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
+}
+
+/* ==========================================================================
+   Add / Edit motorcycle form — UI refinement
+   Every selector is scoped to .bike-form-view (set on the form root in
+   Inventory.jsx), so no other screen that shares .page-form-* / .form-*
+   classes is affected. Fully token-driven: works in light and dark themes.
+   ========================================================================== */
+
+/* -- Rhythm ---------------------------------------------------------------
+   The old spacing stacked utility margins (mb-3 / mt-4) on top of the flex
+   gap, so rows were ~34px apart but columns only ~22px. One source of
+   spacing now: the gap. */
+.bike-form-view .page-form-container {
+  gap: 16px;
+}
+
+.bike-form-view .page-form-container>*,
+.bike-form-view .page-form-card>* {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.bike-form-view .page-form-grid-2 {
+  gap: 16px;
+}
+
+/* -- Cards ---------------------------------------------------------------- */
+.bike-form-view .page-form-card {
+  padding: 20px 22px 24px;
+  gap: 18px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.bike-form-view .page-form-card-title {
+  font-size: var(--fs-14);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  padding-bottom: 12px;
+}
+
+/* -- Rows ------------------------------------------------------------------
+   Grid instead of flex + align-items:flex-end, so inputs stay on one line
+   even when a label or hint wraps. */
+.bike-form-view .form-group-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.bike-form-view .form-group-row--date {
+  grid-auto-flow: row;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+/* -- Fields ----------------------------------------------------------------
+   .form-field is `flex: 1` globally; inside these column-flex cards that made
+   every field stretch to fill the card, leaving huge gaps between inputs. */
+.bike-form-view .form-field {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.bike-form-view .form-field--fill {
+  flex: 1 1 auto;
+}
+
+.bike-form-view .form-field label {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0.005em;
+  gap: 6px;
+}
+
+/* Required marker, derived from the input's own `required` attribute */
+.bike-form-view .form-field label:has(+ .form-input:required)::after,
+.bike-form-view .form-field label:has(+ .input-affix .form-input:required)::after {
+  content: '*';
+  color: var(--bad);
+  font-weight: 600;
+  margin-left: -2px;
+}
+
+.bike-form-view .form-hint {
+  font-size: var(--fs-12);
+  line-height: 1.4;
+  color: var(--ink-4);
+}
+
+/* -- Controls -------------------------------------------------------------- */
+.bike-form-view .form-input,
+.bike-form-view select.form-input {
+  min-height: 42px;
+  padding: 9px 13px;
+  background-color: var(--surface-inset);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.bike-form-view select.form-input {
+  padding-right: 36px;
+  background-position: right 12px center;
+}
+
+.bike-form-view .form-input::placeholder {
+  color: var(--ink-4);
+  opacity: 0.85;
+}
+
+.bike-form-view .form-input:hover:not(:disabled) {
+  border-color: var(--ink-4);
+}
+
+.bike-form-view .form-input:focus {
+  background-color: var(--surface);
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+.bike-form-view .form-input:disabled {
+  background-color: var(--surface-3);
+  color: var(--ink-3);
+  opacity: 1;
+}
+
+.bike-form-view input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s var(--ease);
+}
+
+.bike-form-view input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Dark theme: native chrome (date picker, select chevron) follows the theme */
+html[data-theme='dark'] .bike-form-view .form-input {
+  color-scheme: dark;
+}
+
+html[data-theme='dark'] .bike-form-view select.form-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* -- Currency inputs -------------------------------------------------------- */
+.bike-form-view .input-affix {
+  position: relative;
+  display: flex;
+}
+
+.bike-form-view .input-affix-label {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  background: var(--surface-3);
+  border-right: 1px solid var(--line-strong);
+  border-radius: calc(var(--radius-md) - 1px) 0 0 calc(var(--radius-md) - 1px);
+  pointer-events: none;
+}
+
+.bike-form-view .input-affix .form-input {
+  padding-left: 58px;
+}
+
+.bike-form-view .input-affix input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.bike-form-view .input-affix input[type='number']::-webkit-outer-spin-button,
+.bike-form-view .input-affix input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* -- Notes ------------------------------------------------------------------ */
+.bike-form-view .form-field--fill textarea.form-input {
+  flex: 1;
+  min-height: 96px;
+  padding: 11px 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* -- Action bar: Save stays reachable on this long form ---------------------- */
+.bike-form-view .page-form-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: 4px;
+  padding: 14px 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+}
+
+/* -- Responsive -------------------------------------------------------------- */
+@media (max-width: 768px) {
+
+  .bike-form-view .form-group-row,
+  .bike-form-view .form-group-row--date {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .bike-form-view .page-form-card {
+    padding: 16px 16px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+
+  /* A stacked two-button bar would eat too much of a phone screen */
+  .bike-form-view .page-form-footer {
+    position: static;
+  }
+}

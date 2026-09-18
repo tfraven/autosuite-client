@@ -429,11 +429,11 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
             {/* Vehicles Purchased Card */}
             <div className="page-form-card">
               <div className="page-form-card-title">
-                Motorcycles owned ({selectedCustomer.purchasedBikes.length})
+                Motorcycles owned ({selectedCustomer.purchasedBikes?.length || 0})
               </div>
 
               <div className="bikes-registered-grid">
-                {selectedCustomer.purchasedBikes.map((bike, idx) => (
+                {(selectedCustomer.purchasedBikes || []).map((bike, idx) => (
                   <div key={idx} className="customer-bike-tile">
                     <div className="tile-icon-box">
                       <Bike size={18} />
@@ -488,11 +488,11 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
             {/* Sales Invoices & Installments Card */}
             <div className="page-form-card">
               <div className="page-form-card-title">
-                Invoices ({selectedCustomer.sales.length})
+                Invoices ({selectedCustomer?.sales?.length || 0})
               </div>
 
               <div className="customer-sales-list">
-                {selectedCustomer.sales.map((sale) => (
+                {selectedCustomer?.sales?.map((sale) => (
                   <div key={sale.id} className="customer-sale-card glass-panel mb-3">
                     <div className="sale-card-summary-row">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -549,7 +549,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                     </div>
 
                     {/* If credit installment, show schedule */}
-                    {sale.installments && sale.installments.length > 0 && (
+                    {sale?.installments && sale?.installments?.length > 0 && (
                       <div className="customer-installments-table-wrap mt-3">
                         <div className="text-xs font-medium text-muted mb-2">Installment schedule</div>
                         <table className="mini-ledger-table">
@@ -563,7 +563,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                             </tr>
                           </thead>
                           <tbody>
-                            {sale.installments.map((inst) => {
+                            {sale?.installments?.map((inst) => {
                               const isOverdue = inst.status !== 'PAID' && new Date(inst.dueDate) < new Date();
                               return (
                                 <tr key={inst.id}>
@@ -760,7 +760,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
           <div className="spinner" />
           <p>Loading customers</p>
         </div>
-      ) : customers.length === 0 ? (
+      ) : customers?.length === 0 ? (
         <div className="empty-state glass-panel">
           <Users size={32} className="text-muted mb-2" />
           <h3>No customers found</h3>
@@ -768,7 +768,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="customer-card-grid">
-          {customers.map((c) => (
+          {customers?.map((c) => (
             <div
               key={c.id}
               className="customer-card glass-panel"
@@ -806,7 +806,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   </strong>
                 </div>
 
-                {c.purchasedBikes.length > 0 && (
+                {c?.purchasedBikes?.length > 0 && (
                   <div className="customer-recent-bike">
                     <Bike size={13} className="text-muted" />
                     <span>Latest: <strong>{c.purchasedBikes[0].modelName}</strong> ({c.purchasedBikes[0].chassisNumber})</span>
@@ -858,7 +858,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
               </tr>
             </thead>
             <tbody>
-              {customers.map((c) => (
+              {customers?.map((c) => (
                 <tr key={c.id} onClick={() => handleSelectCustomer(c)} className="clickable-row">
                   <td>
                     <div className="customer-cell-flex">
@@ -908,7 +908,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                         className="btn btn-sm btn-outline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedCustomer(c);
+                          handleSelectCustomer(c);
                         }}
                       >
                         Ledger <ChevronRight size={13} />

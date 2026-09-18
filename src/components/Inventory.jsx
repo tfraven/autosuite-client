@@ -189,7 +189,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   if (subView === 'bike-form') {
     return (
       <div className="inventory-view">
-        <div className="page-form-view">
+        <div className="page-form-view bike-form-view">
           <div className="page-form-header">
             <button
               className="page-form-back-btn"
@@ -218,7 +218,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2">
               <div className="page-form-card">
                 <div className="page-form-card-title">Category and identifiers</div>
-                <div className="form-group-row mb-3">
+                <div className="form-group-row">
                   <div className="form-field">
                     <label>Category</label>
                     <select
@@ -245,23 +245,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
                 </div>
 
-                <div className="form-field mb-3">
-                  <label className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Calendar size={13} className="text-cyan" />
-                      {isRomanUrdu ? 'Stock Mein Shamil Karne Ki Tareekh' : 'Stock Arrival Date (Paper Record Date)'}
-                    </span>
-                    <span className="text-xs text-muted">Defaults to now</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={formData.receivedDate || ''}
-                    onChange={(e) => setFormData({ ...formData, receivedDate: e.target.value })}
-                    className="form-input font-mono"
-                  />
-                </div>
-
-                <div className="form-group-row mb-3">
+                <div className="form-group-row">
                   <div className="form-field">
                     <label>Brand / Make</label>
                     <input
@@ -297,7 +281,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     />
                   </div>
                 </div>
-                <div className="form-group-row mb-3">
+
+                <div className="form-group-row">
                   <div className="form-field">
                     <label>Color</label>
                     <input
@@ -309,8 +294,6 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       className="form-input"
                     />
                   </div>
-                </div>
-                <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Model Year</label>
                     <input
@@ -320,6 +303,22 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       required
                       className="form-input font-mono"
                     />
+                  </div>
+                </div>
+
+                <div className="form-group-row form-group-row--date">
+                  <div className="form-field">
+                    <label>
+                      <Calendar size={13} className="text-cyan" />
+                      {isRomanUrdu ? 'Stock Mein Shamil Karne Ki Tareekh' : 'Stock Arrival Date (Paper Record Date)'}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.receivedDate || ''}
+                      onChange={(e) => setFormData({ ...formData, receivedDate: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                    <span className="form-hint">Defaults to now</span>
                   </div>
                   <div className="form-field">
                     <label>Batch / Lot Number</label>
@@ -336,7 +335,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
 
               <div className="page-form-card">
                 <div className="page-form-card-title">Chassis and Engine Numbers</div>
-                <div className="form-field mb-3">
+                <div className="form-field">
                   <label>Chassis / VIN Number</label>
                   <input
                     type="text"
@@ -347,8 +346,9 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     disabled={!!editingBike}
                     className="form-input font-mono"
                   />
+                  <span className="form-hint">Cannot be changed after saving</span>
                 </div>
-                <div className="form-field mb-3">
+                <div className="form-field">
                   <label>Engine Number</label>
                   <input
                     type="text"
@@ -359,8 +359,9 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                     disabled={!!editingBike}
                     className="form-input font-mono"
                   />
+                  <span className="form-hint">Cannot be changed after saving</span>
                 </div>
-                <div className="form-field mb-3">
+                <div className="form-field">
                   <label>Initial Status</label>
                   <select
                     value={formData.status}
@@ -476,33 +477,58 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
             <div className="page-form-grid-2 mt-4">
               <div className="page-form-card">
                 <div className="page-form-card-title">Commercial Pricing</div>
-                <div className="form-group-row mb-3">
+                <div className="form-group-row">
                   <div className="form-field">
                     <label>Dealer Invoice Cost (PKR)</label>
-                    <input
-                      type="number"
-                      value={formData.dealerInvoicePrice}
-                      onChange={(e) => setFormData({ ...formData, dealerInvoicePrice: e.target.value })}
-                      className="form-input font-mono"
-                    />
+                    <div className="input-affix">
+                      <span className="input-affix-label">PKR</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={formData.dealerInvoicePrice}
+                        onChange={(e) => setFormData({ ...formData, dealerInvoicePrice: e.target.value })}
+                        className="form-input font-mono"
+                      />
+                    </div>
                   </div>
                   <div className="form-field">
                     <label>Retail Selling Price (PKR)</label>
-                    <input
-                      type="number"
-                      value={formData.retailPrice}
-                      onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
-                      required
-                      className="form-input font-mono text-lg font-bold"
-                    />
+                    <div className="input-affix">
+                      <span className="input-affix-label">PKR</span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={formData.retailPrice}
+                        onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
+                        required
+                        className="form-input font-mono text-lg font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="page-form-card">
-                <div className="page-form-card-title">Internal Notes</div>
-                <div className="form-field">
+                <div className="page-form-card-title">Stock Intake &amp; Notes</div>
+                <div className="form-field mb-3">
+                  <label className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Calendar size={13} className="text-cyan" />
+                      {isRomanUrdu ? 'Gaari Aayi Ki Tareekh (Paper Record)' : 'Stock Arrival Date (Paper Record Date)'}
+                    </span>
+                    <span className="text-xs text-muted">Defaults to now</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="form-input font-mono"
+                    value={formData.receivedDate}
+                    onChange={(e) => setFormData({ ...formData, receivedDate: e.target.value })}
+                  />
+                  <span className="form-hint">Set this to the actual date the motorcycle was received if entering a historical record</span>
+                </div>
+                <div className="form-field form-field--fill">
+                  <label>Internal Notes</label>
                   <textarea
-                    rows="3"
+                    rows="2"
                     className="form-input"
                     placeholder="Additional notes, condition, showroom bay location..."
                     value={formData.notes}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   TrendingUp,
   Activity,
@@ -153,8 +153,22 @@ function DonutChart({ items, size = 176, thickness = 22, centerLabel, centerSub 
 
 function ComboTrendChart({ series }) {
   const [hover, setHover] = useState(null);
-  const width = 760;
-  const height = 280;
+  const containerRef = useRef(null);
+  const [width, setWidth] = useState(760);
+  const height = 300;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width;
+      if (w && Math.abs(w - width) > 1) setWidth(w);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const pad = { top: 18, right: 44, bottom: 36, left: 52 };
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
@@ -177,8 +191,8 @@ function ComboTrendChart({ series }) {
   const ticks = [0, 0.25, 0.5, 0.75, 1];
 
   return (
-    <div className="svg-chart-container combo-chart">
-      <svg viewBox={`0 0 ${width} ${height}`} className="analytics-svg-chart" preserveAspectRatio="xMidYMid meet">
+    <div className="svg-chart-container combo-chart" ref={containerRef}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="analytics-svg-chart" preserveAspectRatio="none">
         <defs>
           <linearGradient id="revArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
@@ -488,137 +502,140 @@ function ShowroomHeatmap({ heatmaps, isRomanUrdu }) {
         </div>
       </div>
 
-      {/* Mode 1 & 3: 7-Day x 24-Hour Matrix */}
-      {isHourlyMode && (
-        <div className="heatmap-matrix-container relative">
-          <table className="heatmap-matrix-table">
-            <thead>
-              <tr>
-                <th className="heatmap-day-label">Day / Time</th>
-                {hours.map((h) => {
-                  const ampm = h >= 12 ? 'p' : 'a';
-                  const disp = h % 12 === 0 ? 12 : h % 12;
-                  return (
-                    <th key={h} title={`${disp}:00 ${ampm.toUpperCase()}M`}>
-                      {disp}{ampm}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {daysOfWeek.map(({ idx, label, full }) => (
-                <tr key={idx}>
-                  <td className="heatmap-day-label">{label}</td>
+      {/* Visualization area — fixed-height wrapper so switching modes doesn't jump the card size */}
+      <div className="heatmap-viz-area">
+        {/* Mode 1 & 3: 7-Day x 24-Hour Matrix */}
+        {isHourlyMode && (
+          <div className="heatmap-matrix-container relative">
+            <table className="heatmap-matrix-table">
+              <thead>
+                <tr>
+                  <th className="heatmap-day-label">Day / Time</th>
                   {hours.map((h) => {
-                    let cellVal = 0;
-                    let displayVal = '';
-                    let subText = '';
-
-                    if (isSalesMode) {
-                      const found = (sales.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
-                      cellVal = metric === 'COUNT' ? (found?.count || 0) : (found?.revenue || 0);
-                      displayVal = `${found?.count || 0} invoices`;
-                      subText = formatPKR(found?.revenue || 0);
-                    } else {
-                      const found = (userAct.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
-                      cellVal = found?.count || 0;
-                      displayVal = `${cellVal} staff operations`;
-                      subText = `${found?.dayName} at ${h}:00`;
-                    }
-
-                    const level = getIntensity(cellVal, maxHourlyVal);
-                    const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
-
-                    const ampm = h >= 12 ? 'PM' : 'AM';
-                    const dispH = h % 12 === 0 ? 12 : h % 12;
-                    const timeLabel = `${dispH}:00 - ${dispH}:59 ${ampm}`;
-
+                    const ampm = h >= 12 ? 'p' : 'a';
+                    const disp = h % 12 === 0 ? 12 : h % 12;
                     return (
-                      <td
-                        key={h}
-                        className={`heatmap-cell ${colorClass}`}
-                        onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setHovered({
-                            title: `${full} · ${timeLabel}`,
-                            primary: displayVal,
-                            secondary: subText,
-                            level,
-                            x: rect.left + rect.width / 2,
-                            y: rect.top
-                          });
-                        }}
-                        onMouseLeave={() => setHovered(null)}
-                      />
+                      <th key={h} title={`${disp}:00 ${ampm.toUpperCase()}M`}>
+                        {disp}{ampm}
+                      </th>
                     );
                   })}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {daysOfWeek.map(({ idx, label, full }) => (
+                  <tr key={idx}>
+                    <td className="heatmap-day-label">{label}</td>
+                    {hours.map((h) => {
+                      let cellVal = 0;
+                      let displayVal = '';
+                      let subText = '';
 
-      {/* Mode 2 & 4: 90-Day Calendar Grid */}
-      {!isHourlyMode && (
-        <div className="calendar-heatmap-wrap relative">
-          <div className="cal-day-labels">
-            <span className="cal-day-label">Mon</span>
-            <span className="cal-day-label">Wed</span>
-            <span className="cal-day-label">Fri</span>
-            <span className="cal-day-label">Sun</span>
+                      if (isSalesMode) {
+                        const found = (sales.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
+                        cellVal = metric === 'COUNT' ? (found?.count || 0) : (found?.revenue || 0);
+                        displayVal = `${found?.count || 0} invoices`;
+                        subText = formatPKR(found?.revenue || 0);
+                      } else {
+                        const found = (userAct.hourlyMatrix || []).find((m) => m.day === idx && m.hour === h);
+                        cellVal = found?.count || 0;
+                        displayVal = `${cellVal} staff operations`;
+                        subText = `${found?.dayName} at ${h}:00`;
+                      }
+
+                      const level = getIntensity(cellVal, maxHourlyVal);
+                      const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
+
+                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      const dispH = h % 12 === 0 ? 12 : h % 12;
+                      const timeLabel = `${dispH}:00 - ${dispH}:59 ${ampm}`;
+
+                      return (
+                        <td
+                          key={h}
+                          className={`heatmap-cell ${colorClass}`}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHovered({
+                              title: `${full} · ${timeLabel}`,
+                              primary: displayVal,
+                              secondary: subText,
+                              level,
+                              x: rect.left + rect.width / 2,
+                              y: rect.top
+                            });
+                          }}
+                          onMouseLeave={() => setHovered(null)}
+                        />
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        )}
 
-          <div className="cal-weeks-grid">
-            {weeks.map((wk, wIdx) => {
-              const monthLabel = wIdx % 4 === 0 && wk[0] ? new Date(wk[0].date).toLocaleDateString('en-US', { month: 'short' }) : '';
-              return (
-                <div key={wIdx} className="cal-week-col">
-                  <span className="cal-week-month-tag">{monthLabel}</span>
-                  {wk.map((day) => {
-                    const cellVal = isSalesMode
-                      ? (metric === 'COUNT' ? day.salesCount : day.salesRevenue)
-                      : day.auditCount;
+        {/* Mode 2 & 4: 90-Day Calendar Grid */}
+        {!isHourlyMode && (
+          <div className="calendar-heatmap-wrap relative">
+            <div className="cal-day-labels">
+              <span className="cal-day-label">Mon</span>
+              <span className="cal-day-label">Wed</span>
+              <span className="cal-day-label">Fri</span>
+              <span className="cal-day-label">Sun</span>
+            </div>
 
-                    const level = getIntensity(cellVal, maxDailyVal);
-                    const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
-                    const formattedDate = new Date(day.date).toLocaleDateString('en-GB', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    });
+            <div className="cal-weeks-grid">
+              {weeks.map((wk, wIdx) => {
+                const monthLabel = wIdx % 4 === 0 && wk[0] ? new Date(wk[0].date).toLocaleDateString('en-US', { month: 'short' }) : '';
+                return (
+                  <div key={wIdx} className="cal-week-col">
+                    <span className="cal-week-month-tag">{monthLabel}</span>
+                    {wk.map((day) => {
+                      const cellVal = isSalesMode
+                        ? (metric === 'COUNT' ? day.salesCount : day.salesRevenue)
+                        : day.auditCount;
 
-                    return (
-                      <div
-                        key={day.date}
-                        className={`cal-day-cell ${colorClass}`}
-                        onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setHovered({
-                            title: formattedDate,
-                            primary: isSalesMode
-                              ? `${day.salesCount} invoices (${formatPKR(day.salesRevenue)})`
-                              : `${day.auditCount} system operations`,
-                            secondary: isSalesMode
-                              ? (day.salesCount > 0 ? 'Sales recorded' : 'No sales activity')
-                              : 'Audit trail events',
-                            level,
-                            x: rect.left + rect.width / 2,
-                            y: rect.top
-                          });
-                        }}
-                        onMouseLeave={() => setHovered(null)}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
+                      const level = getIntensity(cellVal, maxDailyVal);
+                      const colorClass = isSalesMode ? `heat-cyan-${level}` : `heat-emerald-${level}`;
+                      const formattedDate = new Date(day.date).toLocaleDateString('en-GB', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      });
+
+                      return (
+                        <div
+                          key={day.date}
+                          className={`cal-day-cell ${colorClass}`}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHovered({
+                              title: formattedDate,
+                              primary: isSalesMode
+                                ? `${day.salesCount} invoices (${formatPKR(day.salesRevenue)})`
+                                : `${day.auditCount} system operations`,
+                              secondary: isSalesMode
+                                ? (day.salesCount > 0 ? 'Sales recorded' : 'No sales activity')
+                                : 'Audit trail events',
+                              level,
+                              x: rect.left + rect.width / 2,
+                              y: rect.top
+                            });
+                          }}
+                          onMouseLeave={() => setHovered(null)}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Legend */}
       <div className="heatmap-legend-row">
