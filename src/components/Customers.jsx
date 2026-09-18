@@ -27,6 +27,45 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Pagination from './Pagination';
 
+function normalizeCustomerLedger(customer) {
+  if (!customer) return customer;
+
+  const sales = Array.isArray(customer.sales) ? customer.sales : [];
+  const purchasedBikes = customer.purchasedBikes?.length
+    ? customer.purchasedBikes
+    : sales
+        .filter((s) => s?.bike)
+        .map((s) => ({
+          id: s.bike.id,
+          modelName: s.bike.modelName,
+          chassisNumber: s.bike.chassisNumber,
+          engineNumber: s.bike.engineNumber,
+          color: s.bike.color,
+          modelYear: s.bike.modelYear,
+          saleDate: s.saleDate,
+          invoiceNumber: s.invoiceNumber
+        }));
+
+  const saleDates = sales.map((s) => s.saleDate).filter(Boolean);
+  const fallbackDate = customer.createdAt || customer.lastPurchaseDate || null;
+
+  return {
+    ...customer,
+    sales,
+    purchasedBikes,
+    saleType: customer.saleType || sales[0]?.saleType || (customer.customerType === 'DEALER' ? 'B2B' : 'B2C'),
+    firstPurchaseDate: customer.firstPurchaseDate || saleDates[saleDates.length - 1] || fallbackDate,
+    lastPurchaseDate: customer.lastPurchaseDate || saleDates[0] || fallbackDate,
+    totalPurchases: customer.totalPurchases ?? purchasedBikes.length
+  };
+}
+
+function formatDisplayDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('en-GB');
+}
+
 export default function Customers({ onViewInvoice, initialCustomerId }) {
   const { hasPermission } = useAuth();
   const toast = useToast();
@@ -48,17 +87,17 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
   useEffect(() => {
     if (initialCustomerId) {
       api.getCustomer(initialCustomerId).then((cust) => {
-        if (cust) setSelectedCustomer(cust);
+        if (cust) setSelectedCustomer(normalizeCustomerLedger(cust));
       }).catch(console.error);
     }
   }, [initialCustomerId]);
 
   const handleSelectCustomer = async (c) => {
-    setSelectedCustomer(c);
+    setSelectedCustomer(normalizeCustomerLedger(c));
     try {
       const full = await api.getCustomer(c.id);
       if (full) {
-        setSelectedCustomer(full);
+        setSelectedCustomer(normalizeCustomerLedger({ ...c, ...full }));
       }
     } catch (err) {
       console.warn('Could not fetch full customer:', err);
@@ -366,7 +405,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   <div className="hero-name-row">
                     <h3>{selectedCustomer.name}</h3>
                     <span className={`glass-badge ${selectedCustomer.saleType === 'B2B' ? 'badge-purple' : 'badge-cyan'}`}>
-                      {selectedCustomer.customerType} ({selectedCustomer.saleType})
+                      {selectedCustomer.customerType}{selectedCustomer.saleType ? ` (${selectedCustomer.saleType})` : ''}
                     </span>
                     <span className={`glass-badge ${selectedCustomer.remainingBalance > 0 ? 'badge-rose' : 'badge-emerald'}`}>
                       <span className="status-dot" />
@@ -395,10 +434,12 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                       </div>
                     )}
 
-                    <div className="contact-item text-muted">
-                      <Calendar size={14} />
-                      <span>Customer since {new Date(selectedCustomer.firstPurchaseDate).toLocaleDateString('en-GB')}</span>
-                    </div>
+                    {formatDisplayDate(selectedCustomer.firstPurchaseDate) && (
+                      <div className="contact-item text-muted">
+                        <Calendar size={14} />
+                        <span>Customer since {formatDisplayDate(selectedCustomer.firstPurchaseDate)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
