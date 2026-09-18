@@ -9,11 +9,6 @@ import {
   Edit3,
   Trash2,
   FileSpreadsheet,
-  X,
-  Tag,
-  ShieldCheck,
-  Fuel,
-  ArrowRight,
   ArrowLeft
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -25,7 +20,7 @@ import Pagination from './Pagination';
 
 export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   const { hasPermission } = useAuth();
-  const { t, isRomanUrdu } = useLanguage();
+  const { isRomanUrdu } = useLanguage();
   const toast = useToast();
 
   const [bikes, setBikes] = useState([]);

@@ -81,14 +81,13 @@ function DonutChart({ items, size = 176, thickness = 22, centerLabel, centerSub 
   const cy = size / 2;
   const circumference = 2 * Math.PI * radius;
 
-  let offset = 0;
-  const rings = items.map((item) => {
+  const rings = items.reduce((acc, item) => {
     const value = Number(item.value || 0);
     const length = total > 0 ? (value / total) * circumference : 0;
-    const ring = { ...item, value, length, offset };
-    offset += length;
-    return ring;
-  });
+    acc.list.push({ ...item, value, length, offset: acc.offset });
+    acc.offset += length;
+    return acc;
+  }, { list: [], offset: 0 }).list;
 
   const active = hover || null;
   const activePct = total > 0 && active ? Math.round((active.value / total) * 100) : 0;
@@ -162,7 +161,6 @@ function ComboTrendChart({ series }) {
 
   const xAt = (i) => pad.left + slot * i + slot / 2;
   const yRevenue = (v) => pad.top + innerH - (v / maxRevenue) * innerH;
-  const yUnits = (v) => pad.top + innerH - (v / maxUnits) * innerH;
 
   const linePath = series
     .map((d, i) => `${i === 0 ? 'M' : 'L'} ${xAt(i)} ${yRevenue(d.revenue || 0)}`)

@@ -4039,11 +4039,11 @@ would be invisible (e.g. the password strength indicator). */
 }
 
 /* Hover-state fills for list/menu rows */
-.hover:bg-surface-2:hover {
+.hover\:bg-surface-2:hover {
   background-color: var(--surface-2);
 }
 
-.hover:bg-surface-3:hover {
+.hover\:bg-surface-3:hover {
   background-color: var(--surface-3);
 }
 
@@ -4051,21 +4051,21 @@ would be invisible (e.g. the password strength indicator). */
 couple of header controls). Mobile-first: hidden below the breakpoint,
 shown at and above it. Pair with .hidden on the same element. */
 @media (min-width: 640px) {
-  .sm:flex {
+  .sm\:flex {
     display: flex !important;
   }
 
-  .sm:inline {
+  .sm\:inline {
     display: inline !important;
   }
 }
 
 @media (min-width: 768px) {
-  .md:flex {
+  .md\:flex {
     display: flex !important;
   }
 
-  .md:inline {
+  .md\:inline {
     display: inline !important;
   }
 }

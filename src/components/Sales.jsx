@@ -7,7 +7,6 @@ import {
   CreditCard,
   Calendar,
   FileSpreadsheet,
-  X,
   DollarSign,
   Bike,
   ArrowLeft,
@@ -33,9 +32,28 @@ import ConfirmDeleteModal from './ConfirmDeleteModal';
 import Pagination from './Pagination';
 import FinancingCalculatorModal from './FinancingCalculatorModal';
 
+const getDefaultSaleForm = () => ({
+  customerId: null,
+  saleType: 'B2C',
+  customerName: '',
+  customerPhone: '',
+  customerCnic: '',
+  customerAddress: '',
+  customerType: 'RETAIL',
+  salePrice: '',
+  discount: 0,
+  tax: 0,
+  paymentType: 'CASH',
+  initialDeposit: '',
+  paymentReference: '',
+  installmentsCount: 6,
+  installmentIntervalMonths: 1,
+  firstInstallmentDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+});
+
 export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const { hasPermission } = useAuth();
-  const { t, isRomanUrdu } = useLanguage();
+  const { isRomanUrdu } = useLanguage();
   const toast = useToast();
 
   const [sales, setSales] = useState([]);
@@ -89,25 +107,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // New Sale Form
-  const initialSaleForm = {
-    saleType: 'B2C',
-    customerName: '',
-    customerPhone: '',
-    customerCnic: '',
-    customerAddress: '',
-    customerType: 'RETAIL',
-    salePrice: '',
-    discount: 0,
-    tax: 0,
-    paymentType: 'CASH',
-    initialDeposit: '',
-    paymentReference: '',
-    installmentsCount: 6,
-    installmentIntervalMonths: 1,
-    firstInstallmentDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  };
-
-  const [saleForm, setSaleForm] = useState(initialSaleForm);
+  const [saleForm, setSaleForm] = useState(getDefaultSaleForm);
   const [saleFormError, setSaleFormError] = useState('');
 
   // Payment Recording Form
@@ -119,6 +119,23 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     notes: ''
   });
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
+  const openNewSaleModal = () => {
+    fetchAvailableBikes();
+    setSelectedBike(null);
+    setChassisSearch('');
+    setChassisError('');
+    setSaleForm(getDefaultSaleForm());
+    setSelectedExistingCustomer(null);
+    setCustomerSuggestions([]);
+    setSaleFormError('');
+    setSubView('new-sale');
+  };
+
+  const closeNewSaleModal = () => {
+    setSubView(null);
+    if (onCloseNewSaleModal) onCloseNewSaleModal();
+  };
 
   const fetchSales = async () => {
     try {
@@ -170,23 +187,6 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     }
   }, [isOpenNewSaleModal]);
 
-  const openNewSaleModal = () => {
-    fetchAvailableBikes();
-    setSelectedBike(null);
-    setChassisSearch('');
-    setChassisError('');
-    setSaleForm(initialSaleForm);
-    setSelectedExistingCustomer(null);
-    setCustomerSuggestions([]);
-    setSaleFormError('');
-    setSubView('new-sale');
-  };
-
-  const closeNewSaleModal = () => {
-    setSubView(null);
-    if (onCloseNewSaleModal) onCloseNewSaleModal();
-  };
-
   // Task 10: Fast Customer Lookup & Autofill
   const handleCustomerLookup = async (queryText) => {
     if (!queryText || queryText.trim().length < 2) {
@@ -206,6 +206,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
   const selectCustomer = (cust) => {
     setSaleForm((prev) => ({
       ...prev,
+      customerId: cust.id,
       customerName: cust.name,
       customerPhone: cust.phone,
       customerCnic: cust.cnic || '',
@@ -225,6 +226,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
     setSelectedExistingCustomer(null);
     setSaleForm((prev) => ({
       ...prev,
+      customerId: null,
       customerName: '',
       customerPhone: '',
       customerCnic: '',
@@ -274,6 +276,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
       setSaleFormError('');
       const payload = {
         ...saleForm,
+        customerId: selectedExistingCustomer?.id || saleForm.customerId || null,
         bikeId: selectedBike.id,
         salePrice: Number(saleForm.salePrice),
         discount: Number(saleForm.discount) || 0,
@@ -350,7 +353,7 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
       try {
         const fresh = await api.getSale(activeSaleForPayment.id);
         setSelectedInvoice(fresh || updated);
-      } catch (e) {
+      } catch {
         setSelectedInvoice(updated);
       }
     } catch (err) {
@@ -612,6 +615,12 @@ export default function Sales({ isOpenNewSaleModal, onCloseNewSaleModal }) {
                     <span className="font-semibold">Total Amount Due</span>
                     <strong className="text-cyan text-xl font-mono">{formatPKR(finalAmount)}</strong>
                   </div>
+                  {deposit > 0 && (
+                    <div className="text-xs text-muted mt-2 px-1 flex justify-between">
+                      <span>{isRomanUrdu ? 'Baqaya Wajib-ul-Ada:' : 'Remaining Balance Due:'}</span>
+                      <span className="font-mono font-semibold text-ink-1">{formatPKR(remainingDue)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

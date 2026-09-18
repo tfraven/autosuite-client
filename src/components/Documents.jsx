@@ -7,13 +7,9 @@ import {
   Clock,
   CheckCircle2,
   FileText,
-  ArrowRight,
-  X,
   Edit,
   Building,
-  Truck,
-  Layers,
-  Sparkles
+  Truck
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
