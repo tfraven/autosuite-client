@@ -37,6 +37,7 @@ function normalizeCustomerLedger(customer) {
         .filter((s) => s?.bike)
         .map((s) => ({
           id: s.bike.id,
+          saleId: s.id,
           modelName: s.bike.modelName,
           chassisNumber: s.bike.chassisNumber,
           engineNumber: s.bike.engineNumber,
@@ -513,7 +514,12 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                       <button
                         type="button"
                         className="tile-invoice tile-invoice-btn"
-                        onClick={() => onViewInvoice({ id: bike.id, invoiceNumber: bike.invoiceNumber })}
+                        onClick={() => {
+                          const matchedSale = selectedCustomer.sales?.find(
+                            (s) => s.invoiceNumber === bike.invoiceNumber || s.id === bike.saleId
+                          );
+                          onViewInvoice(matchedSale || { id: bike.saleId, invoiceNumber: bike.invoiceNumber });
+                        }}
                         title="Click to view invoice details"
                       >
                         {bike.invoiceNumber} <ExternalLink size={10} className="inline ml-1 opacity-70" />
