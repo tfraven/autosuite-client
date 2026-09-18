@@ -154,10 +154,35 @@ export const api = {
 
   getCustomers: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/sales/customers${query ? `?${query}` : ''}`, {
+    return fetch(`${API_BASE}/customers${query ? `?${query}` : ''}`, {
       headers: getAuthHeaders()
     }).then(handleResponse);
   },
+
+  getCustomer: (id) =>
+    fetch(`${API_BASE}/customers/${id}`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  createCustomer: (customerData) =>
+    fetch(`${API_BASE}/customers`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(customerData)
+    }).then(handleResponse),
+
+  updateCustomer: (id, customerData) =>
+    fetch(`${API_BASE}/customers/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(customerData)
+    }).then(handleResponse),
+
+  deleteCustomer: (id) =>
+    fetch(`${API_BASE}/customers/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
 
   customerLookup: (query) =>
     fetch(`${API_BASE}/sales/customer-lookup?query=${encodeURIComponent(query)}`, {
@@ -263,6 +288,65 @@ export const api = {
     fetch(`${API_BASE}/parts/vendor-pos/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  // Suppliers & Vendors (3NF/BCNF)
+  getVendors: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return fetch(`${API_BASE}/vendors${query ? `?${query}` : ''}`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse);
+  },
+
+  getVendor: (id) =>
+    fetch(`${API_BASE}/vendors/${id}`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  createVendor: (vendorData) =>
+    fetch(`${API_BASE}/vendors`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(vendorData)
+    }).then(handleResponse),
+
+  updateVendor: (id, vendorData) =>
+    fetch(`${API_BASE}/vendors/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(vendorData)
+    }).then(handleResponse),
+
+  deleteVendor: (id) =>
+    fetch(`${API_BASE}/vendors/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  // Bike Models Catalog (3NF/BCNF)
+  getBikeModels: () =>
+    fetch(`${API_BASE}/bikes/models/all`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  createBikeModel: (modelData) =>
+    fetch(`${API_BASE}/bikes/models`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(modelData)
+    }).then(handleResponse),
+
+  // Spare Parts Categories (3NF/BCNF)
+  getPartCategories: () =>
+    fetch(`${API_BASE}/parts/categories/all`, {
+      headers: getAuthHeaders()
+    }).then(handleResponse),
+
+  createPartCategory: (categoryData) =>
+    fetch(`${API_BASE}/parts/categories`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(categoryData)
     }).then(handleResponse),
 
   // Reports & Excel Exports

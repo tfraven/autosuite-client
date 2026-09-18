@@ -51,6 +51,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
   const initialFormData = {
     type: 'BRAND_NEW',
     modelName: '',
+    brand: 'Atlas Honda',
     engineNumber: '',
     chassisNumber: '',
     color: '',
@@ -125,6 +126,7 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     setFormData({
       type: bike.type,
       modelName: bike.modelName,
+      brand: bike.brand || bike.model?.brand || 'Atlas Honda',
       engineNumber: bike.engineNumber,
       chassisNumber: bike.chassisNumber,
       color: bike.color,
@@ -239,16 +241,41 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
                 <div className="form-group-row mb-3">
                   <div className="form-field">
+                    <label>Brand / Make</label>
+                    <input
+                      list="bike-brands"
+                      type="text"
+                      placeholder="e.g. Honda, Unique, Superstar, Suzuki, Yamaha..."
+                      value={formData.brand}
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      className="form-input"
+                    />
+                    <datalist id="bike-brands">
+                      <option value="Atlas Honda" />
+                      <option value="Unique" />
+                      <option value="Superstar" />
+                      <option value="Suzuki" />
+                      <option value="Yamaha" />
+                      <option value="Road Prince" />
+                      <option value="United" />
+                      <option value="Crown" />
+                      <option value="Metro" />
+                      <option value="Hi-Speed" />
+                    </datalist>
+                  </div>
+                  <div className="form-field">
                     <label>Model Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Honda CD-70 Dream"
+                      placeholder="e.g. CD70 Euro II, UD70, CG125..."
                       value={formData.modelName}
                       onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
                       required
                       className="form-input"
                     />
                   </div>
+                </div>
+                <div className="form-group-row mb-3">
                   <div className="form-field">
                     <label>Color</label>
                     <input
@@ -326,6 +353,103 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                 </div>
               </div>
             </div>
+
+            {formData.type === 'USED' && (
+              <div className="page-form-card mt-4">
+                <div className="page-form-card-title flex items-center justify-between">
+                  <span>Pre-Owned / Used Details & Ownership History</span>
+                  <span className="glass-badge badge-amber text-xs">Used Subtype (3NF/BCNF)</span>
+                </div>
+                <div className="form-group-row mb-3">
+                  <div className="form-field">
+                    <label>Registration Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. LHR-24-8891"
+                      value={formData.registrationNumber}
+                      onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Condition Grade</label>
+                    <select
+                      value={formData.conditionGrade}
+                      onChange={(e) => setFormData({ ...formData, conditionGrade: e.target.value })}
+                      className="form-input"
+                    >
+                      <option value="GRADE_A">Grade A (Mint / Low Mileage)</option>
+                      <option value="GRADE_B">Grade B (Good / Minor Wear)</option>
+                      <option value="GRADE_C">Grade C (Refurbished / Fair)</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label>Previous Owner Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Muhammad Hamza"
+                      value={formData.prevOwnerName}
+                      onChange={(e) => setFormData({ ...formData, prevOwnerName: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+                <div className="form-group-row mb-3">
+                  <div className="form-field">
+                    <label>Previous Owner Phone</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 0300-1234567"
+                      value={formData.prevOwnerPhone}
+                      onChange={(e) => setFormData({ ...formData, prevOwnerPhone: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Previous Owner CNIC</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 35201-1234567-1"
+                      value={formData.prevOwnerCnic}
+                      onChange={(e) => setFormData({ ...formData, prevOwnerCnic: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Purchase Cost (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.purchaseCost}
+                      onChange={(e) => setFormData({ ...formData, purchaseCost: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="form-group-row">
+                  <div className="form-field">
+                    <label>Refurbishment Cost (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.refurbishmentCost}
+                      onChange={(e) => setFormData({ ...formData, refurbishmentCost: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Expected Selling Price (PKR)</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.expectedSellingPrice}
+                      onChange={(e) => setFormData({ ...formData, expectedSellingPrice: e.target.value })}
+                      className="form-input font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="page-form-grid-2 mt-4">
               <div className="page-form-card">
@@ -532,6 +656,18 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="bike-card-body">
+                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                      {bike.brand && (
+                        <span className="glass-badge badge-cyan text-xs font-semibold px-2 py-0.5">
+                          {bike.brand}
+                        </span>
+                      )}
+                      {bike.conditionGrade && (
+                        <span className="glass-badge badge-amber text-xs font-semibold px-2 py-0.5">
+                          Grade {bike.conditionGrade}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="bike-card-title">{bike.modelName}</h3>
                     <div className="bike-card-specs">
                       <span className="color-indicator-chip">
@@ -647,6 +783,14 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       </td>
                       <td>
                         <div className="font-bold text-main">{bike.modelName}</div>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          {bike.brand && <span className="text-xs text-muted font-medium">{bike.brand}</span>}
+                          {bike.conditionGrade && (
+                            <span className="glass-badge badge-amber text-[10px] py-0 px-1.5 font-medium">
+                              Grade {bike.conditionGrade}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <div className="table-chassis-cell">

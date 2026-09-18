@@ -60,6 +60,15 @@ export default function Parts() {
     location: ''
   });
 
+  const [categories, setCategories] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [submittingPO, setSubmittingPO] = useState(false);
+  const [poForm, setPoForm] = useState({
+    vendorName: '',
+    contactNumber: '',
+    items: [{ partId: '', quantity: 1, unitCost: 0 }]
+  });
+
   const fetchPartsData = async () => {
     try {
       setLoading(true);
@@ -67,11 +76,13 @@ export default function Parts() {
       if (searchQuery) params.search = searchQuery;
       if (categoryFilter) params.category = categoryFilter;
 
-      const [partsRes, alertsRes, ordersRes, posRes] = await Promise.all([
+      const [partsRes, alertsRes, ordersRes, posRes, catRes, venRes] = await Promise.all([
         api.getParts(params).catch(() => []),
         api.getLowStockAlerts().catch(() => ({ parts: [] })),
         api.getPartsOrders().catch(() => []),
-        api.getVendorPOs().catch(() => [])
+        api.getVendorPOs().catch(() => []),
+        api.getPartCategories().catch(() => []),
+        api.getVendors().catch(() => [])
       ]);
 
       if (partsRes.pagination) {
@@ -88,6 +99,8 @@ export default function Parts() {
       setLowStockAlerts(alertsRes.parts || []);
       setOrders(Array.isArray(ordersRes) ? ordersRes : []);
       setVendorPOs(Array.isArray(posRes) ? posRes : []);
+      setCategories(Array.isArray(catRes) ? catRes : (catRes?.categories || []));
+      setVendors(Array.isArray(venRes) ? venRes : (venRes?.vendors || []));
     } catch (err) {
       console.error('Error fetching parts data:', err);
     } finally {
@@ -123,6 +136,39 @@ export default function Parts() {
       fetchPartsData();
     } catch (err) {
       toast.error(err.message || 'Failed to receive shipment');
+    }
+  };
+
+  const handleSavePO = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmittingPO(true);
+      const validItems = poForm.items
+        .filter((it) => it.partId && Number(it.quantity) > 0)
+        .map((it) => ({
+          partId: it.partId,
+          quantity: Number(it.quantity),
+          unitCost: Number(it.unitCost || 0)
+        }));
+
+      if (validItems.length === 0) {
+        toast.error('Please select at least one part and specify valid quantity.');
+        return;
+      }
+
+      await api.createVendorPO({
+        vendorName: poForm.vendorName.trim(),
+        contactNumber: poForm.contactNumber.trim(),
+        items: validItems
+      });
+
+      toast.success('Vendor Purchase Order created successfully!');
+      setSubView(null);
+      fetchPartsData();
+    } catch (err) {
+      toast.error(err.message || 'Failed to create vendor purchase order');
+    } finally {
+      setSubmittingPO(false);
     }
   };
 
@@ -171,7 +217,23 @@ export default function Parts() {
             <FileSpreadsheet size={16} /> Export
           </button>
 
-          {hasPermission('MANAGE_PARTS') && (
+          {hasPermission('MANAGE_PARTS') && activeTab === 'vendor-pos' && (
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setPoForm({
+                  vendorName: '',
+                  contactNumber: '',
+                  items: [{ partId: parts[0]?.id || '', quantity: 1, unitCost: parts[0]?.wholesaleCost || 0 }]
+                });
+                setSubView('create-po');
+              }}
+            >
+              <Plus size={16} /> Create Vendor PO
+            </button>
+          )}
+
+          {hasPermission('MANAGE_PARTS') && activeTab === 'inventory' && (
             <button
               className="btn btn-primary"
               onClick={() => {
@@ -456,11 +518,17 @@ export default function Parts() {
                   <label>Category</label>
                   <input
                     type="text"
+                    list="parts-category-options"
                     className="form-input"
                     placeholder="e.g. Brakes, Engine, Clutch"
                     value={partForm.category}
                     onChange={(e) => setPartForm({ ...partForm, category: e.target.value })}
                   />
+                  <datalist id="parts-category-options">
+                    {categories.map((c) => (
+                      <option key={c.id || c.name} value={c.name} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
@@ -513,6 +581,174 @@ export default function Parts() {
               <div className="modal-footer pt-3 border-t border-line-soft">
                 <button type="button" className="btn btn-secondary" onClick={() => setSubView(null)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save Part</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Vendor PO Modal */}
+      {subView === 'create-po' && (
+        <div className="modal-overlay" onClick={() => setSubView(null)}>
+          <div className="modal-container glass-panel slide-in max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Create Vendor Purchase Order</h3>
+              <button className="modal-close-btn" onClick={() => setSubView(null)}><X size={18} /></button>
+            </div>
+            <form onSubmit={handleSavePO} className="p-4">
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="form-field">
+                  <label>Vendor Supplier Name *</label>
+                  <input
+                    type="text"
+                    list="vendors-list-options"
+                    className="form-input"
+                    placeholder="e.g. Atlas Honda Genuine Parts Ltd"
+                    value={poForm.vendorName}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const matched = vendors.find((v) => v.name?.toLowerCase() === name.toLowerCase());
+                      setPoForm({
+                        ...poForm,
+                        vendorName: name,
+                        contactNumber: matched?.contactNumber || poForm.contactNumber
+                      });
+                    }}
+                    required
+                  />
+                  <datalist id="vendors-list-options">
+                    {vendors.map((v) => (
+                      <option key={v.id} value={v.name}>{v.contactNumber || ''}</option>
+                    ))}
+                  </datalist>
+                </div>
+                <div className="form-field">
+                  <label>Vendor Contact Number *</label>
+                  <input
+                    type="text"
+                    className="form-input font-mono"
+                    placeholder="042-35990000"
+                    value={poForm.contactNumber}
+                    onChange={(e) => setPoForm({ ...poForm, contactNumber: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-semibold text-sm">Purchase Order Items</label>
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-outline"
+                    onClick={() => {
+                      setPoForm({
+                        ...poForm,
+                        items: [...poForm.items, { partId: parts[0]?.id || '', quantity: 1, unitCost: parts[0]?.wholesaleCost || 0 }]
+                      });
+                    }}
+                  >
+                    <Plus size={13} /> Add Part Line
+                  </button>
+                </div>
+
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {poForm.items.map((item, idx) => {
+                    const lineTotal = Number(item.quantity || 0) * Number(item.unitCost || 0);
+                    return (
+                      <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-surface-soft border border-line-soft">
+                        <div className="flex-1">
+                          <select
+                            className="form-input text-xs"
+                            value={item.partId}
+                            onChange={(e) => {
+                              const selectedPart = parts.find((p) => p.id === e.target.value);
+                              const updated = [...poForm.items];
+                              updated[idx] = {
+                                ...updated[idx],
+                                partId: e.target.value,
+                                unitCost: selectedPart?.wholesaleCost || updated[idx].unitCost
+                              };
+                              setPoForm({ ...poForm, items: updated });
+                            }}
+                            required
+                          >
+                            <option value="">-- Select Spare Part --</option>
+                            {parts.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.partName} ({p.partCode}) - Stock: {p.quantity}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="w-24">
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Qty"
+                            className="form-input text-xs font-mono"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const updated = [...poForm.items];
+                              updated[idx].quantity = e.target.value;
+                              setPoForm({ ...poForm, items: updated });
+                            }}
+                            required
+                          />
+                        </div>
+                        <div className="w-28">
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="Cost"
+                            className="form-input text-xs font-mono"
+                            value={item.unitCost}
+                            onChange={(e) => {
+                              const updated = [...poForm.items];
+                              updated[idx].unitCost = e.target.value;
+                              setPoForm({ ...poForm, items: updated });
+                            }}
+                            required
+                          />
+                        </div>
+                        <div className="w-28 text-right font-mono text-xs font-semibold text-cyan">
+                          {formatPKR(lineTotal)}
+                        </div>
+                        {poForm.items.length > 1 && (
+                          <button
+                            type="button"
+                            className="text-rose p-1 hover:bg-rose/10 rounded"
+                            onClick={() => {
+                              const updated = poForm.items.filter((_, i) => i !== idx);
+                              setPoForm({ ...poForm, items: updated });
+                            }}
+                            title="Remove Line"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-end items-center gap-2 mt-3 pt-2 border-t border-line-soft">
+                  <span className="text-sm text-muted">Total Payable:</span>
+                  <span className="font-mono text-base font-bold text-emerald">
+                    {formatPKR(
+                      poForm.items.reduce((sum, it) => sum + (Number(it.quantity || 0) * Number(it.unitCost || 0)), 0)
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="modal-footer pt-3 border-t border-line-soft flex justify-end gap-2">
+                <button type="button" className="btn btn-secondary" onClick={() => setSubView(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submittingPO}>
+                  {submittingPO ? 'Creating...' : 'Create Purchase Order'}
+                </button>
               </div>
             </form>
           </div>

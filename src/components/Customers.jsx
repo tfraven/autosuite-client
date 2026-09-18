@@ -21,14 +21,18 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
-  Building2
+  Building2,
+  Plus,
+  Edit3
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Pagination from './Pagination';
 
 export default function Customers() {
   const { hasPermission } = useAuth();
+  const toast = useToast();
   const [customers, setCustomers] = useState([]);
   const [summary, setSummary] = useState({
     totalCustomers: 0,
@@ -43,6 +47,68 @@ export default function Customers() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [copiedText, setCopiedText] = useState('');
+
+  // Customer Add / Edit Modal state
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [submittingCustomer, setSubmittingCustomer] = useState(false);
+  const [customerFormData, setCustomerFormData] = useState({
+    name: '',
+    phone: '',
+    cnic: '',
+    address: '',
+    customerType: 'RETAIL',
+    notes: ''
+  });
+
+  const handleOpenAddCustomer = () => {
+    setEditingCustomer(null);
+    setCustomerFormData({
+      name: '',
+      phone: '',
+      cnic: '',
+      address: '',
+      customerType: 'RETAIL',
+      notes: ''
+    });
+    setIsCustomerModalOpen(true);
+  };
+
+  const handleOpenEditCustomer = (cust) => {
+    setEditingCustomer(cust);
+    setCustomerFormData({
+      name: cust.name || '',
+      phone: cust.phone || '',
+      cnic: cust.cnic || '',
+      address: cust.address || '',
+      customerType: cust.customerType || 'RETAIL',
+      notes: cust.notes || ''
+    });
+    setIsCustomerModalOpen(true);
+  };
+
+  const handleSaveCustomer = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmittingCustomer(true);
+      if (editingCustomer) {
+        const updated = await api.updateCustomer(editingCustomer.id, customerFormData);
+        toast.success(`Customer ${updated.name} updated.`);
+        if (selectedCustomer && selectedCustomer.id === editingCustomer.id) {
+          setSelectedCustomer((prev) => ({ ...prev, ...updated }));
+        }
+      } else {
+        const created = await api.createCustomer(customerFormData);
+        toast.success(`Customer ${created.name} registered.`);
+      }
+      setIsCustomerModalOpen(false);
+      fetchCustomers();
+    } catch (err) {
+      toast.error(err.message || 'Failed to save customer');
+    } finally {
+      setSubmittingCustomer(false);
+    }
+  };
 
   // Pagination states
   const [page, setPage] = useState(1);
@@ -103,6 +169,107 @@ export default function Customers() {
     return 'PKR ' + Number(val || 0).toLocaleString('en-PK');
   };
 
+  const renderCustomerModal = () => {
+    if (!isCustomerModalOpen) return null;
+    return (
+      <div className="modal-overlay" onClick={() => setIsCustomerModalOpen(false)}>
+        <div className="modal-container glass-panel slide-in max-w-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>{editingCustomer ? 'Edit Customer Details' : 'Register New Customer'}</h3>
+            <button className="modal-close-btn" onClick={() => setIsCustomerModalOpen(false)}>
+              <X size={18} />
+            </button>
+          </div>
+          <form onSubmit={handleSaveCustomer} className="p-4">
+            <div className="form-field mb-3">
+              <label>Full Name *</label>
+              <input
+                type="text"
+                className="form-input"
+                required
+                placeholder="e.g. Muhammad Aslam"
+                value={customerFormData.name}
+                onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="form-field">
+                <label>Phone Number *</label>
+                <input
+                  type="text"
+                  className="form-input font-mono"
+                  required
+                  placeholder="03001234567"
+                  value={customerFormData.phone}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label>CNIC (National ID)</label>
+                <input
+                  type="text"
+                  className="form-input font-mono"
+                  placeholder="35201-1234567-1"
+                  value={customerFormData.cnic}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, cnic: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="form-field">
+                <label>Account Type</label>
+                <select
+                  className="form-input"
+                  value={customerFormData.customerType}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, customerType: e.target.value })}
+                >
+                  <option value="RETAIL">Retail B2C</option>
+                  <option value="DEALER">Dealer B2B</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label>Address</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="City, Area or Street"
+                  value={customerFormData.address}
+                  onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="form-field mb-4">
+              <label>Internal Notes</label>
+              <textarea
+                rows="2"
+                className="form-input"
+                placeholder="Credit terms, reference notes..."
+                value={customerFormData.notes}
+                onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
+              />
+            </div>
+            <div className="modal-footer pt-3 border-t border-line-soft flex justify-end gap-2">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsCustomerModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={submittingCustomer}
+              >
+                {submittingCustomer ? 'Saving…' : (editingCustomer ? 'Save Changes' : 'Register Customer')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   // If a customer is selected for deep profile view
   if (selectedCustomer) {
     return (
@@ -119,9 +286,19 @@ export default function Customers() {
                 Vehicles owned, invoices and payment history
               </div>
             </div>
-            <button className="btn btn-primary" onClick={() => window.print()}>
-              <Printer size={16} /> Print statement
-            </button>
+            <div className="flex items-center gap-2">
+              {hasPermission('CREATE_SALE') && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleOpenEditCustomer(selectedCustomer)}
+                >
+                  <Edit3 size={16} /> Edit details
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={() => window.print()}>
+                <Printer size={16} /> Print statement
+              </button>
+            </div>
           </div>
 
           {/* Printable Document Header (when printed) */}
@@ -334,6 +511,7 @@ export default function Customers() {
             </div>
           </div>
         </div>
+        {renderCustomerModal()}
       </div>
     );
   }
@@ -485,6 +663,15 @@ export default function Customers() {
               <FileSpreadsheet size={16} /> Export
             </button>
           )}
+
+          {hasPermission('CREATE_SALE') && (
+            <button
+              className="btn btn-primary"
+              onClick={handleOpenAddCustomer}
+            >
+              <Plus size={16} /> Add Customer
+            </button>
+          )}
         </div>
       </div>
 
@@ -548,13 +735,29 @@ export default function Customers() {
                 )}
               </div>
 
-              <div className="customer-card-footer">
+              <div className="customer-card-footer flex items-center justify-between">
                 <span className="text-xs text-muted">
                   Last active {new Date(c.lastPurchaseDate).toLocaleDateString('en-GB')}
                 </span>
-                <span className="view-ledger-link">
-                  View <ChevronRight size={14} />
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {hasPermission('CREATE_SALE') && (
+                    <button
+                      type="button"
+                      className="btn-card-action"
+                      style={{ padding: '3px 8px', fontSize: '11px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditCustomer(c);
+                      }}
+                      title="Edit Customer"
+                    >
+                      <Edit3 size={11} /> Edit
+                    </button>
+                  )}
+                  <span className="view-ledger-link">
+                    View <ChevronRight size={14} />
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -609,15 +812,29 @@ export default function Customers() {
                     </span>
                   </td>
                   <td className="text-right">
-                    <button
-                      className="btn btn-sm btn-outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedCustomer(c);
-                      }}
-                    >
-                      Ledger <ChevronRight size={13} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {hasPermission('CREATE_SALE') && (
+                        <button
+                          className="btn btn-sm btn-outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditCustomer(c);
+                          }}
+                          title="Edit Customer Record"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCustomer(c);
+                        }}
+                      >
+                        Ledger <ChevronRight size={13} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -638,6 +855,7 @@ export default function Customers() {
           setPage(1);
         }}
       />
+      {renderCustomerModal()}
     </div>
   );
 }
