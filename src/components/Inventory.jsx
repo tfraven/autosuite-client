@@ -167,6 +167,8 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
     return 'PKR ' + Number(val || 0).toLocaleString('en-PK');
   };
 
+  const formatGrade = (grade) => (grade || '').replace(/^GRADE_/, '');
+
   const getColorSwatch = (colorName) => {
     const c = (colorName || '').toLowerCase();
     if (c.includes('red')) return '#dc2626';
@@ -651,18 +653,17 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                   </div>
 
                   <div className="bike-card-body">
-                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                      {bike.brand && (
-                        <span className="glass-badge badge-cyan text-xs font-semibold px-2 py-0.5">
-                          {bike.brand}
-                        </span>
-                      )}
-                      {bike.conditionGrade && (
-                        <span className="glass-badge badge-amber text-xs font-semibold px-2 py-0.5">
-                          Grade {bike.conditionGrade}
-                        </span>
-                      )}
-                    </div>
+                    {(bike.brand || bike.conditionGrade) && (
+                      <div className="bike-card-eyebrow">
+                        {bike.brand && <span className="eyebrow-brand">{bike.brand}</span>}
+                        {bike.brand && bike.conditionGrade && (
+                          <span className="eyebrow-sep" aria-hidden="true" />
+                        )}
+                        {bike.conditionGrade && (
+                          <span className="eyebrow-grade">Grade {formatGrade(bike.conditionGrade)}</span>
+                        )}
+                      </div>
+                    )}
                     <h3 className="bike-card-title">{bike.modelName}</h3>
                     <div className="bike-card-specs">
                       <span className="color-indicator-chip">
@@ -778,14 +779,17 @@ export default function Inventory({ isOpenAddModal, onCloseAddModal }) {
                       </td>
                       <td>
                         <div className="font-bold text-main">{bike.modelName}</div>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          {bike.brand && <span className="text-xs text-muted font-medium">{bike.brand}</span>}
-                          {bike.conditionGrade && (
-                            <span className="glass-badge badge-amber text-[10px] py-0 px-1.5 font-medium">
-                              Grade {bike.conditionGrade}
-                            </span>
-                          )}
-                        </div>
+                        {(bike.brand || bike.conditionGrade) && (
+                          <div className="bike-card-eyebrow bike-card-eyebrow-table">
+                            {bike.brand && <span className="eyebrow-brand">{bike.brand}</span>}
+                            {bike.brand && bike.conditionGrade && (
+                              <span className="eyebrow-sep" aria-hidden="true" />
+                            )}
+                            {bike.conditionGrade && (
+                              <span className="eyebrow-grade">Grade {formatGrade(bike.conditionGrade)}</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td>
                         <div className="table-chassis-cell">
