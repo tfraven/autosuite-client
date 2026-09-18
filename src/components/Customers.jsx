@@ -67,6 +67,40 @@ function formatDisplayDate(value) {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('en-GB');
 }
 
+function formatLabel(value) {
+  if (!value) return '';
+  return String(value)
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatCustomerType(type) {
+  if (type === 'DEALER') return 'Dealer';
+  if (type === 'RETAIL') return 'Retail';
+  return formatLabel(type);
+}
+
+function formatPaymentType(type) {
+  const labels = {
+    CREDIT_INSTALLMENT: 'Installments',
+    CASH: 'Cash',
+    BANK: 'Bank',
+    BANK_TRANSFER: 'Bank transfer'
+  };
+  return labels[type] || formatLabel(type);
+}
+
+function formatSaleStatus(status) {
+  const labels = {
+    COMPLETED: 'Completed',
+    PENDING_PAYMENT: 'Pending payment',
+    CANCELLED: 'Cancelled',
+    PARTIAL: 'Partial'
+  };
+  return labels[status] || formatLabel(status);
+}
+
 export default function Customers({ onViewInvoice, initialCustomerId }) {
   const { hasPermission } = useAuth();
   const toast = useToast();
@@ -230,28 +264,27 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
   if (subView === 'customer-form') {
     return (
       <div className="customers-view">
-        <div className="page-form-view">
+        <div className="page-form-view customer-form-view">
           <div className="page-form-header">
             <button className="page-form-back-btn" onClick={() => setSubView(null)}>
               <ArrowLeft size={16} /> Back to customers
             </button>
             <div className="page-form-title-group">
               <h2 className="page-form-title">
-                {editingCustomer ? 'Edit customer details' : 'Register new customer'}
+                {editingCustomer ? 'Edit customer' : 'New customer'}
               </h2>
               <div className="page-form-subtitle">
-                Master customer record, National ID (CNIC), contact phone and credit terms
+                Name, phone, CNIC and account type for the master record
               </div>
             </div>
           </div>
 
           <form onSubmit={handleSaveCustomer} className="page-form-container">
             <div className="page-form-grid-2">
-              {/* Card 1: Account Identity */}
               <div className="page-form-card">
-                <div className="page-form-card-title">Customer Identification</div>
-                <div className="form-field mb-3">
-                  <label>Full Legal Name *</label>
+                <div className="page-form-card-title">Identity</div>
+                <div className="form-field">
+                  <label>Full name *</label>
                   <input
                     type="text"
                     className="form-input"
@@ -261,20 +294,20 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                     onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
                   />
                 </div>
-                <div className="form-group-row mb-3">
+                <div className="form-group-row">
                   <div className="form-field">
-                    <label>Account Category</label>
+                    <label>Account type</label>
                     <select
                       className="form-input"
                       value={customerFormData.customerType}
                       onChange={(e) => setCustomerFormData({ ...customerFormData, customerType: e.target.value })}
                     >
-                      <option value="RETAIL">Retail B2C</option>
-                      <option value="DEALER">Dealer B2B</option>
+                      <option value="RETAIL">Retail (B2C)</option>
+                      <option value="DEALER">Dealer (B2B)</option>
                     </select>
                   </div>
                   <div className="form-field">
-                    <label>National ID (CNIC)</label>
+                    <label>CNIC</label>
                     <input
                       type="text"
                       className="form-input font-mono"
@@ -286,11 +319,10 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                 </div>
               </div>
 
-              {/* Card 2: Contact & Location */}
               <div className="page-form-card">
-                <div className="page-form-card-title">Contact & Location</div>
-                <div className="form-field mb-3">
-                  <label>Primary Phone Number *</label>
+                <div className="page-form-card-title">Contact</div>
+                <div className="form-field">
+                  <label>Phone *</label>
                   <input
                     type="text"
                     className="form-input font-mono"
@@ -300,8 +332,8 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                     onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
                   />
                 </div>
-                <div className="form-field mb-3">
-                  <label>Residential / Business Address</label>
+                <div className="form-field">
+                  <label>Address</label>
                   <input
                     type="text"
                     className="form-input"
@@ -314,19 +346,20 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
             </div>
 
             <div className="page-form-card">
-              <div className="page-form-card-title">Commercial & Reference Notes</div>
+              <div className="page-form-card-title">Notes</div>
               <div className="form-field">
+                <label>Internal reference</label>
                 <textarea
                   rows="3"
                   className="form-input"
-                  placeholder="Guarantor references, payment terms, showroom bay or delivery notes..."
+                  placeholder="Guarantor, payment terms, delivery notes…"
                   value={customerFormData.notes}
                   onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="page-form-footer mt-4 flex items-center justify-end gap-3">
+            <div className="page-form-footer flex items-center justify-end gap-3">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -339,7 +372,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                 className="btn btn-primary"
                 disabled={submittingCustomer}
               >
-                {submittingCustomer ? 'Saving…' : (editingCustomer ? 'Save Customer Changes' : 'Register Customer')}
+                {submittingCustomer ? 'Saving…' : (editingCustomer ? 'Save changes' : 'Register customer')}
               </button>
             </div>
           </form>
@@ -350,19 +383,29 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
 
   // If a customer is selected for deep profile view
   if (selectedCustomer) {
+    const ownedBikes = selectedCustomer.purchasedBikes || [];
+    const customerSales = selectedCustomer.sales || [];
+    const sinceDate = formatDisplayDate(selectedCustomer.firstPurchaseDate);
+    const balanceDue = Number(selectedCustomer.remainingBalance || 0) > 0;
+
+    const openBikeInvoice = (bike) => {
+      if (!onViewInvoice) return;
+      const matchedSale = customerSales.find(
+        (s) => s.invoiceNumber === bike.invoiceNumber || s.id === bike.saleId
+      );
+      onViewInvoice(matchedSale || { id: bike.saleId, invoiceNumber: bike.invoiceNumber });
+    };
+
     return (
       <div className="customers-view">
-        <div className="page-form-view">
-          {/* Breadcrumb & Navigation */}
+        <div className="page-form-view customer-ledger-view">
           <div className="page-form-header no-print">
             <button className="page-form-back-btn" onClick={() => setSelectedCustomer(null)}>
               <ArrowLeft size={16} /> Back to customers
             </button>
             <div className="page-form-title-group">
               <h2 className="page-form-title">{selectedCustomer.name}</h2>
-              <div className="page-form-subtitle">
-                Vehicles owned, invoices and payment history
-              </div>
+              <div className="page-form-subtitle">Customer ledger</div>
             </div>
             <div className="flex items-center gap-2">
               {hasPermission('CREATE_SALE') && (
@@ -370,11 +413,11 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   className="btn btn-secondary"
                   onClick={() => handleOpenEditCustomer(selectedCustomer)}
                 >
-                  <Edit3 size={16} /> Edit details
+                  <Edit3 size={16} /> Edit
                 </button>
               )}
               <button className="btn btn-primary" onClick={() => window.print()}>
-                <Printer size={16} /> Print statement
+                <Printer size={16} /> Print
               </button>
             </div>
           </div>
@@ -396,7 +439,6 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
           </div>
 
           <div className="page-form-container">
-            {/* Top Overview Card */}
             <div className="page-form-card">
               <div className="customer-profile-hero">
                 <div className="customer-avatar-large">
@@ -406,47 +448,47 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   <div className="hero-name-row">
                     <h3>{selectedCustomer.name}</h3>
                     <span className={`glass-badge ${selectedCustomer.saleType === 'B2B' ? 'badge-purple' : 'badge-cyan'}`}>
-                      {selectedCustomer.customerType}{selectedCustomer.saleType ? ` (${selectedCustomer.saleType})` : ''}
+                      {formatCustomerType(selectedCustomer.customerType)}
+                      {selectedCustomer.saleType ? ` · ${selectedCustomer.saleType}` : ''}
                     </span>
-                    <span className={`glass-badge ${selectedCustomer.remainingBalance > 0 ? 'badge-rose' : 'badge-emerald'}`}>
+                    <span className={`glass-badge ${balanceDue ? 'badge-rose' : 'badge-emerald'}`}>
                       <span className="status-dot" />
-                      {selectedCustomer.remainingBalance > 0 ? 'Balance due' : 'Fully settled'}
+                      {balanceDue ? 'Balance due' : 'Settled'}
                     </span>
                   </div>
 
                   <div className="customer-contacts-grid">
-                    <div className="contact-item" onClick={() => copyToClipboard(selectedCustomer.phone)} title="Click to copy">
+                    <button type="button" className="contact-item" onClick={() => copyToClipboard(selectedCustomer.phone)} title="Copy phone">
                       <Phone size={14} className="text-cyan" />
                       <span>{selectedCustomer.phone}</span>
                       {copiedText === selectedCustomer.phone ? <Check size={12} className="text-emerald" /> : <Copy size={12} className="text-muted" />}
-                    </div>
+                    </button>
 
                     {selectedCustomer.cnic && (
-                      <div className="contact-item" onClick={() => copyToClipboard(selectedCustomer.cnic)} title="Click to copy CNIC">
+                      <button type="button" className="contact-item" onClick={() => copyToClipboard(selectedCustomer.cnic)} title="Copy CNIC">
                         <ShieldCheck size={14} className="text-purple" />
                         <span className="font-mono">{selectedCustomer.cnic}</span>
-                      </div>
+                      </button>
                     )}
 
                     {selectedCustomer.address && (
-                      <div className="contact-item">
+                      <div className="contact-item contact-item-static">
                         <Building2 size={14} className="text-amber" />
                         <span>{selectedCustomer.address}</span>
                       </div>
                     )}
 
-                    {formatDisplayDate(selectedCustomer.firstPurchaseDate) && (
-                      <div className="contact-item text-muted">
+                    {sinceDate && (
+                      <div className="contact-item contact-item-static text-muted">
                         <Calendar size={14} />
-                        <span>Customer since {formatDisplayDate(selectedCustomer.firstPurchaseDate)}</span>
+                        <span>Since {sinceDate}</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Financial Summary Bar */}
-              <div className="stats-strip mt-3">
+              <div className="stats-strip">
                 <div className="strip-item">
                   <span className="strip-label">Lifetime spend</span>
                   <strong className="strip-val text-cyan font-mono">{formatPKR(selectedCustomer.totalSpent)}</strong>
@@ -457,184 +499,198 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                 </div>
                 <div className="strip-item">
                   <span className="strip-label">Balance due</span>
-                  <strong className={`strip-val font-mono ${selectedCustomer.remainingBalance > 0 ? 'text-rose' : 'text-muted'}`}>
+                  <strong className={`strip-val font-mono ${balanceDue ? 'text-rose' : 'text-muted'}`}>
                     {formatPKR(selectedCustomer.remainingBalance)}
                   </strong>
                 </div>
                 <div className="strip-item">
-                  <span className="strip-label">Motorcycles owned</span>
-                  <strong className="strip-val text-amber">{selectedCustomer.totalPurchases}</strong>
+                  <span className="strip-label">Motorcycles</span>
+                  <strong className="strip-val text-amber">{selectedCustomer.totalPurchases || ownedBikes.length}</strong>
                 </div>
               </div>
             </div>
 
-            {/* Vehicles Purchased Card */}
             <div className="page-form-card">
               <div className="page-form-card-title">
-                Motorcycles owned ({selectedCustomer.purchasedBikes?.length || 0})
+                Motorcycles owned
+                <span className="customer-section-count">{ownedBikes.length}</span>
               </div>
 
-              <div className="bikes-registered-grid">
-                {(selectedCustomer.purchasedBikes || []).map((bike, idx) => (
-                  <div key={idx} className="customer-bike-tile">
-                    <div className="tile-icon-box">
-                      <Bike size={18} />
-                    </div>
-
-                    <div className="tile-identity">
-                      <h4 className="tile-title">{bike.modelName}</h4>
-                      <div className="tile-meta">
-                        <span className="spec-tag">{bike.modelYear}</span>
-                        <span className="spec-tag">{bike.color}</span>
+              {ownedBikes.length === 0 ? (
+                <div className="customer-empty-panel">
+                  <Bike size={18} />
+                  <span>No motorcycles recorded on this account.</span>
+                </div>
+              ) : (
+                <div className="bikes-registered-grid">
+                  {ownedBikes.map((bike, idx) => (
+                    <div key={bike.saleId || bike.chassisNumber || idx} className="customer-bike-tile">
+                      <div className="tile-icon-box">
+                        <Bike size={16} />
                       </div>
-                    </div>
 
-                    <div className="tile-ids">
-                      <div className="tile-id-row">
-                        <span className="id-title">Chassis</span>
+                      <div className="tile-identity">
+                        <h4 className="tile-title">{bike.modelName}</h4>
+                        <div className="tile-meta">
+                          {bike.modelYear && <span className="spec-tag">{bike.modelYear}</span>}
+                          {bike.color && <span className="spec-tag">{bike.color}</span>}
+                        </div>
+                      </div>
+
+                      <div className="tile-ids">
+                        <div className="tile-id-row">
+                          <span className="id-title">Chassis</span>
+                          <button
+                            type="button"
+                            className="id-value id-value-key id-value-copy"
+                            onClick={() => copyToClipboard(bike.chassisNumber)}
+                            title="Copy chassis number"
+                          >
+                            {bike.chassisNumber}
+                            {copiedText === bike.chassisNumber
+                              ? <Check size={11} className="text-emerald" />
+                              : <Copy size={11} />}
+                          </button>
+                        </div>
+                        <div className="tile-id-row">
+                          <span className="id-title">Engine</span>
+                          <span className="id-value">{bike.engineNumber}</span>
+                        </div>
+                      </div>
+
+                      {onViewInvoice ? (
                         <button
                           type="button"
-                          className="id-value id-value-key id-value-copy"
-                          onClick={() => copyToClipboard(bike.chassisNumber)}
-                          title="Copy chassis number"
+                          className="tile-invoice tile-invoice-btn"
+                          onClick={() => openBikeInvoice(bike)}
+                          title="Open invoice"
                         >
-                          {bike.chassisNumber}
-                          {copiedText === bike.chassisNumber
-                            ? <Check size={11} className="text-emerald" />
-                            : <Copy size={11} />}
+                          {bike.invoiceNumber} <ExternalLink size={11} />
                         </button>
-                      </div>
-                      <div className="tile-id-row">
-                        <span className="id-title">Engine</span>
-                        <span className="id-value">{bike.engineNumber}</span>
-                      </div>
+                      ) : (
+                        <span className="tile-invoice">{bike.invoiceNumber}</span>
+                      )}
                     </div>
-
-                    {onViewInvoice ? (
-                      <button
-                        type="button"
-                        className="tile-invoice tile-invoice-btn"
-                        onClick={() => {
-                          const matchedSale = selectedCustomer.sales?.find(
-                            (s) => s.invoiceNumber === bike.invoiceNumber || s.id === bike.saleId
-                          );
-                          onViewInvoice(matchedSale || { id: bike.saleId, invoiceNumber: bike.invoiceNumber });
-                        }}
-                        title="Click to view invoice details"
-                      >
-                        {bike.invoiceNumber} <ExternalLink size={10} className="inline ml-1 opacity-70" />
-                      </button>
-                    ) : (
-                      <span className="tile-invoice">{bike.invoiceNumber}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Sales Invoices & Installments Card */}
             <div className="page-form-card">
               <div className="page-form-card-title">
-                Invoices ({selectedCustomer?.sales?.length || 0})
+                Invoices
+                <span className="customer-section-count">{customerSales.length}</span>
               </div>
 
-              <div className="customer-sales-list">
-                {selectedCustomer?.sales?.map((sale) => (
-                  <div key={sale.id} className="customer-sale-card glass-panel mb-3">
-                    <div className="sale-card-summary-row">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {onViewInvoice ? (
-                          <button
-                            type="button"
-                            className="invoice-redirect-link font-mono font-bold text-cyan text-base flex items-center gap-1.5"
-                            onClick={() => onViewInvoice(sale)}
-                            title="Click to open full invoice details"
-                          >
-                            <span>{sale.invoiceNumber}</span>
-                            <ExternalLink size={14} className="link-arrow-icon text-cyan" />
-                          </button>
-                        ) : (
-                          <span className="font-mono font-bold text-cyan text-base">{sale.invoiceNumber}</span>
-                        )}
-                        <span className="text-xs text-muted ml-2">
-                          {new Date(sale.saleDate).toLocaleDateString('en-GB')}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`glass-badge ${sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-emerald'}`}>
-                          {(sale.paymentType || 'CASH').replace(/_/g, ' ')}
-                        </span>
-                        <span className={`glass-badge ${sale.status === 'COMPLETED' ? 'badge-emerald' : 'badge-amber'}`}>
-                          {sale.status}
-                        </span>
-                        {onViewInvoice && (
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-xs flex items-center gap-1.5 py-1 px-2.5"
-                            onClick={() => onViewInvoice(sale)}
-                            title="Open detailed invoice"
-                          >
-                            <span>View Invoice</span>
-                            <ArrowRight size={12} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+              {customerSales.length === 0 ? (
+                <div className="customer-empty-panel">
+                  <FileSpreadsheet size={18} />
+                  <span>No invoices on this account yet.</span>
+                </div>
+              ) : (
+                <div className="customer-sales-list">
+                  {customerSales.map((sale) => {
+                    const saleBalance = Number(sale.remainingBalance || 0);
+                    const bikeName =
+                      sale.bike?.modelName ||
+                      sale.bikeModel ||
+                      ownedBikes.find((b) => b.invoiceNumber === sale.invoiceNumber)?.modelName ||
+                      'Motorcycle';
 
-                    <div className="sale-financial-breakdown">
-                      <div><span>Total:</span> <strong>{formatPKR(sale.finalAmount)}</strong></div>
-                      <div><span>Balance:</span> <strong className={sale.remainingBalance > 0 ? 'text-rose' : 'text-emerald'}>{formatPKR(sale.remainingBalance)}</strong></div>
-                      <div>
-                        <span>Motorcycle:</span>{' '}
-                        <strong className="text-amber">
-                          {sale.bike?.modelName ||
-                            sale.bikeModel ||
-                            selectedCustomer.purchasedBikes?.find((b) => b.invoiceNumber === sale.invoiceNumber)?.modelName ||
-                            'Motorcycle'}
-                        </strong>
-                      </div>
-                    </div>
+                    return (
+                      <div key={sale.id} className="customer-sale-card">
+                        <div className="sale-card-summary-row">
+                          <div className="customer-sale-heading">
+                            {onViewInvoice ? (
+                              <button
+                                type="button"
+                                className="invoice-redirect-link"
+                                onClick={() => onViewInvoice(sale)}
+                                title="Open invoice"
+                              >
+                                <span>{sale.invoiceNumber}</span>
+                                <ExternalLink size={13} />
+                              </button>
+                            ) : (
+                              <span className="invoice-redirect-link is-static">{sale.invoiceNumber}</span>
+                            )}
+                            <span className="customer-sale-date">
+                              {formatDisplayDate(sale.saleDate) || '—'}
+                            </span>
+                          </div>
+                          <div className="customer-sale-actions">
+                            <span className={`glass-badge ${sale.paymentType === 'CREDIT_INSTALLMENT' ? 'badge-amber' : 'badge-emerald'}`}>
+                              {formatPaymentType(sale.paymentType || 'CASH')}
+                            </span>
+                            <span className={`glass-badge ${sale.status === 'COMPLETED' ? 'badge-emerald' : 'badge-amber'}`}>
+                              {formatSaleStatus(sale.status)}
+                            </span>
+                            {onViewInvoice && (
+                              <button
+                                type="button"
+                                className="btn btn-secondary btn-xs"
+                                onClick={() => onViewInvoice(sale)}
+                              >
+                                View invoice <ArrowRight size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
 
-                    {/* If credit installment, show schedule */}
-                    {sale?.installments && sale?.installments?.length > 0 && (
-                      <div className="customer-installments-table-wrap mt-3">
-                        <div className="text-xs font-medium text-muted mb-2">Installment schedule</div>
-                        <table className="mini-ledger-table">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Due date</th>
-                              <th>Amount</th>
-                              <th>Paid</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sale?.installments?.map((inst) => {
-                              const isOverdue = inst.status !== 'PAID' && new Date(inst.dueDate) < new Date();
-                              return (
-                                <tr key={inst.id}>
-                                  <td className="font-mono">{inst.installmentNumber}</td>
-                                  <td>{new Date(inst.dueDate).toLocaleDateString('en-GB')}</td>
-                                  <td className="font-mono font-bold">{formatPKR(inst.amount)}</td>
-                                  <td className="font-mono text-emerald">{formatPKR(inst.paidAmount)}</td>
-                                  <td>
-                                    <span className={`glass-badge ${inst.status === 'PAID' ? 'badge-emerald' :
-                                      isOverdue ? 'badge-rose' : 'badge-amber'
-                                      }`}>
-                                      {inst.status === 'PAID' ? 'Paid' : isOverdue ? 'Overdue' : 'Pending'}
-                                    </span>
-                                  </td>
+                        <div className="sale-financial-breakdown">
+                          <div>
+                            <span className="strip-label">Total</span>
+                            <strong>{formatPKR(sale.finalAmount)}</strong>
+                          </div>
+                          <div>
+                            <span className="strip-label">Balance</span>
+                            <strong className={saleBalance > 0 ? 'text-rose' : 'text-emerald'}>{formatPKR(sale.remainingBalance)}</strong>
+                          </div>
+                          <div>
+                            <span className="strip-label">Motorcycle</span>
+                            <strong className="text-amber">{bikeName}</strong>
+                          </div>
+                        </div>
+
+                        {sale?.installments?.length > 0 && (
+                          <div className="customer-installments-table-wrap">
+                            <div className="customer-installments-label">Installment schedule</div>
+                            <table className="mini-ledger-table">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Due date</th>
+                                  <th>Amount</th>
+                                  <th>Paid</th>
+                                  <th>Status</th>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                              </thead>
+                              <tbody>
+                                {sale.installments.map((inst) => {
+                                  const isOverdue = inst.status !== 'PAID' && new Date(inst.dueDate) < new Date();
+                                  return (
+                                    <tr key={inst.id}>
+                                      <td className="font-mono">{inst.installmentNumber}</td>
+                                      <td>{formatDisplayDate(inst.dueDate) || '—'}</td>
+                                      <td className="font-mono font-bold">{formatPKR(inst.amount)}</td>
+                                      <td className="font-mono text-emerald">{formatPKR(inst.paidAmount)}</td>
+                                      <td>
+                                        <span className={`glass-badge ${inst.status === 'PAID' ? 'badge-emerald' : isOverdue ? 'badge-rose' : 'badge-amber'}`}>
+                                          {inst.status === 'PAID' ? 'Paid' : isOverdue ? 'Overdue' : 'Pending'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -795,7 +851,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
               className="btn btn-primary"
               onClick={handleOpenAddCustomer}
             >
-              <Plus size={16} /> Add Customer
+              <Plus size={16} /> Add customer
             </button>
           )}
         </div>
@@ -830,7 +886,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   <div className="customer-phone font-mono">{c.phone}</div>
                 </div>
                 <span className={`glass-badge ml-auto text-xs ${c.saleType === 'B2B' ? 'badge-purple' : 'badge-cyan'}`}>
-                  {c.customerType}
+                  {formatCustomerType(c.customerType)}
                 </span>
               </div>
 
@@ -863,25 +919,24 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
 
               <div className="customer-card-footer flex items-center justify-between">
                 <span className="text-xs text-muted">
-                  Last active {new Date(c.lastPurchaseDate).toLocaleDateString('en-GB')}
+                  Last active {formatDisplayDate(c.lastPurchaseDate) || '—'}
                 </span>
                 <div className="flex items-center gap-1.5">
                   {hasPermission('CREATE_SALE') && (
                     <button
                       type="button"
                       className="btn-card-action"
-                      style={{ padding: '3px 8px', fontSize: '11px' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleOpenEditCustomer(c);
                       }}
-                      title="Edit Customer"
+                      title="Edit customer"
                     >
                       <Edit3 size={11} /> Edit
                     </button>
                   )}
                   <span className="view-ledger-link">
-                    View <ChevronRight size={14} />
+                    Ledger <ChevronRight size={14} />
                   </span>
                 </div>
               </div>
@@ -919,7 +974,7 @@ export default function Customers({ onViewInvoice, initialCustomerId }) {
                   <td className="font-mono text-xs">{c.cnic || '—'}</td>
                   <td>
                     <span className={`glass-badge text-xs ${c.saleType === 'B2B' ? 'badge-purple' : 'badge-cyan'}`}>
-                      {c.customerType}
+                      {formatCustomerType(c.customerType)}
                     </span>
                   </td>
                   <td>
